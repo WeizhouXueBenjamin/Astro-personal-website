@@ -2,8 +2,19 @@
 import { defineConfig } from "astro/config";
 
 import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import tailwindcss from "@tailwindcss/vite";
 
-// https://astro.build/config
+// GitHub Pages deployment configuration
+const base = "/Astro-personal-website/";
+const site = "https://weizhouxuebenjamin.github.io";
+
 export default defineConfig({
-  integrations: [mdx()],
+  site,
+  base,
+  trailingSlash: "always",
+  integrations: [mdx(), sitemap()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

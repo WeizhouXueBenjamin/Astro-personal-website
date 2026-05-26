@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Base theme (default dark). Component-level styles can override as needed. */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #0b131c;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

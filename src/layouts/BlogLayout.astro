@@ -1,0 +1,30 @@
+---
+import Layout from "./Layout.astro";
+import Footer from "../components/Footer.astro";
+import { site } from "../config/site";
+
+const {
+  title = site.title,
+  description = site.description,
+} = Astro.props;
+---
+
+<Layout title={title} description={description}>
+  <div class="blog-page">
+    <slot />
+  </div>
+  <Footer />
+</Layout>
+
+<style>
+  .blog-page {
+    min-height: 70vh;
+    background: #0b131c;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 3rem 1.25rem;
+  }
+
+  .blog-page :global(a) {
+    color: #ffffff;
+  }
+</style>

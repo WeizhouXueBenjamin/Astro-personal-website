@@ -1,7 +1,7 @@
 export const site = {
   title: "Benjamin Xue",
   description: "Astro Theme Benjamin's Resume",
-  siteUrl: "https://weizhouxuebenjamin.github.io/Astro-personal-website",
+  siteUrl: "https://weizhouxuebenjamin.github.io",
 
   username: "Benjamin Xue",
   userTitle: "Software Engineer",

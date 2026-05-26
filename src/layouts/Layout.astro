@@ -1,5 +1,6 @@
 ---
 import { site } from "../config/site";
+import "../styles/global.css";
 
 interface Props {
   title?: string;
@@ -19,7 +20,7 @@ const canonicalURL =
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,10 +55,6 @@ const canonicalURL =
     box-sizing: border-box;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
-
   html,
   body {
     margin: 0;
@@ -65,9 +62,4 @@ const canonicalURL =
     min-height: 100%;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-  }
 </style>

@@ -1,0 +1,159 @@
+---
+import { site } from "../config/site";
+import SocialLinks from "./SocialLinks.astro";
+import Icon from "./Icon.astro";
+
+const { username, userTitle, userDescription } = site;
+---
+
+<section id="home" class="hero">
+  <div id="particles-js" class="particles">
+    <div class="hero-content">
+      <h1 class="hero-title">{username}</h1>
+      <p class="hero-subtitle">{userTitle}</p>
+      <SocialLinks />
+    </div>
+
+    <a class="down-button" href="#about" aria-label="Scroll down">
+      <Icon name="chevron-down" />
+    </a>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="about-inner">
+    <h2 class="about-title">About</h2>
+    <p class="about-text">{userDescription}</p>
+  </div>
+</section>
+
+<script>
+  import particlesConfig from "../assets/particles.json";
+  import particlesUrl from "../assets/js/particles.min.js?url";
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  if (!reducedMotion) {
+    const script = document.createElement("script");
+    script.src = particlesUrl;
+    script.onload = () => {
+      particlesJS("particles-js", particlesConfig);
+    };
+    document.head.appendChild(script);
+  }
+</script>
+
+<style>
+  .hero {
+    min-height: 100vh;
+  }
+
+  .particles {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: radial-gradient(
+      circle at 20% 15%,
+      #1c2a3a 0%,
+      #0f1924 55%,
+      #0b131c 100%
+    );
+  }
+
+  .particles :global(.particles-js-canvas-el) {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  .hero-title {
+    margin: 0;
+    font-size: clamp(2.5rem, 8vw, 4.75rem);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: 0.03em;
+  }
+
+  .hero-subtitle {
+    margin: 0.5rem 0 0;
+    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    font-weight: 400;
+    opacity: 0.92;
+  }
+
+  .down-button {
+    position: absolute;
+    left: 50%;
+    bottom: 1.1rem;
+    transform: translateX(-50%);
+    z-index: 1;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.12);
+    transition:
+      transform 140ms ease,
+      background-color 140ms ease,
+      border-color 140ms ease;
+  }
+
+  .down-button:hover {
+    transform: translateX(-50%) translateY(1px);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: #fff;
+  }
+
+  .down-button:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 3px;
+  }
+
+  .about {
+    background: #0b131c;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 4rem 1.25rem;
+  }
+
+  .about-inner {
+    max-width: 52rem;
+    margin: 0 auto;
+  }
+
+  .about-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .about-text {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .down-button {
+      transition: none;
+    }
+  }
+</style>

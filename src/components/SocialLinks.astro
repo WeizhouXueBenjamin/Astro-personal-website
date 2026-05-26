@@ -1,0 +1,129 @@
+---
+import { site } from "../config/site";
+import Icon from "./Icon.astro";
+
+const { email, social } = site;
+
+type SocialEntry = {
+  label: string;
+  href: string;
+  icon: "email" | "twitter" | "instagram" | "facebook" | "linkedin" | "github";
+  external: boolean;
+};
+
+const links: SocialEntry[] = [];
+
+if (email) {
+  links.push({
+    label: "Send email",
+    href: `mailto:${email}`,
+    icon: "email",
+    external: false,
+  });
+}
+
+if (social.twitter) {
+  links.push({
+    label: "Twitter profile",
+    href: `https://twitter.com/${social.twitter}`,
+    icon: "twitter",
+    external: true,
+  });
+}
+
+if (social.instagram) {
+  links.push({
+    label: "Instagram profile",
+    href: `https://instagram.com/${social.instagram}`,
+    icon: "instagram",
+    external: true,
+  });
+}
+
+if (social.facebook) {
+  links.push({
+    label: "Facebook profile",
+    href: `https://facebook.com/${social.facebook}`,
+    icon: "facebook",
+    external: true,
+  });
+}
+
+if (social.linkedin) {
+  links.push({
+    label: "LinkedIn profile",
+    href: `https://linkedin.com/in/${social.linkedin}`,
+    icon: "linkedin",
+    external: true,
+  });
+}
+
+if (social.github) {
+  links.push({
+    label: "GitHub profile",
+    href: `https://github.com/${social.github}`,
+    icon: "github",
+    external: true,
+  });
+}
+---
+
+<nav class="social-links" aria-label="Social links">
+  {
+    links.map((link) => (
+      <a
+        class="icon-button"
+        href={link.href}
+        aria-label={link.label}
+        {...(link.external
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
+      >
+        <Icon name={link.icon} />
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .social-links {
+    display: flex;
+    gap: 0.65rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .icon-button {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    transition:
+      transform 140ms ease,
+      background-color 140ms ease,
+      border-color 140ms ease;
+  }
+
+  .icon-button:hover {
+    transform: translateY(-1px);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #fff;
+  }
+
+  .icon-button:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon-button {
+      transition: none;
+    }
+  }
+</style>

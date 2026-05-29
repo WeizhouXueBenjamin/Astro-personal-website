@@ -1,0 +1,92 @@
+---
+export interface GlobalNavItemProps {
+  href: string;
+  title: string;
+  description: string;
+  icon: any;
+}
+
+const { href, title, description, icon: Icon } = Astro.props;
+---
+
+<li>
+  <a href={href} class="toolbar-item" aria-label={title}>
+    <Icon class="icon" />
+    <span class="toolbar-label">{title}</span>
+  </a>
+</li>
+
+<style is:global>
+  .toolbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .toolbar-item {
+      color: #e5e7eb;
+    }
+  }
+
+  .toolbar-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .toolbar-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .toolbar-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  @media (max-width: 640px) {
+    .floating-toolbar {
+      padding: 0.5rem 0.75rem;
+    }
+    .toolbar-item {
+      padding: 0.5rem 0.75rem;
+    }
+    .toolbar-label {
+      display: none;
+    }
+    .icon {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  @media (min-width: 641px) {
+    .toolbar-label {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .toolbar-item:hover .toolbar-label {
+      max-height: 1.5rem;
+      opacity: 1;
+    }
+    .toolbar-item:hover {
+      padding-bottom: 0.25rem;
+    }
+  }
+</style>

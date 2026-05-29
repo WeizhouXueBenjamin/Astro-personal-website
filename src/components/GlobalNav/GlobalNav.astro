@@ -1,0 +1,57 @@
+---
+import { components } from "./components";
+import GlobalNavItem from "./GlobalNavItem.astro";
+---
+
+<div class="toolbar-wrapper">
+  <nav class="floating-toolbar" role="navigation" aria-label="top-level navigation">
+    <ul class="toolbar-list">
+      {components.map((component) => (
+        <GlobalNavItem {...component} />
+      ))}
+    </ul>
+  </nav>
+</div>
+
+<style is:global>
+  .toolbar-wrapper {
+    position: fixed;
+    top: 1.5rem;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .floating-toolbar {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    box-shadow:
+      0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .floating-toolbar {
+      background: rgba(30, 30, 35, 0.85);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .toolbar-list {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>

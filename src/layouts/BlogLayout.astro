@@ -3,14 +3,12 @@ import Layout from "./Layout.astro";
 import Footer from "../components/Footer.astro";
 import { site } from "../config/site";
 
-const {
-  title = site.title,
-  description = site.description,
-} = Astro.props;
+const { title = site.title, description = site.description } = Astro.props;
 ---
 
 <Layout title={title} description={description}>
   <div class="blog-page">
+    <h1 class="text-4xl font-bold mb-4">Blog</h1>
     <slot />
   </div>
   <Footer />

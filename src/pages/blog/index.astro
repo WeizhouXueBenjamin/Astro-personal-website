@@ -1,13 +1,13 @@
 ---
 import { getCollection } from "astro:content";
-import BlogLayout from "../../layouts/BlogLayout.astro";
+import MainLayout from "../../layouts/MainLayout.astro";
 
-const posts = (await getCollection("blog")).sort(
+const posts = (await getCollection("blogs")).sort(
   (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
 ---
 
-<BlogLayout title="Blog" description="Latest posts">
+<MainLayout title="Blog" description="Latest posts" contentWidth="text">
   <h2 class="text-2xl mb-4">Writing about design and tech...</h2>
 
   <ul
@@ -45,4 +45,4 @@ const posts = (await getCollection("blog")).sort(
       ))
     }
   </ul>
-</BlogLayout>
+</MainLayout>

@@ -8,26 +8,32 @@ const githubUrl = social.github
 ---
 
 <footer class="footer">
-  <p>
-    Built with Astro and <span class="love" aria-hidden="true">❤</span> by
-    {
-      githubUrl ? (
-        <a href={githubUrl} target="_blank" rel="noopener noreferrer">
-          {username}
-        </a>
-      ) : (
-        username
-      )
-    }
-  </p>
+  <div class="container">
+    <p>
+      Built with Astro and <span class="love" aria-hidden="true">&hearts;</span> by
+      {
+        githubUrl ? (
+          <a href={githubUrl} target="_blank" rel="noopener noreferrer">
+            {username}
+          </a>
+        ) : (
+          username
+        )
+      }
+    </p>
+  </div>
 </footer>
 
 <style>
   .footer {
-    padding: 1.25rem;
+    padding-block: 1.25rem;
     background: #0b131c;
     color: rgba(255, 255, 255, 0.8);
     text-align: center;
+  }
+
+  .footer p {
+    margin: 0;
   }
 
   .footer a {

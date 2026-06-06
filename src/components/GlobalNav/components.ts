@@ -23,9 +23,9 @@ export const components: {
     icon: AboutIcon,
   },
   {
-    title: "Work",
-    href: "/work",
-    description: "Explore my portfolio and projects.",
+    title: "Projects",
+    href: "/projects",
+    description: "Explore my projects.",
     icon: WorkIcon,
   },
   {

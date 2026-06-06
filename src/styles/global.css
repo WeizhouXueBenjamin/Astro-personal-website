@@ -16,6 +16,17 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+.container--text {
+  max-width: 800px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

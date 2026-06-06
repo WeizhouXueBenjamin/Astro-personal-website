@@ -1,9 +1,9 @@
 ---
 import { getCollection, getEntry, render } from "astro:content";
-import BlogLayout from "../../layouts/BlogLayout.astro";
+import MainLayout from "../../layouts/MainLayout.astro";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("blog");
+  const posts = await getCollection("blogs");
   return posts.map((post) => ({
     params: { slug: post.id },
   }));
@@ -11,13 +11,14 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 
-const post = await getEntry("blog", slug);
+const post = await getEntry("blogs", slug);
 const { Content } = await render(post);
 ---
 
-<BlogLayout
+<MainLayout
   title={post.data.title}
   description={post.data.description ?? post.data.title}
+  contentWidth="text"
 >
   <article>
     <h1 style="margin: 0 0 0.75rem; font-size: 2.25rem; line-height: 1.1">
@@ -35,5 +36,5 @@ const { Content } = await render(post);
       <Content />
     </div>
   </article>
-</BlogLayout>
+</MainLayout>
 

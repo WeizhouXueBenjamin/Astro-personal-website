@@ -57,7 +57,7 @@ const { username, userTitle, userDescription } = site;
     background: radial-gradient(
       circle at 20% 15%,
       #1c2a3a 0%,
-      #0f1924 55%,
+      var(--bg) 55%,
       #0b131c 100%
     );
   }
@@ -127,8 +127,8 @@ const { username, userTitle, userDescription } = site;
   }
 
   .about {
-    background: #0b131c;
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--bg);
+    color: var(--text);
     padding: 4rem 1.25rem;
   }
 

@@ -7,7 +7,7 @@ import { glob } from "astro/loaders";
 const blogs = defineCollection({
   loader: glob({
     pattern: "**/*.{md,mdx}",
-    base: "./src/content/blog",
+    base: "./src/content/blogs",
   }),
   schema: z.object({
     title: z.string(),
@@ -50,11 +50,70 @@ const experience = defineCollection({
       companyWebsite: z.url().optional(),
 
       // Achievements (for resume highlights)
-      achievements: z.array(z.string()).default([]).optional(),
+      highLights: z.array(z.string()).default([]).optional(),
+
+      // Reference letter fields
+      referenceLetter: z
+        .object({
+          path: z.string().min(1, "File path is required"),
+          refererName: z.string().min(1, "Referer name is required"),
+          refererAvatar: z.string().min(1, "Referer avatar is required"),
+          refererSentence: z
+            .string()
+            .min(10, "Referer sentence must be at least 10 characters"),
+        })
+        .optional()
+        .refine(
+          (ref) => {
+            if (!ref) return true;
+            const validExtensions = [".pdf", ".doc", ".docx", ".txt"];
+            return validExtensions.some((ext) =>
+              ref.path.toLowerCase().endsWith(ext),
+            );
+          },
+          {
+            message: "Reference letter must be a PDF, DOC, DOCX, or TXT file",
+            path: ["path"],
+          },
+        ),
+    }),
+});
+
+const projects = defineCollection({
+  loader: glob({
+    pattern: "**/*.{yaml,yml,json}",
+    base: "./src/content/projects",
+  }),
+  schema: ({ image }) =>
+    z.object({
+      // Basic info
+      title: z.string(),
+      subtitle: z.string().optional(),
+      description: z.string(),
+      githubUrl: z.url().optional(),
+      liveUrl: z.url().optional(),
+      demoUrl: z.url().optional(),
+      year: z.number().optional(),
+      status: z.enum(["In Progress", "Completed"]).default("In Progress").optional(),
+
+      // Content
+      bullets: z.array(z.string()).min(1, "At least one bullet point required"),
+
+      // Classification
+      tags: z.array(z.string()).default([]),
+      techStack: z.array(z.string()).default([]).optional(),
+
+      // Metadata (featured: pin on top, order: custom sorting)
+      order: z.number().default(999).optional(),
+      featured: z.boolean().default(false),
+
+      // Optional
+      logo: image().optional(),
     }),
 });
 
 export const collections = {
   blogs: blogs,
   experience: experience,
+  projects: projects,
 };

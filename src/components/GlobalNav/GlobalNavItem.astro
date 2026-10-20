@@ -4,19 +4,31 @@ export interface GlobalNavItemProps {
   title: string;
   description: string;
   icon: any;
+  isActive?: boolean;
 }
 
-const { href, title, description, icon: Icon } = Astro.props;
+const { href, title, description, icon: Icon, isActive = false } = Astro.props;
 ---
 
-<li>
-  <a href={href} class="toolbar-item" aria-label={title}>
+<li class="toolbar-list-item">
+  <a
+    href={href}
+    class:list={["toolbar-item", { "toolbar-item--active": isActive }]}
+    aria-label={title}
+    aria-current={isActive ? "page" : undefined}
+  >
     <Icon class="icon" />
     <span class="toolbar-label">{title}</span>
   </a>
 </li>
 
 <style is:global>
+  .toolbar-list-item {
+    display: flex;
+    align-items: stretch;
+    padding: 0 0.25rem;
+  }
+
   .toolbar-item {
     display: flex;
     flex-direction: column;
@@ -36,14 +48,40 @@ const { href, title, description, icon: Icon } = Astro.props;
     }
   }
 
-  .toolbar-item:hover {
+  .toolbar-list-item:hover .toolbar-item,
+  .toolbar-item:focus-visible {
     background: rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
   }
 
+  .toolbar-item--active {
+    background: rgba(79, 70, 229, 0.14);
+    color: #4338ca;
+  }
+
   @media (prefers-color-scheme: dark) {
-    .toolbar-item:hover {
+    .toolbar-list-item:hover .toolbar-item,
+    .toolbar-item:focus-visible {
       background: rgba(255, 255, 255, 0.1);
+    }
+
+    .toolbar-item--active {
+      background: rgba(139, 156, 255, 0.18);
+      color: #aebaff;
+    }
+  }
+
+  .toolbar-list-item:hover .toolbar-item--active,
+  .toolbar-item--active:focus-visible {
+    background: rgba(79, 70, 229, 0.22);
+    color: #312e81;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .toolbar-list-item:hover .toolbar-item--active,
+    .toolbar-item--active:focus-visible {
+      background: rgba(139, 156, 255, 0.28);
+      color: #d6dcff;
     }
   }
 
@@ -65,28 +103,9 @@ const { href, title, description, icon: Icon } = Astro.props;
     .toolbar-item {
       padding: 0.5rem 0.75rem;
     }
-    .toolbar-label {
-      display: none;
-    }
     .icon {
       width: 1.125rem;
       height: 1.125rem;
-    }
-  }
-
-  @media (min-width: 641px) {
-    .toolbar-label {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-    .toolbar-item:hover .toolbar-label {
-      max-height: 1.5rem;
-      opacity: 1;
-    }
-    .toolbar-item:hover {
-      padding-bottom: 0.25rem;
     }
   }
 </style>

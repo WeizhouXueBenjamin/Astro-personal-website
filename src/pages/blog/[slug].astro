@@ -1,6 +1,6 @@
 ---
 import { getCollection, getEntry, render } from "astro:content";
-import MainLayout from "../../layouts/MainLayout.astro";
+import MainLayout from "#layouts/MainLayout.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blogs");
@@ -18,7 +18,6 @@ const { Content } = await render(post);
 <MainLayout
   title={post.data.title}
   description={post.data.description ?? post.data.title}
-  contentWidth="text"
 >
   <article>
     <h1 style="margin: 0 0 0.75rem; font-size: 2.25rem; line-height: 1.1">

@@ -1,0 +1,26 @@
+# Reference only: replace required values with real experience facts.
+# This .txt file is not loaded into the experience collection.
+jobTitle: "REPLACE_WITH_ACTUAL_JOB_TITLE"
+company: "REPLACE_WITH_ACTUAL_ORGANIZATION"
+startDate: "Jan 2026" # Replace with the actual start date.
+bullets:
+  - "REPLACE_WITH_YOUR_ACTUAL_CONTRIBUTION"
+tags: []
+techStack: []
+highLights: []
+
+# Optional fields: omit any that have not been provided.
+# location: "Auckland, NZ"
+# endDate: "Present"
+# order: 999
+# featured: false
+# companyWebsite: "https://example.com"
+# logo: "../../assets/actual-company-logo.png"
+
+# Add this entire object only when real, publicly shareable materials exist.
+# Files under public/documents/references use /documents/references/... URLs.
+# referenceLetter:
+#   path: "/documents/references/actual-letter.pdf"
+#   refererName: "ACTUAL_NAME_AND_TITLE"
+#   refererAvatar: "/images/references/actual-avatar.jpg"
+#   refererSentence: "ACTUAL_APPROVED_QUOTATION_OF_AT_LEAST_TEN_CHARACTERS"

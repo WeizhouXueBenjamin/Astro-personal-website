@@ -1,159 +1,220 @@
 ---
-import { site } from "../config/site";
+import { site } from "#config/site";
+import { getProjects } from "#base/lib/content";
 import SocialLinks from "./SocialLinks.astro";
-import Icon from "./assets/Icon.astro";
+import ProjectListItem from "./ProjectList/ProjectListItem.astro";
 
-const { username, userTitle, userDescription } = site;
+const featuredProjects = (await getProjects())
+  .filter(({ data }) => data.featured)
+  .slice(0, 2);
 ---
 
-<section id="home" class="hero">
-  <div id="particles-js" class="particles">
-    <div class="hero-content">
-      <h1 class="hero-title">{username}</h1>
-      <p class="hero-subtitle">{userTitle}</p>
-      <SocialLinks />
+<section class="hero" aria-labelledby="home-heading">
+  <div id="particles-js" class="hero-particles" aria-hidden="true"></div>
+  <div class="hero-content container">
+    <p class="eyebrow">Automation · Control systems · Software</p>
+    <h1 id="home-heading">{site.username}</h1>
+    <p class="hero-subtitle">{site.userTitle}</p>
+    <p class="hero-description">{site.userDescription}</p>
+    <ul class="focus-tags tag-list" aria-label="Engineering focus">
+      {site.focusAreas.map((focus) => <li>{focus}</li>)}
+    </ul>
+    <div class="home-actions">
+      <a class="action-link action-link--primary" href="/projects">
+        Explore projects →
+      </a>
+      <a class="action-link" href="/about">Background & experience</a>
+      <a class="action-link" href={"mailto:" + site.email}>Get in touch</a>
     </div>
-
-    <a class="down-button" href="#about" aria-label="Scroll down">
-      <Icon name="chevron-down" />
-    </a>
+    <SocialLinks />
   </div>
 </section>
 
-<section id="about" class="about">
-  <div class="about-inner">
-    <h2 class="about-title">About</h2>
-    <p class="about-text">{userDescription}</p>
-  </div>
+{featuredProjects.length > 0 && (
+  <section class="home-section container" aria-labelledby="selected-projects-heading">
+    <div class="section-header">
+      <div class="section-heading">
+        <p class="eyebrow">Personal projects</p>
+        <h2 id="selected-projects-heading">Control systems in simulation</h2>
+      </div>
+      <a href="/projects">All projects →</a>
+    </div>
+    <div class="featured-projects">
+      {featuredProjects.map((project) => (
+        <ProjectListItem project={project} headingLevel="h3" />
+      ))}
+    </div>
+  </section>
+)}
+
+<section class="home-section home-background container" aria-labelledby="background-heading">
+  <h2 id="background-heading">Software delivery. Practical technical work.</h2>
+  <p>
+    My background combines software delivery for charities and university teams
+    with hands-on work diagnosing and replacing technical equipment. These experiences
+    support my focus on automation and integrated systems.
+  </p>
+  <a href="/about#work-experience">Read my professional experience →</a>
 </section>
 
 <script>
-  import particlesConfig from "../assets/particles.json";
-  import particlesUrl from "../assets/js/particles.min.js?url";
+  import particlesConfig from "#assets/particles.json";
+  import particlesUrl from "#assets/js/particles.min.js?url";
 
-  const reducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
-
-  if (!reducedMotion) {
-    const script = document.createElement("script");
-    script.src = particlesUrl;
-    script.onload = () => {
-      particlesJS("particles-js", particlesConfig);
+  interface ParticleInstance {
+    pJS: {
+      canvas: { el: HTMLCanvasElement };
+      fn: { vendors: { destroypJS: () => void } };
     };
-    document.head.appendChild(script);
   }
+
+  const particleWindow = window as Window & {
+    particlesJS?: (id: string, config: unknown) => void;
+    pJSDom?: ParticleInstance[] | null;
+  };
+  const host = document.getElementById("particles-js");
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let vendorReady: Promise<void> | undefined;
+  let instance: ParticleInstance | undefined;
+
+  const loadVendor = () => {
+    if (particleWindow.particlesJS) return Promise.resolve();
+    vendorReady ??= new Promise<void>((resolve) => {
+      const script = document.createElement("script");
+      script.src = particlesUrl;
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.head.appendChild(script);
+    });
+    return vendorReady;
+  };
+
+  const syncParticles = async () => {
+    if (!host) return;
+    if (motion.matches) {
+      instance?.pJS.fn.vendors.destroypJS();
+      instance = undefined;
+      return;
+    }
+
+    await loadVendor();
+    if (motion.matches || !host.isConnected || instance || !particleWindow.particlesJS) return;
+    // The vendored destroy function clears this registry; restore it before restarting.
+    particleWindow.pJSDom ??= [];
+    particleWindow.particlesJS(host.id, particlesConfig);
+    instance = particleWindow.pJSDom.find(({ pJS }) => pJS.canvas.el.parentElement === host);
+  };
+
+  motion.addEventListener("change", () => void syncParticles());
+  void syncParticles();
 </script>
 
 <style>
   .hero {
-    min-height: 100vh;
-  }
-
-  .particles {
     position: relative;
-    width: 100%;
+    isolation: isolate;
     overflow: hidden;
-    background: radial-gradient(
-      circle at 20% 15%,
-      #1c2a3a 0%,
-      var(--bg) 55%,
-      #0b131c 100%
-    );
+    background: var(--bg);
   }
 
-  .particles :global(.particles-js-canvas-el) {
+  .hero-particles {
     position: absolute;
     inset: 0;
     z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+
+  .hero-particles :global(canvas) {
+    display: block;
+    pointer-events: none;
   }
 
   .hero-content {
     position: relative;
     z-index: 1;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: var(--space-5);
+    min-height: 85svh;
+    padding-block: calc(var(--header-offset) + var(--space-5)) var(--space-8);
     text-align: center;
-    color: #ffffff;
   }
 
-  .hero-title {
-    margin: 0;
-    font-size: clamp(2.5rem, 8vw, 4.75rem);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    letter-spacing: 0.03em;
+  h1 {
+    font-size: var(--size-hero);
+    line-height: 1.1;
   }
 
   .hero-subtitle {
-    margin: 0.5rem 0 0;
-    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
-    font-weight: 400;
-    opacity: 0.92;
+    max-width: 40rem;
+    font-size: var(--size-h3);
+    line-height: var(--line-heading);
+    text-wrap: balance;
   }
 
-  .down-button {
-    position: absolute;
-    left: 50%;
-    bottom: 1.1rem;
-    transform: translateX(-50%);
-    z-index: 1;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 9999px;
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    display: inline-flex;
-    align-items: center;
+  .hero-description {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+    font-size: var(--size-lead);
+  }
+
+  .focus-tags,
+  .home-actions {
     justify-content: center;
-    color: #fff;
-    text-decoration: none;
-    background: rgba(0, 0, 0, 0.12);
-    transition:
-      transform 140ms ease,
-      background-color 140ms ease,
-      border-color 140ms ease;
   }
 
-  .down-button:hover {
-    transform: translateX(-50%) translateY(1px);
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: #fff;
+  .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
   }
 
-  .down-button:focus-visible {
-    outline: 3px solid rgba(255, 255, 255, 0.8);
-    outline-offset: 3px;
+  .home-section {
+    padding-block: var(--section-gap);
   }
 
-  .about {
-    background: var(--bg);
-    color: var(--text);
-    padding: 4rem 1.25rem;
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
   }
 
-  .about-inner {
-    max-width: 52rem;
-    margin: 0 auto;
+  .featured-projects {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
   }
 
-  .about-title {
-    margin: 0 0 0.75rem;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #fff;
+  .home-background {
+    display: grid;
+    gap: var(--space-5);
+    padding-block-end: var(--space-8);
   }
 
-  .about-text {
-    margin: 0;
-    font-size: 1.05rem;
-    line-height: 1.75;
-    color: rgba(255, 255, 255, 0.85);
+  .home-background p {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+  }
+
+  .home-background a {
+    width: fit-content;
+  }
+
+  @media (max-width: 700px) {
+    .featured-projects {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .down-button {
-      transition: none;
+    .hero-particles {
+      display: none;
     }
   }
 </style>

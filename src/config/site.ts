@@ -1,12 +1,16 @@
 export const site = {
-  title: "Portfolio",
-  description: "Astro Theme Benjamin's Personal Website",
+  title: "Automation & Software Integration",
+  description:
+    "Benjamin Xue's portfolio in automation, control systems, and software integration, featuring PLC/SCADA simulations, software delivery, and hands-on technical experience.",
   siteUrl: "https://weizhouxuebenjamin.github.io",
 
   username: "Benjamin Xue",
-  userTitle: "Full Stack Web Developer",
+  userTitle: "Automation / Control Systems & Software Integration",
   userDescription:
-    "I'm a Full-stack engineer with 1+ year of production experience delivering React/Node.js applications for live charities and university teams. Built AI-powered OCR tools (95% precision), led 7‑dev teams through full SDLC, and shipped hybrid SSR/static sites improving SEO. Looking to scale impact in mission-driven or high‑autonomy engineering roles.",
+    "My focus is PLC/SCADA, industrial automation, and software integration. I build personal simulations with Ignition and CODESYS, supported by experience delivering software for charities and university teams and practical work with technical equipment.",
+
+  location: "Auckland, New Zealand",
+  focusAreas: ["PLC / SCADA", "Industrial automation", "System integration", "Software development"],
 
   email: "benjamin_xue@outlook.com",
   social: {

@@ -13,7 +13,15 @@ export default defineConfig({
   site,
   base,
   trailingSlash: "never",
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap({
+      filter: (page) =>
+        !["/experience", "/gallery"].includes(
+          new URL(page).pathname.replace(/\/$/, ""),
+        ),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

@@ -10,7 +10,7 @@ const githubUrl = social.github
 <footer class="footer">
   <div class="container">
     <p>
-      Built with Astro and <span class="love" aria-hidden="true">&hearts;</span> by
+      Built with Astro and <span class="love" aria-hidden="true">&hearts;</span> by{" "}
       {
         githubUrl ? (
           <a href={githubUrl} target="_blank" rel="noopener noreferrer">
@@ -25,18 +25,19 @@ const githubUrl = social.github
 </footer>
 
 <style>
-  .footer {
-    padding-block: 1.25rem;
-    background-color: var(--bg);
-    color: var(--text-secondary);
+.footer {
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: var(--size-sm);
     text-align: center;
   }
 
   .footer a {
-    color: var(--primary);
+    color: var(--text-secondary);
   }
 
   .love {
-    color: #ff6b6b;
+    color: var(--text-muted);
   }
 </style>

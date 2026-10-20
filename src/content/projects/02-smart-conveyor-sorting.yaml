@@ -1,0 +1,18 @@
+title: "Smart Conveyor Sorting Simulation"
+subtitle: "Personal project · Aug 2026"
+description: "A CODESYS and Factory I/O simulation coordinating sensors, conveyors, a turntable, and transfer operations through Structured Text sequence logic."
+githubUrl: "https://github.com/WeizhouXueBenjamin/smart-conveyor-sorting-codesys"
+year: 2026
+bullets:
+  - "Programmed CODESYS Structured Text sequence logic coordinating sensors, conveyors, a turntable, and transfer operations in Factory I/O."
+  - "Diagnosed signal-mapping, retained-state, and timing faults, then verified the corrected end-to-end operating cycle."
+tags:
+  - PLC
+  - Industrial Automation
+techStack:
+  - CODESYS
+  - Structured Text
+  - PLC Sequence Logic
+  - Factory I/O Simulation
+order: 2
+featured: true

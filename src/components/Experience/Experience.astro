@@ -1,0 +1,49 @@
+---
+import { getExperiences } from "#base/lib/content";
+import ExperienceReferenceCard from "./ExperienceReferenceCard.astro";
+import ExperienceTimeline from "./ExperienceTimeline.astro";
+
+const experiences = await getExperiences();
+const referenceExperiences = experiences.filter(({ data }) => data.referenceLetter);
+---
+
+<div class="experience-showcase">
+  {experiences.length > 0 ? (
+    <ExperienceTimeline experiences={experiences} />
+  ) : (
+    <section aria-labelledby="experience-heading">
+      <h2 id="experience-heading">Professional experience</h2>
+      <p>Experience details will be added here as they become available.</p>
+    </section>
+  )}
+  {referenceExperiences.length > 0 && (
+    <section class="experience-section" aria-labelledby="references-heading">
+      <div class="section-heading">
+        <h2 id="references-heading">Professional references</h2>
+      </div>
+      <div class="reference-grid">
+        {referenceExperiences.map((experience) => <ExperienceReferenceCard experience={experience} />)}
+      </div>
+    </section>
+  )}
+</div>
+
+<style>
+.experience-showcase {
+    display: grid;
+    gap: var(--section-gap);
+  }
+
+  .reference-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  @media (max-width: 700px) {
+    .reference-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

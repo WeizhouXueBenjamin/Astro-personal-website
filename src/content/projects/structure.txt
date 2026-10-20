@@ -1,0 +1,19 @@
+# Reference only: replace required values with real project facts.
+# This .txt file is not loaded into the projects collection.
+title: "REPLACE_WITH_REAL_PROJECT_TITLE"
+description: "REPLACE_WITH_FACTUAL_PROJECT_DESCRIPTION"
+bullets:
+  - "REPLACE_WITH_YOUR_ACTUAL_CONTRIBUTION"
+tags: []
+techStack: []
+
+# Optional fields: omit any that have not been provided.
+# subtitle: "Personal project"
+# githubUrl: "https://github.com/owner/repository"
+# liveUrl: "https://example.com"
+# demoUrl: "https://example.com/demo"
+# year: 2026
+# status: "In Progress" # Only In Progress or Completed; no inferred default.
+# order: 999
+# featured: false
+# logo: "../../assets/actual-project-logo.png"

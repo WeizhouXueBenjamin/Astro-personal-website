@@ -7,14 +7,25 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "verify:site": "node scripts/verify-site.mjs",
     "astro": "astro"
   },
+  "imports": {
+    "#base/*": "./src/*",
+    "#assets/*": "./src/assets/*",
+    "#components/*": "./src/components/*",
+    "#config/*": "./src/config/*",
+    "#content/*": "./src/content/*",
+    "#layouts/*": "./src/layouts/*",
+    "#pages/*": "./src/pages/*",
+    "#styles/*": "./src/styles/*"
+  },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.0",
-    "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/mdx": "^7.0.2",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "3.7.3",
     "@tailwindcss/vite": "^4.3.0",
-    "astro": "^6.0.2",
+    "astro": "^7.0.7",
     "daisyui": "^5.5.19",
     "particles.js": "^2.0.0",
     "tailwindcss": "^4.3.0"

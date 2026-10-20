@@ -1,0 +1,20 @@
+title: "Distribution Feeder SCADA Simulation"
+subtitle: "Personal project · Aug 2026"
+description: "An Ignition Perspective simulation of an 11 kV distribution feeder with live telemetry, breaker supervision, operator controls, and alarm handling."
+githubUrl: "https://github.com/WeizhouXueBenjamin/distribution-feeder-scada"
+year: 2026
+bullets:
+  - "Built an Ignition Perspective simulation of an 11 kV feeder with live telemetry, breaker status, operator controls, and structured Tags."
+  - "Implemented remote and communications interlocks, close permissives, overload trip/reset, telemetry freeze, and command-feedback timeout logic."
+  - "Configured and tested alarms for overload, protection trips, communications loss, and command failure, including acknowledgement and recovery."
+tags:
+  - SCADA
+  - System Integration
+techStack:
+  - Ignition 8.3
+  - Perspective
+  - SCADA Tags
+  - Expression Bindings
+  - Python/Jython
+order: 1
+featured: true

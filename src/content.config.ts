@@ -1,11 +1,11 @@
 import { defineCollection } from "astro:content";
 import { z } from "astro/zod";
 import { site } from "./config/site.ts";
-import { glob } from "astro/loaders";
+import { localGlob } from "./lib/local-content-loader";
 
 // Blogs collection
 const blogs = defineCollection({
-  loader: glob({
+  loader: localGlob({
     pattern: "**/*.{md,mdx}",
     base: "./src/content/blogs",
   }),
@@ -20,7 +20,7 @@ const blogs = defineCollection({
 });
 
 const experience = defineCollection({
-  loader: glob({
+  loader: localGlob({
     pattern: "**/*.{yaml,yml,json}",
     base: "./src/content/experience",
   }),
@@ -80,7 +80,7 @@ const experience = defineCollection({
 });
 
 const projects = defineCollection({
-  loader: glob({
+  loader: localGlob({
     pattern: "**/*.{yaml,yml,json}",
     base: "./src/content/projects",
   }),
@@ -94,7 +94,7 @@ const projects = defineCollection({
       liveUrl: z.url().optional(),
       demoUrl: z.url().optional(),
       year: z.number().optional(),
-      status: z.enum(["In Progress", "Completed"]).default("In Progress").optional(),
+      status: z.enum(["In Progress", "Completed"]).optional(),
 
       // Content
       bullets: z.array(z.string()).min(1, "At least one bullet point required"),

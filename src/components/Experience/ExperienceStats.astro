@@ -1,0 +1,73 @@
+---
+interface Stat {
+  value: string | number;
+  label: string;
+  detail: string;
+}
+
+interface Props {
+  stats: Stat[];
+}
+
+const { stats } = Astro.props;
+---
+
+<dl class="experience-stats" aria-label="Experience summary">
+  {
+    stats.map((stat) => (
+      <div>
+        <dt>{stat.label}</dt>
+        <dd>{stat.value}</dd>
+        <p>{stat.detail}</p>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .experience-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .experience-stats div {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+      var(--card);
+    padding: 1rem;
+  }
+
+  dt {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.35rem 0 0;
+    color: var(--text);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 750;
+    line-height: 1;
+  }
+
+  p {
+    margin: 0.4rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 760px) {
+    .experience-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

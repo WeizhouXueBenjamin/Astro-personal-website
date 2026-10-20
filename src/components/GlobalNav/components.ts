@@ -1,15 +1,16 @@
 import AboutIcon from "../assets/AboutIcon.astro";
 import BlogIcon from "../assets/BlogIcon.astro";
-import GalleryIcon from "../assets/GalleryIcon.astro";
 import HomeIcon from "../assets/HomeIcon.astro";
 import WorkIcon from "../assets/WorkIcon.astro";
 
-export const components: {
+export interface NavigationItem {
   title: string;
   href: string;
   description: string;
-  icon: any;
-}[] = [
+  icon: typeof HomeIcon;
+}
+
+export const components: NavigationItem[] = [
   {
     title: "Home",
     href: "/",
@@ -19,13 +20,13 @@ export const components: {
   {
     title: "About",
     href: "/about",
-    description: "Learn more about me and my work.",
+    description: "Explore my background, experience, and engineering focus.",
     icon: AboutIcon,
   },
   {
     title: "Projects",
     href: "/projects",
-    description: "Explore my projects.",
+    description: "Explore PLC/SCADA, automation, and software projects.",
     icon: WorkIcon,
   },
   {
@@ -33,11 +34,5 @@ export const components: {
     href: "/blog",
     description: "Read my latest articles and insights.",
     icon: BlogIcon,
-  },
-  {
-    title: "Gallery",
-    href: "/gallery",
-    description: "View my latest photos and artwork.",
-    icon: GalleryIcon,
   },
 ];

@@ -1,0 +1,79 @@
+---
+import { site } from "#config/site";
+
+const contactLinks = [
+  { label: "Email", href: `mailto:${site.email}`, external: false },
+  ...(site.social.linkedin
+    ? [{ label: "LinkedIn", href: `https://linkedin.com/in/${site.social.linkedin}`, external: true }]
+    : []),
+  ...(site.social.github
+    ? [{ label: "GitHub", href: `https://github.com/${site.social.github}`, external: true }]
+    : []),
+];
+---
+
+<section id="contact" class="contact-section container" aria-labelledby="contact-heading">
+  <div class="contact-card surface-card">
+    <div class="contact-copy">
+      <p class="eyebrow">Contact</p>
+      <h2 id="contact-heading">Let's discuss automation and integration.</h2>
+      <p>Explore the projects and experience, then reach me directly or download my English CV.</p>
+    </div>
+    <div class="contact-actions">
+      <a class="action-link action-link--primary" href={`mailto:${site.email}`}>
+        Email me
+      </a>
+      <a class="action-link" href={site.resumeUrl} download>
+        Download CV (PDF)
+      </a>
+    </div>
+    <ul class="contact-links" aria-label="Contact details">
+      {contactLinks.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          >{link.label}{link.label === "Email" ? ` · ${site.email}` : " ↗"}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .contact-section {
+    scroll-margin-top: var(--header-offset);
+    padding-block: var(--section-gap) var(--space-8);
+  }
+
+  .contact-card {
+    display: grid;
+    gap: var(--space-5);
+    padding: clamp(var(--space-5), 4vw, var(--space-7));
+  }
+
+  .contact-copy {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .contact-copy p:last-child {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+  }
+
+  .contact-actions,
+  .contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .contact-links {
+    gap: var(--space-3) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--size-sm);
+  }
+</style>

@@ -7,13 +7,12 @@ export const GET: APIRoute = async (context) => {
   const posts = await getPublishedPosts();
 
   const siteUrl = context.site ?? new URL(site.siteUrl);
-  const items = posts
-    .map((post) => ({
-      title: post.data.title,
-      description: post.data.description ?? post.data.title,
-      pubDate: post.data.pubDate,
-      link: new URL(getBlogPath(post.id), siteUrl).href,
-    }));
+  const items = posts.map((post) => ({
+    title: post.data.title,
+    description: post.data.description ?? post.data.title,
+    pubDate: post.data.pubDate,
+    link: new URL(getBlogPath(post.id), siteUrl).href,
+  }));
 
   return rss({
     title: site.title,
@@ -22,4 +21,3 @@ export const GET: APIRoute = async (context) => {
     items,
   });
 };
-

@@ -2,7 +2,7 @@
 
 本文约束后续生成和修改代码时的选择。业务目标见 [business.md](business.md)；遗留差异见 [project-audit.md](project-audit.md)。既有代码并非所有约定都已满足，修改时聚焦当前任务范围。
 
-代码组织、Props 与格式的具体约定见 [coding-style.md](coding-style.md)，不在各个任务提示中重复定义。
+代码组织、Props 与格式的具体约定见 [coding-style.md](coding-style.md)；视觉方向和 token 用法见 [design-system.md](design-system.md)，不在各个任务提示中重复定义。
 
 ## 事实来源
 
@@ -41,6 +41,7 @@
 - 跳转使用 `<a>`，改变页面状态使用 `<button type="button">`。可选 URL 不存在时省略链接，避免 `window.open(undefined)`。
 - 需要筛选时检查 `basic/filter.astro` 是否适用，保留按钮状态和可访问名称。无 JavaScript 时至少仍能阅读内容。
 - 动效和媒体按内容需要使用；尊重 `prefers-reduced-motion`，不要新增与真实项目无关的视频或装饰占位图。
+- 首页粒子以 `e9ea692`（2026-06-06）为回溯基准，使用原有 `particles.js` 与 `src/assets/particles.json` 配置；页面加载时开启减少动效则不创建粒子。英文简历从 `public/documents/` 提供，下载路径集中维护在 `site.resumeUrl`；更新文件时检查公开 PDF 与链接是否一致。
 
 ## 内容 schema
 
@@ -77,7 +78,7 @@
 
 ## 样式与布局
 
-- 优先复用 `--bg`、`--surface`、`--surface-hover`、`--card`、`--border`、`--text`、`--text-secondary`、`--text-muted`、`--accent` 等现有 token。
+- 优先复用 `--bg`、`--surface`、`--surface-hover`、`--card`、`--border`、`--text`、`--text-secondary`、`--text-muted`、`--accent` 等现有 token，按设计规范区分其用途。
 - Tailwind 工具类与 Astro scoped CSS 均可使用；跟随所在模块的表达方式。全局 CSS 仅承载跨页面基础规则，不为单个卡片扩大影响范围。
 - 目前只有 dark token，HTML 也固定 dark。不得假定配置中出现 light 就表示已支持浅色主题；主题任务需统一 token、DOM 状态和组件行为。
 - 新页面优先使用 MainLayout 的宽度与主标题；博客正文从 h2 开始，避免重复 h1。首页沿用 Layout 时自行提供语义明确的 main 区域。
@@ -93,7 +94,7 @@
 
 ## 命令与验证
 
-当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run astro -- ...`。
+当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:design`、`pnpm run astro -- ...`。
 
 `verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建真实内容场景，验证草稿、嵌套文章路径、RSS、项目排序与缺少可选数据、空集合、导航和静态跳转。它不向正式内容目录写测试条目，也不代替浏览器交互验证。
 

@@ -120,10 +120,21 @@ h4 {
   text-wrap: balance;
 }
 
-h1 { font-size: var(--size-h1); }
-h2 { font-size: var(--size-h2); }
-h3 { font-size: var(--size-h3); }
-h4 { font-size: var(--size-body); }
+h1 {
+  font-size: var(--size-h1);
+}
+
+h2 {
+  font-size: var(--size-h2);
+}
+
+h3 {
+  font-size: var(--size-h3);
+}
+
+h4 {
+  font-size: var(--size-body);
+}
 
 a {
   color: var(--accent);
@@ -219,6 +230,45 @@ video {
   background: var(--primary-hover);
 }
 
+.bullet-disclosure {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.bullet-disclosure:has(> .detail-disclosure[open]) > .bullet-disclosure__preview {
+  display: none;
+}
+
+.detail-disclosure:not([open]) {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+}
+
+.detail-disclosure summary {
+  width: fit-content;
+  color: var(--accent);
+  font-size: var(--size-sm);
+  font-weight: var(--weight-control);
+  cursor: pointer;
+}
+
+.detail-disclosure summary::marker {
+  color: var(--accent);
+}
+
+.detail-disclosure__open,
+.detail-disclosure[open] .detail-disclosure__closed {
+  display: none;
+}
+
+.detail-disclosure[open] .detail-disclosure__open {
+  display: inline;
+}
+
+.detail-disclosure[open] > :not(summary) {
+  margin-top: var(--space-3);
+}
+
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -273,6 +323,11 @@ video {
 
 .empty-state {
   padding-block: var(--space-6);
+  color: var(--text-secondary);
+}
+
+.page-intro {
+  max-width: var(--content-copy);
   color: var(--text-secondary);
 }
 

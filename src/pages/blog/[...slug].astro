@@ -29,12 +29,12 @@ const { Content } = await render(post);
   <article>
     <p class="post-meta">
       <time datetime={post.data.pubDate.toISOString()}>
-      {post.data.pubDate.toLocaleDateString("en-NZ", {
-        year: "numeric",
-        month: "long",
-        day: "2-digit",
-        timeZone: "UTC",
-      })}
+        {post.data.pubDate.toLocaleDateString("en-NZ", {
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+          timeZone: "UTC",
+        })}
       </time>
       <span> · {post.data.author}</span>
     </p>
@@ -46,11 +46,10 @@ const { Content } = await render(post);
 </MainLayout>
 
 <style>
-.post-meta {
+  .post-meta {
     margin-bottom: var(--space-6);
     color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: var(--size-sm);
   }
 </style>
-

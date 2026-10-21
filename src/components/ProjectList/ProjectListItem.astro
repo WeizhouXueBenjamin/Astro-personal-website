@@ -8,8 +8,18 @@ interface Props {
 
 const { project, headingLevel: Heading = "h2" } = Astro.props;
 const {
-  title, subtitle, description, githubUrl, liveUrl, demoUrl,
-  year, status, bullets, tags, techStack = [], logo,
+  title,
+  subtitle,
+  description,
+  githubUrl,
+  liveUrl,
+  demoUrl,
+  year,
+  status,
+  bullets,
+  tags,
+  techStack = [],
+  logo,
 } = project.data;
 
 const links = [
@@ -17,36 +27,68 @@ const links = [
   { label: "Live site", href: liveUrl },
   { label: "Watch demo", href: demoUrl },
 ].filter((link): link is { label: string; href: string } => Boolean(link.href));
+const hasMoreDetails = bullets.length > 2;
+const visibleBullets = hasMoreDetails ? [bullets[0], bullets[bullets.length - 1]] : bullets;
+const extraBullets = hasMoreDetails ? bullets.slice(1, -1) : [];
 ---
 
 <article class="project-item surface-card" data-filter-tags={JSON.stringify(tags)}>
   <div class="project-content">
     {logo && (
-      <img class="project-logo" src={logo.src} width="64" height="64" alt={title + " logo"} loading="lazy" />
+      <img
+        class="project-logo"
+        src={logo.src}
+        width="64"
+        height="64"
+        alt={`${title} logo`}
+        loading="lazy"
+      />
     )}
     <div class="project-meta technical-meta">
       {year && <span>{year}</span>}
       {status && (
-        <span class:list={["tag", {
-          "tag--success": status === "Completed",
-          "tag--warning": status === "In Progress",
-        }]}>{status}</span>
+        <span
+          class:list={[
+            "tag",
+            {
+              "tag--success": status === "Completed",
+              "tag--warning": status === "In Progress",
+            },
+          ]}
+        >{status}</span>
       )}
     </div>
     <Heading>{title}</Heading>
     {subtitle && <p class="subtitle technical-meta">{subtitle}</p>}
     <p class="project-description">{description}</p>
     {tags.length > 0 && (
-      <ul class="project-tags tag-list" aria-label={title + " topics"}>
+      <ul class="project-tags tag-list" aria-label={`${title} topics`}>
         {tags.map((tag) => <li>{tag}</li>)}
       </ul>
     )}
     <p class="detail-label">Implementation & verification</p>
-    <ul class="project-bullets">
-      {bullets.map((bullet) => <li>{bullet}</li>)}
-    </ul>
+    {hasMoreDetails ? (
+      <div class="bullet-disclosure">
+        <ul class="project-bullets bullet-disclosure__preview">
+          {visibleBullets.map((bullet) => <li>{bullet}</li>)}
+        </ul>
+        <details class="detail-disclosure">
+          <summary>
+            <span class="detail-disclosure__closed">More implementation details ({extraBullets.length})</span>
+            <span class="detail-disclosure__open">Show less</span>
+          </summary>
+          <ul class="project-bullets">
+            {bullets.map((bullet) => <li>{bullet}</li>)}
+          </ul>
+        </details>
+      </div>
+    ) : (
+      <ul class="project-bullets">
+        {bullets.map((bullet) => <li>{bullet}</li>)}
+      </ul>
+    )}
     {techStack.length > 0 && (
-      <ul class="tech-stack tag-list" aria-label={title + " technology stack"}>
+      <ul class="tech-stack tag-list" aria-label={`${title} technology stack`}>
         {techStack.map((tech) => <li>{tech}</li>)}
       </ul>
     )}

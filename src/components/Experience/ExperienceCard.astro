@@ -27,6 +27,10 @@ const initials = company
   .map((word) => word[0])
   .join("")
   .toUpperCase();
+const hasMoreDetails =
+  bullets.length > 2 && (bullets.length > 3 || bullets.join(" ").length > 420);
+const visibleBullets = hasMoreDetails ? bullets.slice(0, 2) : bullets;
+const extraBullets = hasMoreDetails ? bullets.slice(2) : [];
 ---
 
 <article class="experience-card surface-card">
@@ -38,7 +42,7 @@ const initials = company
       <h3>{jobTitle}</h3>
       {
         companyWebsite ? (
-          <a href={companyWebsite} target="_blank" rel="noreferrer">{company}</a>
+          <a href={companyWebsite} target="_blank" rel="noopener noreferrer">{company}</a>
         ) : (
           <p>{company}</p>
         )
@@ -51,9 +55,26 @@ const initials = company
     {location && <span class="tag">{location}</span>}
   </div>
 
-  <ul class="impact-list" aria-label={`${company} responsibilities`}>
-    {bullets.map((bullet) => <li>{bullet}</li>)}
-  </ul>
+  {hasMoreDetails ? (
+    <div class="bullet-disclosure">
+      <ul class="impact-list bullet-disclosure__preview" aria-label={`${company} responsibilities preview`}>
+        {visibleBullets.map((bullet) => <li>{bullet}</li>)}
+      </ul>
+      <details class="detail-disclosure">
+        <summary>
+          <span class="detail-disclosure__closed">More contributions ({extraBullets.length})</span>
+          <span class="detail-disclosure__open">Show less</span>
+        </summary>
+        <ul class="impact-list" aria-label={`${company} responsibilities`}>
+          {bullets.map((bullet) => <li>{bullet}</li>)}
+        </ul>
+      </details>
+    </div>
+  ) : (
+    <ul class="impact-list" aria-label={`${company} responsibilities`}>
+      {bullets.map((bullet) => <li>{bullet}</li>)}
+    </ul>
+  )}
 
   {
     techStack.length > 0 && (
@@ -72,7 +93,7 @@ const initials = company
 </article>
 
 <style>
-.experience-card {
+  .experience-card {
     display: grid;
     gap: var(--space-5);
     padding: var(--card-padding);

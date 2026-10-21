@@ -16,7 +16,7 @@ const isActiveHref = (href: string) => {
 ---
 
 <div class="toolbar-wrapper">
-  <nav class="floating-toolbar" role="navigation" aria-label="top-level navigation">
+  <nav class="floating-toolbar" aria-label="top-level navigation">
     <ul class="toolbar-list">
       {components.map((component) => (
         <GlobalNavItem {...component} isActive={isActiveHref(component.href)} />
@@ -26,7 +26,7 @@ const isActiveHref = (href: string) => {
 </div>
 
 <style>
-.toolbar-wrapper {
+  .toolbar-wrapper {
     position: fixed;
     inset: var(--space-4) 0 auto;
     z-index: 50;
@@ -37,6 +37,7 @@ const isActiveHref = (href: string) => {
   }
 
   .floating-toolbar {
+    width: min(100%, 22rem);
     max-width: 100%;
     padding: var(--space-2);
     border: 1px solid var(--border);
@@ -47,7 +48,8 @@ const isActiveHref = (href: string) => {
   }
 
   .toolbar-list {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-1);
     margin: 0;
     padding: 0;

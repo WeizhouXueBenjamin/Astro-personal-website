@@ -14,6 +14,7 @@
 | --- | --- |
 | 定位、文案、页面职责、导航与范围 | [业务定义与决策](docs/ai/business.md) |
 | 组件、样式、内容集合、schema、路由与 metadata | [工程与内容约定](docs/ai/engineering.md) |
+| 视觉方向、色彩、排版、卡片、动效与可读性 | [视觉与交互规范](docs/ai/design-system.md) |
 | 文件职责、Props、TypeScript、代码格式与样式组织 | [代码生成与组织约定](docs/ai/coding-style.md) |
 | 任务拆分、生成与验收 | [AI 任务流程](docs/ai/workflows.md) |
 | 了解现有实现、差距和构建基线 | [带日期的现状审计](docs/ai/project-audit.md) |
@@ -24,11 +25,11 @@
 
 - 技术栈、包管理器、可执行脚本：`package.json`。精确依赖版本看 lockfile，不沿用旧文档版本号。
 - 静态构建、集成与部署 URL：`astro.config.mjs`。
-- 身份与联系方式：`src/config/site.ts`。
+- 身份、联系方式与英文简历下载路径：`src/config/site.ts`；公开简历文件位于 `public/documents/`。
 - 教育与能力分类：`src/config/profile.ts`。项目事实来自 `projects` 内容集合；用户提供的两项自动化案例都是个人仿真项目。
 - 内容契约：`src/content.config.ts`。集合名是 `blogs`、`experience`、`projects`；公开文章路由是 `/blog`。
 - 布局：`Layout.astro` 提供文档与 metadata，`MainLayout.astro` 提供内容页容器与主标题。
-- 样式：`src/styles/global.css` 的现有 token；当前仅实现 dark token，不假定已支持浅色主题。
+- 样式：`src/styles/global.css` 的现有 token；本轮统一为克制的深色工程作品集，具体用法见设计规范。不假定已支持浅色主题。
 - `.codex/astro-personal-website/SKILL.md` 是任务入口，按需引用本文件及上述文档；业务规则统一维护在文档中，不在 Skill 内另设一套定义。
 
 ## 生成约束
@@ -47,5 +48,6 @@
 
 - 使用 pnpm。现有命令为 `pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run astro -- ...`。
 - 代码或内容改动运行 `pnpm run build`，并验证受影响行为；改动集合、发布、列表、导航或跳转时运行 `pnpm run verify:site`。纯文档修改检查链接、事实与 diff。
+- 修改配色或对比度相关 token 时运行 `pnpm run verify:design`，并检查实际页面中的文字、控件与焦点状态。
 - `verify:site` 在临时工作区构建固定内容场景，不写入正式内容；当前没有独立 lint/check/typecheck 脚本。构建和场景验证不等于类型、视觉、性能或线上发布验证通过。
 - 区分原有问题与本次改动。说明实际完成结果、验证证据、未验证事项和仍缺少的业务输入。

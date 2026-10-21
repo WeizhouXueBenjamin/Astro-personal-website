@@ -134,3 +134,38 @@
 截图复核发现页脚 `by` 与作者姓名缺少空格，已在 Footer 中显式保留该间隔。修复后再次执行 `pnpm run build`，退出码 0、无内容告警；浏览器读取桌面和窄屏下三个页面的页脚文本，均为 `Built with Astro and ♥ by Benjamin Xue`。
 
 本次本地截图保存于 `.astro/home-desktop.png`、`.astro/home-mobile.png`、`.astro/projects-desktop.png`、`.astro/projects-mobile.png`、`.astro/about-desktop.png`、`.astro/about-mobile.png`，属于忽略的临时产物。未增加浏览器测试依赖，也没有部署网站；完整类型检查、Lighthouse 与其他浏览器引擎不在本次已验证结果中。
+
+## 2026-10-21 视觉规范与一致性收尾
+
+所有者进一步确认以克制的工程作品集为主体，少量使用工业控制台元素；本轮统一深色主题、保证可读性，并保留 Hero 内低权重粒子，停用鼠标交互及高亮连线，遵循减少动效偏好。本轮开始时工作树为干净状态，现有页面已采用深色 token、统一卡片和弱化粒子参数，但缺少独立的视觉生成契约。
+
+- 新增 [视觉与交互规范](design-system.md)，明确页面信息顺序、色彩与排版层级、卡片和动作 recipe、技术标注、粒子及验证要求。根入口、业务、工程、代码生成、任务流程和 README 均链接到该规范；历史未使用的 Experience 展示组件不作为新样式模板。
+- 新增 `pnpm run verify:design`，用 Node 内置 API 读取全局 token，按 WCAG 对比度公式检查 19 组常用文字、状态、按钮及控件边界配对，并限制 Hero 粒子的密度、亮度、速度和交互开关。最弱的所测普通文字组合 `--text-muted`/`--card` 为 6.61:1；所测控件边界 `--border-control`/`--card` 为 4.04:1。脚本对当前配对通过，但不覆盖每个实际像素或第三方内容。
+- 将被触及的基础 CSS 和组件首条规则整理为一致的多行格式，没有改变业务内容或站点路由。
+- `pnpm run build` 通过，生成 6 个页面，没有内容告警；`pnpm run verify:design` 通过；`git diff --check` 通过。此轮未改集合、发布、列表、导航或跳转行为，未重跑 `verify:site`。
+- Playwright 无界面 Chrome 复核 Home、About、Projects、Blog 在 1440/390/320px 共 12 种组合，未见横向溢出或导航遮挡；页面各有一个 h1/main。项目筛选、键盘焦点、旧路径及禁用 JavaScript 的主要内容仍通过，未捕获页面错误、控制台 error 或站内 4xx/5xx。
+- 单独检查粒子：正常动效下只有一张 canvas，边界位于 Hero 内，指针事件为 none，叠层透明度 0.35；切换为减少动效后 canvas 被销毁且粒子容器隐藏，切回后重新渲染。浏览器截图已重新复核首页、项目和关于页的桌面/窄屏版面。
+
+上述证据不等于完整 WCAG 全站审核、跨浏览器兼容验证、真实性独立核实或线上发布。真实项目的架构图、独立 Demo 和可公开测试材料仍需所有者提供后才能加入页面。
+
+## 2026-10-21 粒子、工具栏与代码一致性复核
+
+所有者指出首页粒子不明显、主导航入口尺寸不一，并要求检查项目代码一致性。开始前检查了工作区，保留上轮尚未提交的文档和样式修改。本轮实际范围为活跃页面、组件、内容选择、路由、样式及验证脚本；未调用的历史 Experience 展示组件与旧静态资源没有被当作当前页面实现，也未清理所有者源文件。
+
+- 浏览器量测证实：旧工具栏四个链接宽度约 49–67px；旧 Hero 在 1440px 视口仅有约 19 个粒子，画布已绘像素平均 alpha 约 0.028，外层再乘 0.35 的 opacity，视觉上接近不可见。
+- 导航改为四列等宽网格，窄屏收紧入口内边距；粒子提高到适度密度与尺寸，改用稳定透明度，外层 opacity 调为 0.7。保留低速、无连线、无鼠标/点击交互和减少动效停用。`verify:design` 同时限制粒子配置的过低/过高可见度及过快运动。
+- 检查了活跃内容读取、页面出口和外链生成。统一 Projects/Blog 页引言样式、活跃组件 CSS/Props 排版、外链 rel 与原生导航语义；历史资产与展示组件未被主路由引用。未发现需要改动既有事实或集合 schema 的问题。
+- `pnpm run build` 与 `pnpm run verify:site` 通过，后者覆盖草稿、嵌套文章、RSS、项目排序/可选数据、空集合、导航和静态跳转；`verify:design` 的 19 组 token 对比度和粒子约束通过。
+- Playwright 无界面 Chrome 检查 Home、About、Projects、Blog 在 1440/390/320px 的 12 个组合，均无横向溢出、导航遮挡或运行时错误；筛选、键盘焦点、旧地址及禁用 JavaScript 时的正文仍正常。导航链接宽度在三个视口分别一致为 80.5px、78.25px、60.75px。
+- 新截图可见稀疏的 Hero 背景点；正常动效下 canvas 只在 Hero 内，切换到减少动效时 canvas 被移除，恢复偏好后重新出现。此结果来自模拟视口与本机 Chrome，未代替真实设备和其他浏览器验证。
+
+## 2026-10-21 粒子常显、首页联系与长卡片折叠
+
+所有者再次指出 Hero 粒子不可见，并明确要求在减少动效偏好下也持续可见；同时要求首页快速呈现定位、能力和联系入口，加入英文简历下载及集中联系区，过长经历和项目默认折叠。所有者提供的本机 PDF 为 `Benjamin-Xue-Automation-SCADA-CV.pdf`，核对 `%PDF-` 文件头与 SHA-256 后复制到 `public/documents/`，网站路径由 `site.resumeUrl` 维护。
+
+- 将依赖 `particles.js` 的旧 canvas 效果改为 Hero 内静态生成的 HTML/CSS 点阵。正常情况下低速位移；减少动效只停止动画，不删除粒子。移除未引用的旧粒子脚本及依赖，配置保留在 `src/assets/particles.json`。
+- 首页 Hero 缩短介绍并直接提供 Projects、英文 CV 和联系入口；底部集中联系区展示真实邮件、LinkedIn、GitHub 与 PDF。About 的联系动作指向首页联系区。
+- 三条以上的长项目贡献和较长经历用原生 `<details>` 默认折叠其余说明，标题、背景与首要贡献直接可读。无需 JavaScript 也可展开。
+- `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:design` 与 `git diff --check` 通过；36 个本地 Markdown 链接有效。Playwright 无界面 Chrome 检查 Home、About、Projects、Blog × 1440/390/320px 共 12 组布局；40 个桌面粒子正常动效和减少动效下均可见，后者动画为 `none`；无 JavaScript 的移动端仍显示粒子与内容。PDF 返回 200 且有 `%PDF-` 文件头，点击可下载正确文件名；联系锚点未被工具栏遮挡，项目及经历折叠、键盘展开和项目筛选通过。浏览器未报告脚本或站内请求错误。
+
+本次视觉证据为本地截图与浏览器计算样式；没有执行完整 WCAG 审核、其他浏览器引擎测试或线上部署。简历内容由所有者提供，本站未独立核实其中事实。

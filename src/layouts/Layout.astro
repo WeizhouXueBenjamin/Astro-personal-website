@@ -9,10 +9,7 @@ interface Props {
   description?: string;
 }
 
-const { 
-  title = site.title, 
-  description = site.description 
-} = Astro.props;
+const { title = site.title, description = site.description } = Astro.props;
 
 const baseUrl = site.siteUrl.replace(/\/$/, "");
 const canonicalURL =
@@ -53,4 +50,3 @@ const canonicalURL =
     <Footer />
   </body>
 </html>
-

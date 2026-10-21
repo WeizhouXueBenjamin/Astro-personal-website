@@ -26,7 +26,6 @@ const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
       class="tag-filter"
       data-tag-filter
       data-target={target}
-      aria-label={label}
     >
       <div class="tag-filter__heading">
         <span class="tag-filter__label">{label}</span>
@@ -131,7 +130,7 @@ const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
 </script>
 
 <style>
-.tag-filter {
+  .tag-filter {
     display: grid;
     gap: var(--space-3);
     margin-block: var(--space-5);

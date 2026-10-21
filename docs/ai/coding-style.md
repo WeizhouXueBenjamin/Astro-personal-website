@@ -1,6 +1,6 @@
 # 代码生成与组织约定
 
-本文件规定生成代码的组织方式。业务事实见 [business.md](business.md)，运行时契约见 [engineering.md](engineering.md)；视觉方向由设计规范维护，不能由每次代码生成重新决定。
+本文件规定生成代码的组织方式。业务事实见 [business.md](business.md)，运行时契约见 [engineering.md](engineering.md)；视觉方向见 [design-system.md](design-system.md)，不能由每次代码生成重新决定。
 
 ## 生成前的定位
 

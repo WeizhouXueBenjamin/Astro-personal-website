@@ -12,9 +12,10 @@ pnpm run dev
 pnpm run build
 pnpm run preview
 pnpm run verify:site
+pnpm run verify:design
 ```
 
-build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离临时工作区验证发布规则、RSS、项目列表与空状态、导航和静态跳转，不修改正式内容。
+build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离临时工作区验证发布规则、RSS、项目列表与空状态、导航和静态跳转，不修改正式内容。verify:design 检查深色主题常用 token 配对的 WCAG 对比度。
 
 ## 页面与内容
 
@@ -33,14 +34,14 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 
 ## 维护入口
 
-- 身份、方向、联系方式：src/config/site.ts。
+- 身份、方向、联系方式和英文简历下载路径：src/config/site.ts；公开 PDF 存放在 public/documents/。
 - 教育、证书、能力分类：src/config/profile.ts。
 - 项目：src/content/projects 下的 YAML/YML/JSON。
 - 经历：src/content/experience 下的 YAML/YML/JSON。
 - 文章：src/content/blogs 下的 Markdown/MDX；draft: true 的文章不生成公开详情或进入 RSS。
 - schema：src/content.config.ts；手工模板仅作参考。
 - 内容选择与路径：src/lib/content.ts。
-- 主题与基础样式：src/styles/global.css；当前仅实现深色主题。
+- 主题与基础样式：src/styles/global.css；当前仅实现深色主题，用法见 docs/ai/design-system.md。
 
 两项自动化项目素材由所有者提供，均按个人仿真项目展示。未提供的生产部署、认证、项目状态和指标不补写。Starter Kit 文章作为草稿保留。
 
@@ -52,6 +53,7 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 
 - [业务定义与已确认决策](docs/ai/business.md)
 - [工程与内容约定](docs/ai/engineering.md)
+- [视觉与交互规范](docs/ai/design-system.md)
 - [代码生成与组织约定](docs/ai/coding-style.md)
 - [任务模板与验收流程](docs/ai/workflows.md)
 - [首次审计与后续实施记录](docs/ai/project-audit.md)

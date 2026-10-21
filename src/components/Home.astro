@@ -1,7 +1,7 @@
 ---
 import { site } from "#config/site";
 import { getProjects } from "#base/lib/content";
-import SocialLinks from "./SocialLinks.astro";
+import ContactSection from "./ContactSection.astro";
 import ProjectListItem from "./ProjectList/ProjectListItem.astro";
 
 const featuredProjects = (await getProjects())
@@ -21,12 +21,11 @@ const featuredProjects = (await getProjects())
     </ul>
     <div class="home-actions">
       <a class="action-link action-link--primary" href="/projects">
-        Explore projects →
+        View projects →
       </a>
-      <a class="action-link" href="/about">Background & experience</a>
-      <a class="action-link" href={"mailto:" + site.email}>Get in touch</a>
+      <a class="action-link" href={site.resumeUrl} download>Download CV (PDF)</a>
+      <a class="action-link" href="#contact">Contact me</a>
     </div>
-    <SocialLinks />
   </div>
 </section>
 
@@ -57,56 +56,24 @@ const featuredProjects = (await getProjects())
   <a href="/about#work-experience">Read my professional experience →</a>
 </section>
 
+<ContactSection />
+
 <script>
   import particlesConfig from "#assets/particles.json";
   import particlesUrl from "#assets/js/particles.min.js?url";
 
-  interface ParticleInstance {
-    pJS: {
-      canvas: { el: HTMLCanvasElement };
-      fn: { vendors: { destroypJS: () => void } };
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  if (!reducedMotion) {
+    const script = document.createElement("script");
+    script.src = particlesUrl;
+    script.onload = () => {
+      particlesJS("particles-js", particlesConfig);
     };
+    document.head.appendChild(script);
   }
-
-  const particleWindow = window as Window & {
-    particlesJS?: (id: string, config: unknown) => void;
-    pJSDom?: ParticleInstance[] | null;
-  };
-  const host = document.getElementById("particles-js");
-  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let vendorReady: Promise<void> | undefined;
-  let instance: ParticleInstance | undefined;
-
-  const loadVendor = () => {
-    if (particleWindow.particlesJS) return Promise.resolve();
-    vendorReady ??= new Promise<void>((resolve) => {
-      const script = document.createElement("script");
-      script.src = particlesUrl;
-      script.onload = () => resolve();
-      script.onerror = () => resolve();
-      document.head.appendChild(script);
-    });
-    return vendorReady;
-  };
-
-  const syncParticles = async () => {
-    if (!host) return;
-    if (motion.matches) {
-      instance?.pJS.fn.vendors.destroypJS();
-      instance = undefined;
-      return;
-    }
-
-    await loadVendor();
-    if (motion.matches || !host.isConnected || instance || !particleWindow.particlesJS) return;
-    // The vendored destroy function clears this registry; restore it before restarting.
-    particleWindow.pJSDom ??= [];
-    particleWindow.particlesJS(host.id, particlesConfig);
-    instance = particleWindow.pJSDom.find(({ pJS }) => pJS.canvas.el.parentElement === host);
-  };
-
-  motion.addEventListener("change", () => void syncParticles());
-  void syncParticles();
 </script>
 
 <style>
@@ -114,7 +81,12 @@ const featuredProjects = (await getProjects())
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: var(--bg);
+    background: radial-gradient(
+      circle at 20% 15%,
+      #1c2a3a 0%,
+      #0f1924 55%,
+      #0b131c 100%
+    );
   }
 
   .hero-particles {
@@ -122,7 +94,6 @@ const featuredProjects = (await getProjects())
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.35;
   }
 
   .hero-particles :global(canvas) {
@@ -138,7 +109,7 @@ const featuredProjects = (await getProjects())
     align-items: center;
     justify-content: center;
     gap: var(--space-5);
-    min-height: 85svh;
+    min-height: 70svh;
     padding-block: calc(var(--header-offset) + var(--space-5)) var(--space-8);
     text-align: center;
   }
@@ -194,7 +165,6 @@ const featuredProjects = (await getProjects())
   .home-background {
     display: grid;
     gap: var(--space-5);
-    padding-block-end: var(--space-8);
   }
 
   .home-background p {
@@ -209,12 +179,6 @@ const featuredProjects = (await getProjects())
   @media (max-width: 700px) {
     .featured-projects {
       grid-template-columns: 1fr;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-particles {
-      display: none;
     }
   }
 </style>

@@ -20,7 +20,13 @@ const anchorLinks = [
   <div class="about-shell">
     <aside class="about-rail">
       <nav aria-label="About page sections">
-        {anchorLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+        <p class="eyebrow">On this page</p>
+        {anchorLinks.map((link, index) => (
+          <a href={link.href}>
+            <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+            {link.label}
+          </a>
+        ))}
       </nav>
     </aside>
 
@@ -48,10 +54,12 @@ const anchorLinks = [
           {capabilities.map((capability) => (
             <article class="capability">
               <h3>{capability.title}</h3>
-              <p>{capability.description}</p>
-              <ul class="chip-row tag-list" aria-label={capability.title + " technologies and practices"}>
-                {capability.tools.map((tool) => <li>{tool}</li>)}
-              </ul>
+              <div class="capability-detail">
+                <p>{capability.description}</p>
+                <ul class="chip-row tag-list" aria-label={capability.title + " technologies and practices"}>
+                  {capability.tools.map((tool) => <li>{tool}</li>)}
+                </ul>
+              </div>
             </article>
           ))}
         </div>
@@ -91,11 +99,20 @@ const anchorLinks = [
 
   .about-rail nav {
     display: grid;
-    gap: var(--space-2);
+    gap: var(--space-1);
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--border);
+  }
+
+  .about-rail .eyebrow {
+    margin-bottom: var(--space-3);
   }
 
   .about-rail a {
-    width: fit-content;
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: baseline;
     padding: var(--space-2);
     border-radius: var(--radius-control);
     color: var(--text-secondary);
@@ -106,6 +123,12 @@ const anchorLinks = [
   .about-rail a:hover {
     background: var(--surface-hover);
     color: var(--text);
+  }
+
+  .about-rail a span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
   }
 
   .about-page {
@@ -173,6 +196,18 @@ const anchorLinks = [
   .study-item {
     display: grid;
     gap: var(--space-3);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .capability {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--space-5);
+  }
+
+  .capability-detail {
+    display: grid;
+    gap: var(--space-3);
   }
 
   .capability p,
@@ -199,6 +234,20 @@ const anchorLinks = [
     .about-rail nav {
       display: flex;
       flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .about-rail .eyebrow {
+      flex-basis: 100%;
+      margin-bottom: 0;
+    }
+
+    .capability {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
     }
   }
 </style>

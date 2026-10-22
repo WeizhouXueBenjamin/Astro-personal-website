@@ -2,7 +2,7 @@
 
 ## 目标与范围
 
-本项目是 Astro 个人职业展示网站，定位为 **Automation / Control Systems & Software Integration**：突出 PLC/SCADA、工业自动化、系统集成与软件开发，现场技术经验作为实践优势。网站正文使用英文，业务文档与 instructions 使用中文，保留代码术语英文。
+本项目是 Astro 个人职业展示网站，定位为 **Automation / Control Systems & Software Integration**：突出 PLC/SCADA、工业自动化、系统集成与软件开发，现场技术经验作为实践优势。网站正文使用 NZ English，业务文档与 instructions 使用中文，保留代码术语英文。
 
 主要页面为 Home、About、Projects、Blog。About 集中展示经历；旧 `/experience` 跳转到 `/about#work-experience`，Gallery 暂缓，旧 `/gallery` 跳转首页。
 
@@ -15,6 +15,7 @@
 | 定位、文案、页面职责、导航与范围 | [业务定义与决策](docs/ai/business.md) |
 | 组件、样式、内容集合、schema、路由与 metadata | [工程与内容约定](docs/ai/engineering.md) |
 | 视觉方向、色彩、排版、卡片、动效与可读性 | [视觉与交互规范](docs/ai/design-system.md) |
+| 项目案例、截图、视频、Figure 与证据来源 | [项目展示维护规范](docs/ai/project-showcase.md) |
 | 文件职责、Props、TypeScript、代码格式与样式组织 | [代码生成与组织约定](docs/ai/coding-style.md) |
 | 任务拆分、生成与验收 | [AI 任务流程](docs/ai/workflows.md) |
 | 了解现有实现、差距和构建基线 | [带日期的现状审计](docs/ai/project-audit.md) |
@@ -40,6 +41,7 @@
 - 个人经历、学历、指标、项目成果、推荐引文必须来自已提供事实。缺少内容时询问或省略，不发布占位事实。
 - 共用数据维护一份，通过明确的 Props 或集合类型消费；schema 变更同步内容、消费者与模板。
 - 公开文章统一通过 `src/lib/content.ts` 的 `getPublishedPosts()` 获取；列表、详情静态路径与 RSS 一致排除草稿。项目排序与精选也复用该文件。
+- Projects 使用统一卡片和 `/projects/[slug]` 独立 Hybrid Case Study；媒体按技术章节组织，Hero 不重复嵌入。Figure 按实际阅读顺序自动编号；截图、测试与演示需可追溯，计划功能与已实现功能分开。
 - 不将个人仿真项目描述为生产现场投运，不把求职方向写成未提供的岗位头衔或工作成果。
 - 可选链接、文件和媒体必须有真实来源，缺失时不生成无效交互；保证内容无需 JavaScript 也能阅读。
 - 需要所有者决定的是定位、事实冲突和范围等实质问题；常规局部实现可自行处理，已确认事项不反复询问。

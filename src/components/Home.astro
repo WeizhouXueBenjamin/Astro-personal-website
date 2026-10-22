@@ -2,7 +2,7 @@
 import { site } from "#config/site";
 import { getProjects } from "#base/lib/content";
 import ContactSection from "./ContactSection.astro";
-import ProjectListItem from "./ProjectList/ProjectListItem.astro";
+import ProjectCard from "./ProjectList/ProjectCard.astro";
 
 const featuredProjects = (await getProjects())
   .filter(({ data }) => data.featured)
@@ -12,19 +12,26 @@ const featuredProjects = (await getProjects())
 <section class="hero" aria-labelledby="home-heading">
   <div id="particles-js" class="hero-particles" aria-hidden="true"></div>
   <div class="hero-content container">
-    <p class="eyebrow">Automation · Control systems · Software</p>
-    <h1 id="home-heading">{site.username}</h1>
-    <p class="hero-subtitle">{site.userTitle}</p>
-    <p class="hero-description">{site.userDescription}</p>
-    <ul class="focus-tags tag-list" aria-label="Engineering focus">
-      {site.focusAreas.map((focus) => <li>{focus}</li>)}
-    </ul>
-    <div class="home-actions">
-      <a class="action-link action-link--primary" href="/projects">
-        View projects →
-      </a>
-      <a class="action-link" href={site.resumeUrl} download>Download CV (PDF)</a>
-      <a class="action-link" href="#contact">Contact me</a>
+    <div class="hero-intro">
+      <p class="eyebrow">Automation · Control systems · Software</p>
+      <h1 id="home-heading">{site.username}</h1>
+      <p class="hero-subtitle">{site.userTitle}</p>
+      <p class="hero-description">{site.userDescription}</p>
+      <div class="home-actions">
+        <a class="action-link action-link--primary" href="/projects">
+          View projects →
+        </a>
+        <a class="action-link" href={site.resumeUrl} download>Download CV (PDF)</a>
+        <a class="action-link" href="#contact">Contact me</a>
+      </div>
+    </div>
+    <div class="hero-focus">
+      <p class="eyebrow">Areas of work</p>
+      <ul aria-label="Engineering focus">
+        {site.focusAreas.map((focus, index) => (
+          <li><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{focus}</li>
+        ))}
+      </ul>
     </div>
   </div>
 </section>
@@ -40,7 +47,7 @@ const featuredProjects = (await getProjects())
     </div>
     <div class="featured-projects">
       {featuredProjects.map((project) => (
-        <ProjectListItem project={project} headingLevel="h3" />
+        <ProjectCard project={project} headingLevel="h3" />
       ))}
     </div>
   </section>
@@ -48,12 +55,14 @@ const featuredProjects = (await getProjects())
 
 <section class="home-section home-background container" aria-labelledby="background-heading">
   <h2 id="background-heading">Software delivery. Practical technical work.</h2>
-  <p>
-    My background combines software delivery for charities and university teams
-    with hands-on work diagnosing and replacing technical equipment. These experiences
-    support my focus on automation and integrated systems.
-  </p>
-  <a href="/about#work-experience">Read my professional experience →</a>
+  <div class="background-copy">
+    <p>
+      My background combines software delivery for charities and university teams
+      with hands-on work diagnosing and replacing technical equipment. These experiences
+      support my focus on automation and integrated systems.
+    </p>
+    <a href="/about#work-experience">Read my professional experience →</a>
+  </div>
 </section>
 
 <ContactSection />
@@ -104,24 +113,28 @@ const featuredProjects = (await getProjects())
   .hero-content {
     position: relative;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 0.7fr);
     align-items: center;
-    justify-content: center;
-    gap: var(--space-5);
+    gap: clamp(var(--space-7), 7vw, 7rem);
     min-height: 70svh;
     padding-block: calc(var(--header-offset) + var(--space-5)) var(--space-8);
-    text-align: center;
+  }
+
+  .hero-intro {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
   }
 
   h1 {
     font-size: var(--size-hero);
-    line-height: 1.1;
+    line-height: 1.05;
   }
 
   .hero-subtitle {
-    max-width: 40rem;
-    font-size: var(--size-h3);
+    max-width: 43rem;
+    font-size: var(--size-h2);
     line-height: var(--line-heading);
     text-wrap: balance;
   }
@@ -132,15 +145,39 @@ const featuredProjects = (await getProjects())
     font-size: var(--size-lead);
   }
 
-  .focus-tags,
-  .home-actions {
-    justify-content: center;
-  }
-
   .home-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .hero-focus {
+    align-self: center;
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--border-control);
+  }
+
+  .hero-focus ul {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-focus li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: baseline;
+    font-size: var(--size-sm);
+    line-height: 1.5;
+  }
+
+  .hero-focus li span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
   }
 
   .home-section {
@@ -164,21 +201,59 @@ const featuredProjects = (await getProjects())
 
   .home-background {
     display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-7);
+    border-top: 1px solid var(--border);
+  }
+
+  .background-copy {
+    display: grid;
+    justify-items: start;
     gap: var(--space-5);
   }
 
-  .home-background p {
+  .background-copy p {
     max-width: var(--content-copy);
     color: var(--text-secondary);
   }
 
-  .home-background a {
+  .background-copy a {
     width: fit-content;
   }
 
+  @media (max-width: 850px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: var(--space-7);
+    }
+
+    .hero-focus ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-background {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+  }
+
   @media (max-width: 700px) {
+    .hero-focus {
+      display: none;
+    }
+
     .featured-projects {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-intro {
+      gap: var(--space-4);
+    }
+
+    .hero-description {
+      font-size: var(--size-body);
     }
   }
 </style>

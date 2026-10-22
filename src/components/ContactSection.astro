@@ -16,8 +16,8 @@ const contactLinks = [
   <div class="contact-card surface-card">
     <div class="contact-copy">
       <p class="eyebrow">Contact</p>
-      <h2 id="contact-heading">Let's discuss automation and integration.</h2>
-      <p>Explore the projects and experience, then reach me directly or download my English CV.</p>
+      <h2 id="contact-heading">Let's connect</h2>
+      <p>Reach me directly or check my CV.</p>
     </div>
     <div class="contact-actions">
       <a class="action-link action-link--primary" href={`mailto:${site.email}`}>
@@ -48,6 +48,7 @@ const contactLinks = [
 
   .contact-card {
     display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 0.7fr);
     gap: var(--space-5);
     padding: clamp(var(--space-5), 4vw, var(--space-7));
   }
@@ -69,11 +70,24 @@ const contactLinks = [
     gap: var(--space-3);
   }
 
+  .contact-actions {
+    align-content: center;
+    justify-content: flex-start;
+  }
+
   .contact-links {
+    grid-column: 1 / -1;
     gap: var(--space-3) var(--space-5);
     margin: 0;
-    padding: 0;
+    padding: var(--space-5) 0 0;
+    border-top: 1px solid var(--border);
     list-style: none;
     font-size: var(--size-sm);
+  }
+
+  @media (max-width: 700px) {
+    .contact-card {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

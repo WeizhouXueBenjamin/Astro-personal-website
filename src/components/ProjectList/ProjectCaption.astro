@@ -1,0 +1,33 @@
+---
+import type { NumberedMedia } from "#base/lib/project-media";
+
+type Props = NumberedMedia;
+const { media, number } = Astro.props;
+---
+
+<figcaption id={`caption-${media.id}`} class="project-caption">
+  <p class="project-caption__title">
+    <span class="technical-meta">Figure {String(number).padStart(2, "0")}</span>
+    <span aria-hidden="true"> — </span>{media.title}
+  </p>
+  <p>{media.caption}</p>
+  {media.sourceUrl && <a href={media.sourceUrl}>View source ↗</a>}
+  <slot />
+</figcaption>
+
+<style>
+  .project-caption {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+    line-height: 1.6;
+  }
+
+  .project-caption__title {
+    color: var(--text);
+    font-weight: var(--weight-control);
+  }
+</style>

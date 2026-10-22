@@ -169,3 +169,29 @@
 - `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:design` 与 `git diff --check` 通过；36 个本地 Markdown 链接有效。Playwright 无界面 Chrome 检查 Home、About、Projects、Blog × 1440/390/320px 共 12 组布局；40 个桌面粒子正常动效和减少动效下均可见，后者动画为 `none`；无 JavaScript 的移动端仍显示粒子与内容。PDF 返回 200 且有 `%PDF-` 文件头，点击可下载正确文件名；联系锚点未被工具栏遮挡，项目及经历折叠、键盘展开和项目筛选通过。浏览器未报告脚本或站内请求错误。
 
 本次视觉证据为本地截图与浏览器计算样式；没有执行完整 WCAG 审核、其他浏览器引擎测试或线上部署。简历内容由所有者提供，本站未独立核实其中事实。
+
+## 2026-10-22 Project Showcase 与 Visual Evidence 验收
+
+本轮承接所有者确认的 Hybrid Case Study 需求，保留此前深色视觉调整与现有暂存内容。项目列表改为统一的 16:9 封面卡片，整卡进入 `/projects/distribution-feeder-scada` 或 `/projects/smart-conveyor-sorting`；首页精选复用同一组件。详情复用站点外壳，以成果 Hero、页内索引、技术章节、就近媒体、预期/实际测试结果及经验总结组织内容。
+
+- 新增 ProjectCard、ProjectHero、ProjectSection、ProjectMedia、ProjectGallery、ProjectVideo、ProjectCaption 和 ProjectDetailLayout；媒体支持 featured、comparison、sequence，按页面阅读顺序生成 Figure 编号。原图可在浏览器放大；视频默认暂停、按需下载、提供 Poster、原生控件与文本说明。外部嵌入点击后才加载播放器。
+- projects schema、两项正式内容、模板、所有消费者及维护文档已同步迁移。分类优先突出 Automation / SCADA，重复 slug、媒体来源、错误章节关联与缺失本地视频会使构建失败。集合 ID 独立于公开 slug，避免 Astro 默认 loader 静默覆盖重名 URL。
+- 真实素材来自所有者此前提供的两个公开 GitHub 仓库。接入四张原始截图及 SCADA Release 演示，保留来源；演示从约 361.6 MB 压缩为 1.34 MB、1080p、约 87 秒，未添加虚构场景。Astro Image 使用显式 Sharp 依赖生成响应式 WebP，SVG 保留矢量。
+- 输送线以现有运行基线截图作为 Hero，说明它只能证明 SoftPLC 连接与 RUN 状态。OPC UA、18 个信号及状态机依据实际技术笔记；Manual/Auto、联锁、Jam Detection、故障处理和正式 FAT-style 文档仍属计划范围。完整素材缺口与来源见 [project-showcase.md](project-showcase.md)。
+- 修复验证脚本原有的缓存隔离缺口：临时工作区的 node_modules 链接会共享默认 Astro cache。现在为测试配置独立 Astro/Vite cache；并行正式构建与场景验证均通过，最终 dist 无测试案例或测试文章。
+
+| 验证 | 本轮实际结果 |
+| --- | --- |
+| `pnpm run build` | 退出码 0，8 个静态页面，包括两项独立案例；最终构建无内容或媒体告警 |
+| `pnpm run verify:site` | 退出码 0；覆盖发布/RSS、分类优先级、卡片与详情路由、可选数据、Figure 排序、三种布局、视频/嵌入、错误输入及删除后的空状态 |
+| `pnpm run verify:design` | 19 组既有深色 token 对比度配对通过 |
+| 本地链接与构建产物 | 46 个文档相对链接有效；正式 HTML 的站内页面/资源引用均有文件，项目详情仅两项，无 fixture 内容 |
+| Chrome 布局 | Home、Projects、两页案例、About、Blog × 1440/390/320px 共 18 组；无横向溢出、重复 ID 或已加载图片损坏，每页一个 h1/main，Figure caption 结构正确 |
+| Chrome 交互 | 分类筛选与 Enter 操作、2px 可见焦点、整卡导航、章节锚点、原图 HTTP 200、视频实际解码/播放/全屏通过；播放前 MP4 请求数为 0 |
+| 降级与媒体样式 | 三页 Projects 内容无 JavaScript 仍可读；减少动效下视频保持暂停、平滑滚动关闭；隔离样例验证 comparison 窄屏单列、sequence 编号与按需 iframe 创建 |
+
+按 distinctive-ai-design 对实际截图做了自查，重点检查成果媒体、章节层级、caption 关联与窄屏阅读。没有独立评审者。截图与浏览器结果保留在忽略目录 `.astro/showcase-*.png`、`.astro/project-review-results.json`；fixture 页面不属于正式内容。浏览器没有捕获脚本异常或站内 HTTP 错误。
+
+窄屏截图自查发现 SCADA 长流程文本撑宽了隐式网格列，进而使固定导航偏移；已将章节正文列限定为 `minmax(0, 1fr)`，长代码仅在自身容器内滚动。浏览器断言同步比较指定视口宽度、document clientWidth 与导航右边界，避免只比较随内容扩大的 innerWidth 而漏检。
+
+本轮没有重新运行 Ignition/CODESYS 仿真，没有把书面项目记录当成本轮独立实测。外部视频嵌入验证了加载机制，未用虚构视频 ID 宣称第三方实际播放通过；正式案例使用本地真实 MP4。未执行完整类型检查、WCAG 全站审核、真实手机/其他浏览器或线上部署。

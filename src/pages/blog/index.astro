@@ -31,7 +31,10 @@ const posts = await getPublishedPosts();
       ))}
     </ul>
   ) : (
-    <p class="empty-state">No articles published yet. Engineering notes and project write-ups will appear here.</p>
+    <div class="empty-state blog-empty">
+      <p>No articles published yet. Engineering notes and project write-ups will appear here.</p>
+      <a href="/projects">Explore projects →</a>
+    </div>
   )}
 </MainLayout>
 
@@ -62,5 +65,14 @@ const posts = await getPublishedPosts();
 
   article p {
     color: var(--text-secondary);
+  }
+
+  .blog-empty {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--border-control);
   }
 </style>

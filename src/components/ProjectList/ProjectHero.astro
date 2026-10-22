@@ -1,0 +1,121 @@
+---
+import type { ProjectData, NumberedMedia } from "#base/lib/project-media";
+import ProjectMedia from "./ProjectMedia.astro";
+
+interface Props {
+  project: ProjectData;
+  evidence?: NumberedMedia;
+}
+
+const { project, evidence } = Astro.props;
+---
+
+<header class="project-hero">
+  <a class="project-hero__back" href="/projects">← All projects</a>
+  <div class="project-hero__intro">
+    <div class="project-hero__heading">
+      <p class="eyebrow">{project.category}</p>
+      <h1>{project.title}</h1>
+      <p class="project-hero__summary">{project.summary}</p>
+    </div>
+    <dl class="project-hero__facts">
+      <div><dt>Project type</dt><dd>{project.projectType}</dd></div>
+      <div><dt>My role</dt><dd>{project.role}</dd></div>
+      {project.period && <div><dt>Period</dt><dd>{project.period}</dd></div>}
+      {project.status && <div><dt>Status</dt><dd>{project.status}</dd></div>}
+    </dl>
+  </div>
+  <div class="project-hero__tools">
+    <ul class="tag-list" aria-label="Core technologies">
+      {project.techStack.map((tech) => <li>{tech}</li>)}
+    </ul>
+    {project.links.length > 0 && (
+      <div class="project-hero__links">
+        {project.links.map(({ label, url }) => <a class="action-link" href={url}>{label} ↗</a>)}
+      </div>
+    )}
+  </div>
+  {evidence && <ProjectMedia {...evidence} priority />}
+</header>
+
+<style>
+  .project-hero {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .project-hero__back {
+    justify-self: start;
+    font-size: var(--size-sm);
+  }
+
+  .project-hero__intro {
+    display: grid;
+    grid-template-columns: minmax(0, 2.4fr) minmax(13rem, 1fr);
+    align-items: end;
+    gap: var(--space-7);
+  }
+
+  .project-hero__heading {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .project-hero__heading h1 {
+    max-width: 23ch;
+  }
+
+  .project-hero__summary {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+    font-size: var(--size-lead);
+  }
+
+  .project-hero__facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--border-control);
+    font-size: var(--size-sm);
+  }
+
+  .project-hero__facts dt {
+    color: var(--text-muted);
+  }
+
+  .project-hero__facts dd {
+    margin: 0;
+  }
+
+  .project-hero__tools,
+  .project-hero__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .project-hero__tools {
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  @media (max-width: 800px) {
+    .project-hero__intro {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+
+    .project-hero__facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: var(--space-4) 0 0;
+      border-left: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .project-hero__summary {
+      font-size: var(--size-body);
+    }
+  }
+</style>

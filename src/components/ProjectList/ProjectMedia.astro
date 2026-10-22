@@ -1,0 +1,68 @@
+---
+import { Image } from "astro:assets";
+import type { NumberedMedia } from "#base/lib/project-media";
+import ProjectCaption from "./ProjectCaption.astro";
+import ProjectVideo from "./ProjectVideo.astro";
+
+type Props = NumberedMedia & { priority?: boolean };
+const { media, number, priority = false } = Astro.props;
+---
+
+<figure class="project-media" id={`figure-${media.id}`}>
+  {media.type === "image" ? (
+    <a class:list={["project-media__image", { "project-media__image--native": media.aspectRatio === "native" }]}
+      href={media.src.src} target="_blank" rel="noopener"
+      aria-label={`Open full-size image: ${media.title} (new tab)`}>
+      <Image src={media.src} alt={media.alt}
+        widths={[480, 800, 1200, media.src.width]} sizes="(max-width: 800px) 100vw, 80vw"
+        format={media.src.format === "svg" ? "svg" : "webp"} loading={priority ? "eager" : "lazy"} fetchpriority={priority ? "high" : "auto"} />
+      <span class="project-media__expand">Open full-size image <span aria-hidden="true">↗</span></span>
+    </a>
+  ) : <ProjectVideo media={media} number={number} priority={priority} />}
+  {media.type === "image" && <ProjectCaption media={media} number={number} />}
+</figure>
+
+<style>
+  .project-media {
+    min-width: 0;
+    margin: 0;
+    scroll-margin-top: var(--header-offset);
+  }
+
+  .project-media__image {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--border-control);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    text-decoration: none;
+  }
+
+  .project-media__image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+  }
+
+  .project-media__image--native img {
+    aspect-ratio: auto;
+  }
+
+  .project-media__expand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--space-4);
+    border-top: 1px solid var(--border);
+    color: var(--accent);
+    font-size: var(--size-sm);
+  }
+
+  .project-media__image:hover .project-media__expand {
+    background: var(--surface-hover);
+  }
+</style>

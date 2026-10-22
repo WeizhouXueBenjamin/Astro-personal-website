@@ -32,7 +32,7 @@ acceptance: 可以观察和验证的完成条件
 | 任务 | 先读 | 需要交付的完整链路 | 验证重点 |
 | --- | --- | --- | --- |
 | 新增/更新经历 | experience schema、现有条目、About/Experience 消费者 | 真实数据 → 统一数据源 → 涉及的概览/详情 | 必需字段、日期、排序、无占位推荐材料、build |
-| 新增/更新项目 | projects schema、ProjectList 与列表项 | 真实条目 → 集合读取 → 卡片/过滤/可选链接 | 无内容与缺少可选链接、标签筛选、build |
+| 新增/更新项目 | projects schema、[项目展示规范](project-showcase.md)、ProjectCard/ProjectDetailLayout | 真实条目与媒体 → 集合 → 卡片/详情/章节证据 | slug、分类筛选、Figure 顺序/去重、缺少可选媒体、键盘/窄屏、build 与 verify:site |
 | 发布 Blog | blogs schema、列表、详情、RSS | 文章 → 一致发布过滤 → 正确路径/metadata/RSS | draft、标题层级、RSS 条目、build |
 | 新增或调整页面 | 对应业务职责、现有路由与布局、导航数据 | 路由 → 数据 → 布局 → 入口和导航状态 | 重复职责、移动端、键盘、metadata、build |
 | 合并 About/Experience | 已确认业务方向、两页所有消费者 | 单一职业背景页 → 导航 → 旧地址处理 → 数据一致性 | 不丢真实经历/教育/技能，旧路径行为有证据 |

@@ -1,0 +1,148 @@
+---
+import { getImage, Image } from "astro:assets";
+import { getEmbedUrl, type NumberedMedia } from "#base/lib/project-media";
+import ProjectCaption from "./ProjectCaption.astro";
+
+interface Props {
+  media: Exclude<NumberedMedia["media"], { type: "image" }>;
+  number: number;
+  priority?: boolean;
+}
+
+const { media, number, priority = false } = Astro.props;
+const posterFormat = media.poster.format === "svg" ? "svg" : "webp";
+const poster = await getImage({ src: media.poster, width: Math.min(1600, media.poster.width), format: posterFormat });
+const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
+---
+
+<script>
+  // Progressive enhancement: no third-party request until the visitor loads a player.
+  document.querySelectorAll<HTMLAnchorElement>("[data-embed-src]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      const frame = document.createElement("iframe");
+      frame.src = link.dataset.embedSrc!;
+      frame.title = link.dataset.videoTitle!;
+      frame.allow = "fullscreen; picture-in-picture";
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = "strict-origin-when-cross-origin";
+      link.replaceWith(frame);
+      frame.focus();
+    });
+  });
+</script>
+
+<div
+  class:list={["project-video__frame", { "project-video__frame--native": media.aspectRatio === "native" }]}
+  style={`--media-ratio: ${media.poster.width} / ${media.poster.height}`}
+>
+  {media.type === "video" ? (
+    <video controls playsinline preload="none" poster={poster.src}
+      width={media.poster.width} height={media.poster.height}
+      aria-label={media.title} aria-describedby={`caption-${media.id}`}>
+      <source src={media.src} type={/\.webm(?:\?|$)/.test(media.src) ? "video/webm" : "video/mp4"} />
+      {media.captions && <track kind="captions" src={media.captions.src} srclang={media.captions.language} label={media.captions.label} default />}
+      <p>Your browser cannot play this video. <a href={media.src}>Open the video file</a>.</p>
+    </video>
+  ) : (
+    <a class="project-video__poster" href={media.src} data-embed-src={getEmbedUrl(media.src)} data-video-title={media.title}
+      aria-label={`Load video player: ${media.title}`}>
+      <Image src={media.poster} alt={media.alt} widths={[480, 800, 1600]} sizes="100vw" format={posterFormat} loading={priority ? "eager" : "lazy"} />
+      <span class="action-link">▶ Load video player</span>
+    </a>
+  )}
+</div>
+<ProjectCaption media={media} number={number}>
+  <div class="project-video__notes">
+    <a href={media.src}>{media.type === "video" ? "Open video file" : "Watch on original site"} ↗</a>
+    {media.highlights.length > 0 && (
+      <div>
+        <p class="project-video__label">Demo highlights</p>
+        <ul>{media.highlights.map((highlight) => <li>{highlight}</li>)}</ul>
+      </div>
+    )}
+    {media.timestamps.length > 0 && (
+      <ol class="project-video__chapters" aria-label="Video chapters">
+        {media.timestamps.map(({ seconds, label }) => (
+          <li><span class="technical-meta">{timeLabel(seconds)}</span> — {label}</li>
+        ))}
+      </ol>
+    )}
+    {media.description && (
+      <details class="detail-disclosure">
+        <summary>Read video description</summary>
+        <p>{media.description}</p>
+      </details>
+    )}
+  </div>
+</ProjectCaption>
+
+<style>
+  .project-video__frame {
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--border-control);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+
+  .project-video__frame--native {
+    aspect-ratio: var(--media-ratio);
+  }
+
+  .project-video__frame video,
+  .project-video__frame :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: contain;
+  }
+
+  .project-video__poster {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+  }
+
+  .project-video__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .project-video__poster .action-link {
+    position: absolute;
+  }
+
+  .project-video__notes {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+  }
+
+  .project-video__label {
+    color: var(--text);
+    font-weight: var(--weight-control);
+  }
+
+  .project-video__notes ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-4);
+    list-style: disc;
+  }
+
+  .project-video__chapters {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

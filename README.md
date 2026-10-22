@@ -1,6 +1,6 @@
 # Benjamin Xue · Automation & Software Integration
 
-基于 Astro 静态生成的个人职业展示网站，重点呈现 PLC/SCADA、工业自动化、系统集成与软件开发。网站正文使用英文，业务文档与 AI instructions 使用中文。
+基于 Astro 静态生成的个人职业展示网站，重点呈现 PLC/SCADA、工业自动化、系统集成与软件开发。网站正文使用 NZ English，业务文档与 AI instructions 使用中文。
 
 ## 本地运行
 
@@ -23,7 +23,8 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 | --- | --- | --- |
 | / | 职业定位、精选项目、联系与背景入口 | site 配置、projects 集合 |
 | /about | 工程方向、完整经历、教育与证书 | site/profile 配置、experience 集合 |
-| /projects | 项目事实、个人贡献、技术与源码 | projects 集合 |
+| /projects | 统一项目卡片与分类筛选 | projects 集合 |
+| /projects/[slug] | Hybrid Case Study、成果媒体、技术章节与验证证据 | projects 集合与本地媒体 |
 | /blog | 正式文章列表 | blogs 集合 |
 | /blog/文章id | 正式文章详情，支持子目录 | blogs 集合 |
 | /rss.xml | 与文章页面一致的正式文章 Feed | getPublishedPosts() |
@@ -37,6 +38,7 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 - 身份、方向、联系方式和英文简历下载路径：src/config/site.ts；公开 PDF 存放在 public/documents/。
 - 教育、证书、能力分类：src/config/profile.ts。
 - 项目：src/content/projects 下的 YAML/YML/JSON。
+- 项目详情、图片、视频与 Figure 的字段、来源及新增流程见 [项目展示维护规范](docs/ai/project-showcase.md)。
 - 经历：src/content/experience 下的 YAML/YML/JSON。
 - 文章：src/content/blogs 下的 Markdown/MDX；draft: true 的文章不生成公开详情或进入 RSS。
 - schema：src/content.config.ts；手工模板仅作参考。

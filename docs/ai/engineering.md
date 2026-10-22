@@ -29,7 +29,7 @@
 - `src/components/Experience`、`ProjectList`、`GlobalNav` 继续承载相应领域。新建目录前先检查是否已有同职责组件。
 - 复用组件通过明确的 Props 接收数据；涉及集合条目时优先使用 `CollectionEntry<"集合名">`，不手工复制一套容易漂移的类型。
 - 导航和内容选择集中表达；共用排序、发布过滤等规则在多个消费者出现时，再提取最小共享函数。
-- 本项目现有共享内容选择函数在 `src/lib/content.ts`：`getPublishedPosts()`、`getProjects()`、`getExperiences()` 与 `getBlogPath()`。页面和列表复用它们，不再各自定义公开范围或排序。
+- 本项目现有共享内容选择函数在 `src/lib/content.ts`：`getPublishedPosts()`、`getProjects()`、`getExperiences()`、`getBlogPath()` 与 `getProjectPath()`。页面和列表复用它们，不再各自定义公开范围或排序。
 - 新增及大幅修改文件使用项目已有的 `#components/*`、`#layouts/*`、`#config/*` 等 imports；同一目录的相邻文件可以使用相对路径。不要只为统一 import 改动无关文件。
 - 延续现有文件夹与命名方式，避免顺手引入 `ui`、`services`、`repositories` 等额外层次；确有新职责时再增加。
 
@@ -51,7 +51,7 @@
 | --- | --- | --- | --- |
 | `blogs` | `src/content/blogs/**/*.{md,mdx}` | `title`、`pubDate`（解析为 Date）、`description` | `author` 默认站点姓名，`tags` 默认 `[]`，`draft` 默认 `false` |
 | `experience` | `src/content/experience/**/*.{yaml,yml,json}` | `jobTitle`、`company`、`startDate`、至少一个 `bullets` | `location`、`endDate`、`tags`、`techStack`、`order`、`featured`、`logo`、`companyWebsite`、`highLights`、`referenceLetter` |
-| `projects` | `src/content/projects/**/*.{yaml,yml,json}` | `title`、`description`、至少一个 `bullets` | `subtitle`、`githubUrl`、`liveUrl`、`demoUrl`、`year`、`status`、`tags`、`techStack`、`order`、`featured`、`logo` |
+| `projects` | `src/content/projects/**/*.{yaml,yml,json}` | `title`、`slug`、`summary`、`category`、`projectType`、`role`、3–5 个 `techStack`、至少一个 `sections` | `period`、`year`、`status`、`links`、`featuredMedia`、`coverMedia`、`media`、`order`、`featured`；完整维护说明见 [project-showcase.md](project-showcase.md) |
 
 容易出错的现有约束：
 
@@ -62,7 +62,8 @@
 - Experience 当前日期是字符串，已有内容使用 `Dec 2025`、`Present` 等格式。不要未经迁移就改成 Date 字段、ISO 专用解析或新的任职状态模型。
 - Project `status` 仅接受 `In Progress` 或 `Completed`，没有默认值；所有者未提供状态时省略字段和 UI，不自行推断。
 - `logo` 使用 schema 的 `image()`，按实际内容文件位置提供可解析的图片，不把任意字符串当成已验证图片。
-- `order` 与 `featured` 是展示元数据。Experience 按 featured 优先、order 升序、开始日期倒序排列；Projects 按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
+- `order` 与 `featured` 是展示元数据。Experience 按 featured 优先、order 升序、开始日期倒序排列；Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
+- Projects 使用严格 schema；旧 `description`、`bullets`、`tags`、`githubUrl` 等字段已迁移为摘要、章节、分类与 `links`。新增案例从 `src/content/projects/structure.txt` 开始，不能复制旧字段。重复 slug、媒体来源、无效章节引用、缺失本地视频会使构建失败。
 
 ## 正式发布规则
 
@@ -81,7 +82,7 @@
 - 优先复用 `--bg`、`--surface`、`--surface-hover`、`--card`、`--border`、`--text`、`--text-secondary`、`--text-muted`、`--accent` 等现有 token，按设计规范区分其用途。
 - Tailwind 工具类与 Astro scoped CSS 均可使用；跟随所在模块的表达方式。全局 CSS 仅承载跨页面基础规则，不为单个卡片扩大影响范围。
 - 目前只有 dark token，HTML 也固定 dark。不得假定配置中出现 light 就表示已支持浅色主题；主题任务需统一 token、DOM 状态和组件行为。
-- 新页面优先使用 MainLayout 的宽度与主标题；博客正文从 h2 开始，避免重复 h1。首页沿用 Layout 时自行提供语义明确的 main 区域。
+- 普通内容页使用 MainLayout 的宽度与主标题；项目详情使用 ProjectDetailLayout，并复用 Layout 的文档外壳。博客正文从 h2 开始，避免重复 h1。首页与项目详情自行提供唯一的 main/h1。
 - 检查窄屏换行、长标题、长链接和空内容，不以固定卡片高度掩盖截断问题。
 
 ## 页面质量
@@ -96,7 +97,9 @@
 
 当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:design`、`pnpm run astro -- ...`。
 
-`verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建真实内容场景，验证草稿、嵌套文章路径、RSS、项目排序与缺少可选数据、空集合、导航和静态跳转。它不向正式内容目录写测试条目，也不代替浏览器交互验证。
+`verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
+
+临时工作区复用 node_modules 链接，但必须使用自己的 Astro `cacheDir` 与 Vite cache，避免默认缓存经链接污染正式构建。Projects 的集合 ID 使用完整源文件相对路径，与公开 slug 分开，防止默认 loader 用重复 slug 覆盖条目而绕过 URL 唯一性校验。
 
 scripts 目前没有 `lint`、`check` 或 `typecheck`，也未声明完整的 Astro 类型检查工具链。不能生成报告声称运行了不存在的检查；如要引入工具，应单独在任务范围内配置。
 

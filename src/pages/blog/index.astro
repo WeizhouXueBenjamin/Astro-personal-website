@@ -1,48 +1,79 @@
 ---
-import { getCollection } from "astro:content";
-import BlogLayout from "../../layouts/BlogLayout.astro";
+import { getBlogPath, getPublishedPosts } from "#base/lib/content";
+import MainLayout from "#layouts/MainLayout.astro";
+import { withBase } from "#base/lib/paths";
 
-const posts = (await getCollection("blog")).sort(
-  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-);
-
+const posts = await getPublishedPosts();
 ---
 
-<BlogLayout title="Blog" description="Latest posts">
-  <h1 style="margin: 0 0 1.5rem; font-size: 2rem; font-weight: 700">
-    Blog
-  </h1>
+<MainLayout
+  title="Blog"
+  description="Notes on automation, control systems, software, and engineering practice."
+  contentWidth="text"
+>
+  <p class="page-intro">Notes on automation, control systems, software, and engineering practice.</p>
+  {posts.length > 0 ? (
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <article class="surface-card">
+            <h2><a href={getBlogPath(post.id)}>{post.data.title}</a></h2>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString("en-NZ", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                timeZone: "UTC",
+              })}
+            </time>
+            <p>{post.data.description}</p>
+          </article>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="empty-state blog-empty">
+      <p>No articles published yet. Engineering notes and project write-ups will appear here.</p>
+      <a href={withBase("/projects/")}>Explore projects →</a>
+    </div>
+  )}
+</MainLayout>
 
-  <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 1.25rem">
-    {posts.map((post) => (
-      <li>
-        <a
-          href={`${post.id}/`}
-          style="
-            display: block;
-            padding: 1.25rem;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            text-decoration: none;
-          "
-        >
-          <div style="font-weight: 700; margin-bottom: 0.25rem">
-            {post.data.title}
-          </div>
-          <div style="opacity: 0.8; font-size: 0.95rem; margin-bottom: 0.75rem">
-            {post.data.pubDate.toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "2-digit",
-            })}
-          </div>
-          {post.data.description ? (
-            <div style="opacity: 0.85">{post.data.description}</div>
-          ) : null}
-        </a>
-      </li>
-    ))}
-  </ul>
-</BlogLayout>
+<style>
+  .post-list {
+    display: grid;
+    gap: var(--space-5);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
 
+  article {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--card-padding);
+  }
+
+  h2 {
+    font-size: var(--size-h3);
+  }
+
+  time {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-sm);
+  }
+
+  article p {
+    color: var(--text-secondary);
+  }
+
+  .blog-empty {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--border-control);
+  }
+</style>

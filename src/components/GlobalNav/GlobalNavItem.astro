@@ -1,0 +1,73 @@
+---
+import type { NavigationItem } from "./components";
+
+export interface GlobalNavItemProps extends NavigationItem {
+  isActive?: boolean;
+}
+
+type Props = GlobalNavItemProps;
+
+const { href, title, icon: Icon, isActive = false } = Astro.props;
+---
+
+<li class="toolbar-list-item">
+  <a
+    href={href}
+    class:list={["toolbar-item", { "toolbar-item--active": isActive }]}
+    aria-label={title}
+    aria-current={isActive ? "page" : undefined}
+  >
+    <Icon class="icon" />
+    <span class="toolbar-label">{title}</span>
+  </a>
+</li>
+
+<style>
+  .toolbar-list-item {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  .toolbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: var(--space-1);
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) ease;
+  }
+
+  .toolbar-item:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .toolbar-item--active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .toolbar-item :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .toolbar-label {
+    font-size: var(--size-xs);
+    font-weight: var(--weight-control);
+  }
+
+  @media (max-width: 400px) {
+    .toolbar-item {
+      padding-inline: var(--space-2);
+    }
+  }
+</style>

@@ -1,0 +1,260 @@
+---
+import { site } from "#config/site";
+import { getProjects } from "#base/lib/content";
+import ContactSection from "./ContactSection.astro";
+import ProjectCard from "./ProjectList/ProjectCard.astro";
+import { withBase } from "#base/lib/paths";
+
+const featuredProjects = (await getProjects())
+  .filter(({ data }) => data.featured)
+  .slice(0, 2);
+---
+
+<section class="hero" aria-labelledby="home-heading">
+  <div id="particles-js" class="hero-particles" aria-hidden="true"></div>
+  <div class="hero-content container">
+    <div class="hero-intro">
+      <p class="eyebrow">Automation · Control systems · Software</p>
+      <h1 id="home-heading">{site.username}</h1>
+      <p class="hero-subtitle">{site.userTitle}</p>
+      <p class="hero-description">{site.userDescription}</p>
+      <div class="home-actions">
+        <a class="action-link action-link--primary" href={withBase("/projects/")}>
+          View projects →
+        </a>
+        <a class="action-link" href={withBase(site.resumeUrl)} download>Download CV (PDF)</a>
+        <a class="action-link" href="#contact">Contact me</a>
+      </div>
+    </div>
+    <div class="hero-focus">
+      <p class="eyebrow">Areas of work</p>
+      <ul aria-label="Engineering focus">
+        {site.focusAreas.map((focus, index) => (
+          <li><span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{focus}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{featuredProjects.length > 0 && (
+  <section class="home-section container" aria-labelledby="selected-projects-heading">
+    <div class="section-header">
+      <div class="section-heading">
+        <p class="eyebrow">Personal projects</p>
+        <h2 id="selected-projects-heading">Control systems in simulation</h2>
+      </div>
+      <a href={withBase("/projects/")}>All projects →</a>
+    </div>
+    <div class="featured-projects">
+      {featuredProjects.map((project) => (
+        <ProjectCard project={project} headingLevel="h3" />
+      ))}
+    </div>
+  </section>
+)}
+
+<section class="home-section home-background container" aria-labelledby="background-heading">
+  <h2 id="background-heading">Software delivery. Practical technical work.</h2>
+  <div class="background-copy">
+    <p>
+      My background combines software delivery for charities and university teams
+      with hands-on work diagnosing and replacing technical equipment. These experiences
+      support my focus on automation and integrated systems.
+    </p>
+    <a href={withBase("/about/#work-experience")}>Read my professional experience →</a>
+  </div>
+</section>
+
+<ContactSection />
+
+<script>
+  import particlesConfig from "#assets/particles.json";
+  import particlesUrl from "#assets/js/particles.min.js?url";
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  if (!reducedMotion) {
+    const script = document.createElement("script");
+    script.src = particlesUrl;
+    script.onload = () => {
+      particlesJS("particles-js", particlesConfig);
+    };
+    document.head.appendChild(script);
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: radial-gradient(
+      circle at 20% 15%,
+      #1c2a3a 0%,
+      #0f1924 55%,
+      #0b131c 100%
+    );
+  }
+
+  .hero-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero-particles :global(canvas) {
+    display: block;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 0.7fr);
+    align-items: center;
+    gap: clamp(var(--space-7), 7vw, 7rem);
+    min-height: 70svh;
+    padding-block: calc(var(--header-offset) + var(--space-5)) var(--space-8);
+  }
+
+  .hero-intro {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+  }
+
+  h1 {
+    font-size: var(--size-hero);
+    line-height: 1.05;
+  }
+
+  .hero-subtitle {
+    max-width: 43rem;
+    font-size: var(--size-h2);
+    line-height: var(--line-heading);
+    text-wrap: balance;
+  }
+
+  .hero-description {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+    font-size: var(--size-lead);
+  }
+
+  .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .hero-focus {
+    align-self: center;
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--border-control);
+  }
+
+  .hero-focus ul {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-focus li {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: baseline;
+    font-size: var(--size-sm);
+    line-height: 1.5;
+  }
+
+  .hero-focus li span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+  }
+
+  .home-section {
+    padding-block: var(--section-gap);
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .featured-projects {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .home-background {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-7);
+    border-top: 1px solid var(--border);
+  }
+
+  .background-copy {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+  }
+
+  .background-copy p {
+    max-width: var(--content-copy);
+    color: var(--text-secondary);
+  }
+
+  .background-copy a {
+    width: fit-content;
+  }
+
+  @media (max-width: 850px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: var(--space-7);
+    }
+
+    .hero-focus ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-background {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hero-focus {
+      display: none;
+    }
+
+    .featured-projects {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-intro {
+      gap: var(--space-4);
+    }
+
+    .hero-description {
+      font-size: var(--size-body);
+    }
+  }
+</style>

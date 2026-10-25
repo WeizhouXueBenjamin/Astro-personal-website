@@ -1,0 +1,189 @@
+---
+type Tag = string;
+
+interface Props<TTag extends Tag = Tag> {
+  /** Tags shown in the filter. Duplicate values are removed. */
+  tags: readonly TTag[];
+  /** id of the element containing items with a `data-filter-tags` attribute. */
+  target: string;
+  label?: string;
+  allLabel?: string;
+}
+
+const {
+  tags,
+  target,
+  label = "Filter by tag",
+  allLabel = "All",
+} = Astro.props;
+
+const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
+---
+
+{
+  uniqueTags.length > 0 && (
+    <div
+      class="tag-filter"
+      data-tag-filter
+      data-target={target}
+    >
+      <div class="tag-filter__heading">
+        <span class="tag-filter__label">{label}</span>
+        <output class="tag-filter__count" aria-live="polite" />
+      </div>
+
+      <div class="tag-filter__options" role="group" aria-label={label}>
+        <button
+          class="tag-filter__button"
+          type="button"
+          data-filter-value=""
+          aria-pressed="true"
+        >
+          {allLabel}
+        </button>
+
+        {uniqueTags.map((tag) => (
+          <button
+            class="tag-filter__button"
+            type="button"
+            data-filter-value={tag}
+            aria-pressed="false"
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  type FilterItem = HTMLElement & {
+    dataset: DOMStringMap & { filterTags?: string };
+  };
+
+  const setupTagFilter = (filter: HTMLElement) => {
+    if (filter.dataset.initialized === "true") return;
+
+    const targetId = filter.dataset.target;
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (!target) return;
+
+    filter.dataset.initialized = "true";
+
+    const buttons = Array.from(
+      filter.querySelectorAll<HTMLButtonElement>("[data-filter-value]"),
+    );
+    const items = Array.from(
+      target.querySelectorAll<FilterItem>("[data-filter-tags]"),
+    );
+    const count = filter.querySelector<HTMLOutputElement>(
+      ".tag-filter__count",
+    );
+
+    const getTags = (item: FilterItem): string[] => {
+      try {
+        return JSON.parse(item.dataset.filterTags ?? "[]");
+      } catch {
+        return [];
+      }
+    };
+
+    const applyFilter = (selectedTag: string) => {
+      let visibleItems = 0;
+
+      items.forEach((item) => {
+        const isVisible = !selectedTag || getTags(item).includes(selectedTag);
+        item.hidden = !isVisible;
+        if (isVisible) visibleItems += 1;
+      });
+
+      buttons.forEach((button) => {
+        button.setAttribute(
+          "aria-pressed",
+          String((button.dataset.filterValue ?? "") === selectedTag),
+        );
+      });
+
+      if (count) {
+        count.value = `${visibleItems} ${visibleItems === 1 ? "result" : "results"}`;
+      }
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applyFilter(button.dataset.filterValue ?? "");
+      });
+    });
+
+    applyFilter("");
+  };
+
+  const setupTagFilters = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-tag-filter]")
+      .forEach(setupTagFilter);
+  };
+
+  setupTagFilters();
+  document.addEventListener("astro:page-load", setupTagFilters);
+</script>
+
+<style>
+  .tag-filter {
+    display: grid;
+    gap: var(--space-3);
+    margin-block: var(--space-5);
+  }
+
+  .tag-filter__heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .tag-filter__label {
+    color: var(--text);
+    font-size: var(--size-sm);
+    font-weight: var(--weight-control);
+  }
+
+  .tag-filter__count {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-sm);
+  }
+
+  .tag-filter__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tag-filter__button {
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-control);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+    line-height: 1.5;
+    transition:
+      background-color var(--duration-fast) ease,
+      border-color var(--duration-fast) ease;
+  }
+
+  .tag-filter__button:hover {
+    border-color: var(--accent);
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .tag-filter__button[aria-pressed="true"] {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+</style>

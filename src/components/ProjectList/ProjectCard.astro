@@ -1,0 +1,118 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import { getProjectPath } from "#base/lib/content";
+import { getProjectCover } from "#base/lib/project-media";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  headingLevel?: "h2" | "h3";
+}
+
+const { project, headingLevel: Heading = "h2" } = Astro.props;
+const { title, slug, summary, category, techStack, status, projectType } = project.data;
+const cover = getProjectCover(project.data);
+---
+
+<article class="project-card surface-card" data-filter-tags={JSON.stringify([category])}>
+  <a class="project-card__link" href={getProjectPath(slug)} aria-labelledby={`card-${slug}`}>
+    {cover && (
+      <div class="project-card__cover">
+        <Image src={cover.src} alt={cover.alt} widths={[480, 800, 1200]} sizes="(max-width: 700px) 100vw, 50vw" format={cover.src.format === "svg" ? "svg" : "webp"} loading="lazy" />
+      </div>
+    )}
+    <div class="project-card__body">
+      <div class="project-card__meta">
+        <span class="eyebrow">{category}</span>
+        {status && <span class="tag">{status}</span>}
+      </div>
+      <Heading id={`card-${slug}`}>{title}</Heading>
+      <p class="project-card__type">{projectType}</p>
+      <p class="project-card__summary">{summary}</p>
+      <ul class="tag-list" aria-label="Core technologies">
+        {techStack.map((tech) => <li>{tech}</li>)}
+      </ul>
+      <span class="project-card__action">View project <span aria-hidden="true">↗</span></span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .project-card {
+    overflow: hidden;
+    transition: border-color var(--duration-fast) ease;
+  }
+
+  .project-card:hover,
+  .project-card:focus-within {
+    border-color: var(--accent);
+  }
+
+  .project-card__link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .project-card__link:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .project-card__cover {
+    aspect-ratio: 16 / 9;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .project-card__cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .project-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--space-4);
+    padding: var(--card-padding);
+  }
+
+  .project-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .project-card__body :is(h2, h3) {
+    font-size: var(--size-h3);
+    text-wrap: pretty;
+  }
+
+  .project-card__type {
+    margin-top: calc(-1 * var(--space-2));
+    color: var(--text-muted);
+    font-size: var(--size-sm);
+  }
+
+  .project-card__summary {
+    color: var(--text-secondary);
+  }
+
+  .project-card__action {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+    color: var(--accent);
+    font-size: var(--size-sm);
+    font-weight: var(--weight-control);
+  }
+</style>

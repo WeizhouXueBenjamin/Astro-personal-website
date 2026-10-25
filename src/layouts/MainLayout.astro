@@ -1,0 +1,41 @@
+---
+import Layout from "./Layout.astro";
+import { site } from "../config/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+  contentWidth?: "wide" | "text";
+}
+
+const {
+  title = site.title,
+  description = site.description,
+  contentWidth = "wide",
+} = Astro.props;
+
+const containerClass =
+  contentWidth === "text" ? "container container--text" : "container";
+---
+
+<Layout title={title} description={description}>
+  <main class="layout-wrapper">
+    <div class={containerClass}>
+      <h1 class="page-title">{title}</h1>
+      <slot />
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .layout-wrapper {
+    min-height: 70vh;
+    padding-block: var(--header-offset) var(--space-8);
+  }
+
+  .page-title {
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border);
+  }
+</style>

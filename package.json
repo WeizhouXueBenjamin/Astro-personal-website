@@ -2,20 +2,36 @@
   "name": "persona",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "pnpm@10.34.1+sha512.b58fbde6dca66a929538021581f648b4570b6ca19b18e7cbd7f2c07a7b24454155388dacdf08f2af3678e88a6d1fe04f9d609df24bf51735a060ea041b374ab7",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "verify:site": "node scripts/verify-site.mjs",
+    "verify:output": "node scripts/verify-output.mjs",
+    "verify:design": "node scripts/verify-design.mjs",
     "astro": "astro"
   },
+  "imports": {
+    "#base/*": "./src/*",
+    "#assets/*": "./src/assets/*",
+    "#components/*": "./src/components/*",
+    "#config/*": "./src/config/*",
+    "#content/*": "./src/content/*",
+    "#layouts/*": "./src/layouts/*",
+    "#pages/*": "./src/pages/*",
+    "#styles/*": "./src/styles/*"
+  },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.0",
-    "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/markdown-remark": "7.2.1",
+    "@astrojs/mdx": "^7.0.2",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "3.7.3",
     "@tailwindcss/vite": "^4.3.0",
-    "astro": "^6.0.2",
+    "astro": "^7.0.7",
     "daisyui": "^5.5.19",
     "particles.js": "^2.0.0",
+    "sharp": "0.34.5",
     "tailwindcss": "^4.3.0"
   },
   "volta": {

@@ -1,0 +1,80 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getProjectEvidence } from "#base/lib/project-media";
+import ProjectHero from "#components/ProjectList/ProjectHero.astro";
+import ProjectSection from "#components/ProjectList/ProjectSection.astro";
+import Layout from "./Layout.astro";
+import { withBase } from "#base/lib/paths";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project: { data: project } } = Astro.props;
+const evidence = getProjectEvidence(project);
+---
+
+<Layout title={project.title} description={project.summary}>
+  <main class="project-detail container">
+    <ProjectHero project={project} evidence={evidence.find((item) => item.media.id === project.featuredMedia)} />
+    <nav class="project-detail__contents" aria-label="Case study sections">
+      <p class="eyebrow">In this case study</p>
+      <ol>
+        {project.sections.map((section) => <li><a href={`#${section.id}`}>{section.title}</a></li>)}
+      </ol>
+    </nav>
+    {project.sections.map((section, index) => <ProjectSection section={section} index={index} evidence={evidence} />)}
+    <footer class="project-detail__footer">
+      <a class="action-link" href={withBase("/projects/")}>← Explore all projects</a>
+      <a href={withBase("/about/")}>About my background →</a>
+    </footer>
+  </main>
+</Layout>
+
+<style>
+  .project-detail {
+    padding-block: var(--header-offset) var(--space-7);
+    overflow-wrap: anywhere;
+  }
+
+  .project-detail__contents {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: var(--space-7);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .project-detail__contents ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--size-sm);
+  }
+
+  .project-detail__contents a {
+    display: inline-block;
+    padding-block: var(--space-2);
+  }
+
+  .project-detail__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 800px) {
+    .project-detail__contents {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+  }
+</style>

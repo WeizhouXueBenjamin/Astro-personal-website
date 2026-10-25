@@ -1,22 +1,19 @@
 import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
+import { getBlogPath, getPublishedPosts } from "#base/lib/content";
 import type { APIRoute } from "astro";
 import { site } from "../config/site";
+import { withBase } from "#base/lib/paths";
 
 export const GET: APIRoute = async (context) => {
-  const posts = await getCollection("blog");
+  const posts = await getPublishedPosts();
 
-  const siteUrl = context.site ?? new URL(site.siteUrl);
-  const base = siteUrl.toString().replace(/\/$/, "");
-  const basePath = import.meta.env.BASE_URL ?? "";
-  const items = posts
-    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-    .map((post) => ({
-      title: post.data.title,
-      description: post.data.description ?? post.data.title,
-      pubDate: post.data.pubDate,
-      link: `${base}${basePath}blog/${post.id}/`,
-    }));
+  const siteUrl = new URL(withBase("/"), context.site);
+  const items = posts.map((post) => ({
+    title: post.data.title,
+    description: post.data.description ?? post.data.title,
+    pubDate: post.data.pubDate,
+    link: new URL(getBlogPath(post.id), siteUrl).href,
+  }));
 
   return rss({
     title: site.title,
@@ -25,4 +22,3 @@ export const GET: APIRoute = async (context) => {
     items,
   });
 };
-

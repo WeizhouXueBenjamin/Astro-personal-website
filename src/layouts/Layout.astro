@@ -1,33 +1,31 @@
 ---
+import Footer from "../components/Footer.astro";
+import Navigation from "../components/GlobalNav/GlobalNav.astro";
 import { site } from "../config/site";
 import "../styles/global.css";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const {
-  title = site.title,
-  description = site.description,
-} = Astro.props;
+const { title = site.title, description = site.description } = Astro.props;
 
-const baseUrl = site.siteUrl.replace(/\/$/, "");
-const canonicalURL =
-  Astro.url.pathname === "/"
-    ? `${baseUrl}/`
-    : new URL(Astro.url.pathname, `${baseUrl}/`).href;
+const isNotFound = Astro.routePattern === "/404";
+const canonicalURL = new URL(isNotFound ? withBase("/404.html") : Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en-NZ" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
 
-    <title>{title}</title>
+    <title>{title} - {site.username}</title>
     <meta name="description" content={description} />
+    {isNotFound && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalURL} />
 
     <meta property="og:type" content="website" />
@@ -40,26 +38,14 @@ const canonicalURL =
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
+    <link rel="icon" href={withBase("/favicon.ico")} />
   </head>
   <body>
+    <header>
+      <Navigation />
+    </header>
     <slot />
+    <Footer />
   </body>
 </html>
-
-<style is:global>
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    min-height: 100%;
-  }
-
-</style>

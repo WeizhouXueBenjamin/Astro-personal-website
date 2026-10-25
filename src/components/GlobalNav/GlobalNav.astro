@@ -1,0 +1,59 @@
+---
+import { components } from "./components";
+import GlobalNavItem from "./GlobalNavItem.astro";
+import { withBase } from "#base/lib/paths";
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const isActiveHref = (href: string) => {
+  const normalizedHref = withBase(href).replace(/\/$/, "") || "/";
+
+  if (href === "/") {
+    return currentPath === normalizedHref;
+  }
+
+  return currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`);
+};
+---
+
+<div class="toolbar-wrapper">
+  <nav class="floating-toolbar" aria-label="top-level navigation">
+    <ul class="toolbar-list">
+      {components.map((component) => (
+        <GlobalNavItem {...component} href={withBase(component.href)} isActive={isActiveHref(component.href)} />
+      ))}
+    </ul>
+  </nav>
+</div>
+
+<style>
+  .toolbar-wrapper {
+    position: fixed;
+    inset: var(--space-4) 0 auto;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    padding-inline: var(--space-4);
+    pointer-events: none;
+  }
+
+  .floating-toolbar {
+    width: min(100%, 22rem);
+    max-width: 100%;
+    padding: var(--space-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    pointer-events: auto;
+  }
+
+  .toolbar-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

@@ -1,0 +1,59 @@
+# 仅供参考：替换为真实事实后，另存为 YAML；此 .txt 不会进入集合。
+# 完整字段与媒体规则见 docs/ai/project-showcase.md。
+title: "REPLACE_WITH_REAL_PROJECT_TITLE"
+slug: real-project-slug
+summary: "REPLACE_WITH_FACTUAL_SUMMARY"
+category: Software Engineering
+projectType: "REPLACE_WITH_ACTUAL_PROJECT_TYPE"
+role: "REPLACE_WITH_YOUR_ACTUAL_CONTRIBUTION"
+techStack:
+  - "REPLACE_WITH_TECHNOLOGY_1"
+  - "REPLACE_WITH_TECHNOLOGY_2"
+  - "REPLACE_WITH_TECHNOLOGY_3"
+sections:
+  - id: overview
+    title: Overview
+    paragraphs:
+      - "REPLACE_WITH_ACTUAL_GOAL_AND_SCOPE"
+  - id: architecture
+    title: Architecture & approach
+    paragraphs:
+      - "REPLACE_WITH_VERIFIABLE_TECHNICAL_DECISION"
+  - id: testing
+    title: Testing & validation
+    paragraphs:
+      - "REPLACE_WITH_ACTUAL_TEST_METHOD_AND_LIMITATIONS"
+    # tests:
+    #   - scenario: "真实测试场景"
+    #     expected: "真实预期行为，网站填写英文"
+    #     result: "实际结果，不能把计划当成已测试"
+    #     evidence: real-evidence-id
+  - id: outcomes
+    title: Outcomes & lessons
+    paragraphs:
+      - "REPLACE_WITH_VERIFIABLE_OUTCOME"
+
+# 可选字段：未知就省略，所有示例文字须替换为真实 NZ English 内容。
+# period: "Aug 2026"
+# year: 2026
+# status: "In Progress" # 仅接受 In Progress / Completed，不推断默认值。
+# order: 999
+# featured: false
+# links:
+#   - label: GitHub
+#     url: "真实仓库 URL"
+# featuredMedia: real-evidence-id
+# media:
+#   - id: real-evidence-id
+#     type: image
+#     src: ../../assets/projects/your-project/real-screenshot.png
+#     section: hero
+#     title: "真实证据标题，不含 Figure 编号"
+#     alt: "可见 UI、状态或数据"
+#     caption: "1–2 句说明工程意义，不虚构结果"
+#     aspectRatio: "16:9" # 或 native
+#     sourceUrl: "真实来源 URL（如有）"
+# 同章节双列：在章节设置 mediaLayout: comparison，并关联两项不同媒体。
+# 连续证据：mediaLayout: sequence，至少两项媒体，order 决定显示顺序。
+# 本地视频：type: video、src: /media/projects/real-demo.mp4、poster: 实际图片路径。
+# 外部嵌入：type: embed、src: 规范 YouTube/Vimeo 地址、poster: 实际图片路径。

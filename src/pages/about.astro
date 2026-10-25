@@ -1,0 +1,254 @@
+---
+import MainLayout from "#layouts/MainLayout.astro";
+import { site } from "#config/site";
+import { capabilities, studies } from "#config/profile";
+import Experience from "#components/Experience/Experience.astro";
+import SocialLinks from "#components/SocialLinks.astro";
+import { withBase } from "#base/lib/paths";
+
+const anchorLinks = [
+  { href: "#introduction", label: "Introduction" },
+  { href: "#engineering-focus", label: "Engineering focus" },
+  { href: "#work-experience", label: "Experience" },
+  { href: "#studies", label: "Education & certifications" },
+];
+---
+
+<MainLayout
+  title="About"
+  description="Benjamin Xue's background in automation and control systems, software development, and hands-on technical work."
+>
+  <div class="about-shell">
+    <aside class="about-rail">
+      <nav aria-label="About page sections">
+        <p class="eyebrow">On this page</p>
+        {anchorLinks.map((link, index) => (
+          <a href={link.href}>
+            <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    </aside>
+
+    <article class="about-page">
+      <section id="introduction" class="about-section about-intro" aria-label="Introduction">
+        <div class="identity-row">
+          <img src={withBase("/favicon.svg")} alt="" width="56" height="56" />
+          <div>
+            <p class="identity-name">{site.username}</p>
+            <p class="location">{site.location}</p>
+          </div>
+        </div>
+        <p class="direction">{site.userTitle}</p>
+        <p class="intro-copy">{site.userDescription}</p>
+        <div class="intro-actions">
+          <a class="action-link" href={withBase("/projects/")}>Explore my projects →</a>
+          <a class="action-link" href={withBase("/#contact")}>Get in touch</a>
+        </div>
+        <SocialLinks />
+      </section>
+
+      <section id="engineering-focus" class="about-section" aria-labelledby="focus-title">
+        <h2 id="focus-title">Engineering focus</h2>
+        <div class="capability-list">
+          {capabilities.map((capability) => (
+            <article class="capability">
+              <h3>{capability.title}</h3>
+              <div class="capability-detail">
+                <p>{capability.description}</p>
+                <ul class="chip-row tag-list" aria-label={capability.title + " technologies and practices"}>
+                  {capability.tools.map((tool) => <li>{tool}</li>)}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="work-experience" class="about-section" aria-label="Professional experience">
+        <Experience />
+      </section>
+
+      <section id="studies" class="about-section" aria-labelledby="studies-title">
+        <h2 id="studies-title">Education & certifications</h2>
+        <div class="study-list">
+          {studies.map((study) => (
+            <article class="study-item">
+              <h3>{study.title}</h3>
+              <p>{study.meta}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </article>
+  </div>
+</MainLayout>
+
+<style>
+  .about-shell {
+    display: grid;
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+
+  .about-rail {
+    position: sticky;
+    top: var(--header-offset);
+    align-self: start;
+  }
+
+  .about-rail nav {
+    display: grid;
+    gap: var(--space-1);
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--border);
+  }
+
+  .about-rail .eyebrow {
+    margin-bottom: var(--space-3);
+  }
+
+  .about-rail a {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: baseline;
+    padding: var(--space-2);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+    text-decoration: none;
+  }
+
+  .about-rail a:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .about-rail a span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+  }
+
+  .about-page {
+    display: grid;
+    gap: var(--space-8);
+    min-width: 0;
+  }
+
+  .about-section {
+    scroll-margin-top: var(--header-offset);
+  }
+
+  .about-section > h2 {
+    margin-bottom: var(--space-5);
+  }
+
+  .about-intro {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .about-intro :global(.social-links) {
+    justify-content: flex-start;
+  }
+
+  .identity-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .identity-row img {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+  }
+
+  .identity-name {
+    font-weight: var(--weight-control);
+  }
+
+  .location {
+    color: var(--text-muted);
+    font-size: var(--size-sm);
+  }
+
+  .direction {
+    color: var(--accent);
+    font-size: var(--size-h3);
+    line-height: var(--line-heading);
+  }
+
+  .intro-copy {
+    max-width: var(--content-copy);
+    font-size: var(--size-lead);
+  }
+
+  .capability-list,
+  .study-list {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .capability,
+  .study-item {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .capability {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--space-5);
+  }
+
+  .capability-detail {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .capability p,
+  .study-item p {
+    color: var(--text-secondary);
+  }
+
+  .intro-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 850px) {
+    .about-shell {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+    }
+
+    .about-rail {
+      position: static;
+    }
+
+    .about-rail nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .about-rail .eyebrow {
+      flex-basis: 100%;
+      margin-bottom: 0;
+    }
+
+    .capability {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+  }
+</style>

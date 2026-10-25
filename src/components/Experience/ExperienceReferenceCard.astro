@@ -1,0 +1,60 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { withBase } from "#base/lib/paths";
+
+interface Props {
+  experience: CollectionEntry<"experience">;
+}
+
+const { experience } = Astro.props;
+const { company, jobTitle, referenceLetter } = experience.data;
+const extension = referenceLetter?.path.split(".").pop()?.toUpperCase() ?? "DOC";
+---
+
+{
+  referenceLetter && (
+    <article class="reference-card surface-card">
+      <div>
+        <p class="referer">{referenceLetter.refererName}</p>
+        <p class="context">{company} · {jobTitle}</p>
+      </div>
+      <blockquote>{referenceLetter.refererSentence}</blockquote>
+      <a class="action-link" href={withBase(referenceLetter.path)} target="_blank" rel="noopener noreferrer">
+        <span>{extension}</span>
+        View Letter
+        <strong aria-hidden="true">→</strong>
+      </a>
+    </article>
+  )
+}
+
+<style>
+  .reference-card {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+    padding: var(--card-padding);
+  }
+
+  .referer {
+    color: var(--text);
+    font-weight: var(--weight-control);
+  }
+
+  .context {
+    margin-top: var(--space-1);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+  }
+
+  blockquote {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  .action-link span {
+    color: inherit;
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+  }
+</style>

@@ -1,0 +1,22 @@
+jobTitle: "Tech Lead & Full-Stack Developer"
+company: "University of Auckland - WDCC"
+location: "Auckland, NZ"
+startDate: "Jan 2025"
+endDate: "Dec 2025"
+# order: 
+tags:
+  - Full Stack
+techStack:
+  - MongoDB
+  - Express.js
+  - React
+  - Node.js
+  - Cypress
+bullets:
+  - "Led team of 7 developers through full MERN stack build (MongoDB, Express, React, Node), shipping a live job-board platform used by 200+ members."
+  - "Designed RESTful API with JWT + RBAC (3 user roles); reduced auth bugs by ~30% via integration tests."
+  - "Set up Cypress E2E pipeline, catching 12+ regressions before production."
+  - "Ran weekly sprints, code reviews, and technical task delegation, zero missed deadlines over 4 sprints."
+highLights:
+  - "Successfully shipped platform to 200+ users"
+  - "Zero missed deadlines across 4 sprints"

@@ -61,7 +61,7 @@
 | 页面引言 | `.page-intro` | Projects 与 Blog 等内容页复用次要正文色和阅读宽度 |
 | 长经历 | 原生 `<details>`、`.detail-disclosure` | 默认展示身份、简介和首要贡献；展开后连续显示完整 bullet list，提示切换为 `Show less`，无 JavaScript 时仍可操作。项目改用独立详情页 |
 
-共享 recipe 放在 `global.css`，领域布局和局部状态放在 Astro scoped CSS。新组件先复用现有 token 与 recipe；确实多处使用时再增加共享规则。旧版未被页面使用的 ExperienceHero、ExperienceFeatured、ExperienceStats、ExperienceTechSummary 源文件含历史视觉写法，不作为新页面样式模板；重新启用前应先核对事实和本规范。
+共享 recipe 放在 `global.css`，领域布局和局部状态放在 Astro scoped CSS。新组件先复用现有 token 与 recipe；确实多处使用时再增加共享规则。无调用者的旧 Experience 展示组件已移除，新增展示需求应从当前 About 与 ExperienceCard 的实际职责出发。
 
 ## 媒体与图示
 

@@ -38,11 +38,7 @@ const experience = defineCollection({
 
       // Classification
       tags: z.array(z.string()).default([]),
-      techStack: z.array(z.string()).default([]).optional(),
-
-      // Metadata
-      order: z.number().default(999).optional(),
-      featured: z.boolean().default(false),
+      techStack: z.array(z.string()).default([]),
 
       // Optional
       logo: image().optional(),
@@ -50,7 +46,7 @@ const experience = defineCollection({
       companyWebsite: z.url().optional(),
 
       // Achievements (for resume highlights)
-      highLights: z.array(z.string()).default([]).optional(),
+      highLights: z.array(z.string()).default([]),
 
       // Reference letter fields
       referenceLetter: z
@@ -191,7 +187,7 @@ const projects = defineCollection({
 });
 
 export const collections = {
-  blogs: blogs,
-  experience: experience,
-  projects: projects,
+  blogs,
+  experience,
+  projects,
 };

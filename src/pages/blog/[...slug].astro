@@ -23,7 +23,7 @@ const { Content } = await render(post);
 
 <MainLayout
   title={post.data.title}
-  description={post.data.description ?? post.data.title}
+  description={post.data.description}
   contentWidth="text"
 >
   <article>

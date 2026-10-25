@@ -1,10 +1,8 @@
 ---
-import { site } from "../config/site";
+import { contactLinks, site } from "#config/site";
 
-const { username, social } = site;
-const githubUrl = social.github
-  ? `https://github.com/${social.github}`
-  : undefined;
+const { username } = site;
+const githubUrl = contactLinks.find(({ icon }) => icon === "github")?.href;
 ---
 
 <footer class="footer">

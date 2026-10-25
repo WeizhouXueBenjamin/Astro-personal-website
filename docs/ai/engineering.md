@@ -36,7 +36,7 @@
 ## 渲染与交互
 
 - 优先 Astro 静态组件、语义 HTML、CSS 和少量原生 TypeScript。
-- 不因 `tsconfig.json` 有 JSX 设置或目录中有 React 说明文件，就假定 React 集成已经存在；新增框架须与任务需求相符，并同步依赖与 Astro 集成。
+- 当前没有客户端框架集成；新增框架须与任务需求相符，并同步依赖与 Astro 集成，不预留无调用者的框架配置或目录。
 - 集合内容在构建时读取，不在浏览器请求本地 YAML/Markdown 源文件。
 - 跳转使用 `<a>`，改变页面状态使用 `<button type="button">`。可选 URL 不存在时省略链接，避免 `window.open(undefined)`。
 - 需要筛选时检查 `basic/filter.astro` 是否适用，保留按钮状态和可访问名称。无 JavaScript 时至少仍能阅读内容。
@@ -50,7 +50,7 @@
 | 集合名 | 文件来源 | 必需字段 | 常用可选或默认字段 |
 | --- | --- | --- | --- |
 | `blogs` | `src/content/blogs/**/*.{md,mdx}` | `title`、`pubDate`（解析为 Date）、`description` | `author` 默认站点姓名，`tags` 默认 `[]`，`draft` 默认 `false` |
-| `experience` | `src/content/experience/**/*.{yaml,yml,json}` | `jobTitle`、`company`、`startDate`、至少一个 `bullets` | `location`、`endDate`、`tags`、`techStack`、`order`、`featured`、`logo`、`companyWebsite`、`highLights`、`referenceLetter` |
+| `experience` | `src/content/experience/**/*.{yaml,yml,json}` | `jobTitle`、`company`、`startDate`、至少一个 `bullets` | `location`、`endDate`、`tags`、`techStack`、`logo`、`companyWebsite`、`highLights`、`referenceLetter` |
 | `projects` | `src/content/projects/**/*.{yaml,yml,json}` | `title`、`slug`、`summary`、`category`、`projectType`、`role`、3–5 个 `techStack`、至少一个 `sections` | `period`、`year`、`status`、`links`、`featuredMedia`、`coverMedia`、`media`、`order`、`featured`；完整维护说明见 [project-showcase.md](project-showcase.md) |
 
 容易出错的现有约束：
@@ -62,7 +62,7 @@
 - Experience 当前日期是字符串，已有内容使用 `Dec 2025`、`Present` 等格式。不要未经迁移就改成 Date 字段、ISO 专用解析或新的任职状态模型。
 - Project `status` 仅接受 `In Progress` 或 `Completed`，没有默认值；所有者未提供状态时省略字段和 UI，不自行推断。
 - `logo` 使用 schema 的 `image()`，按实际内容文件位置提供可解析的图片，不把任意字符串当成已验证图片。
-- `order` 与 `featured` 是展示元数据。Experience 按 featured 优先、order 升序、开始日期倒序排列；Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
+- Experience 按开始日期倒序排列，相同日期按 id 稳定排序；已移除 `featured` 与 `order`。Projects 保留这两个展示字段：先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。媒体条目的 `order` 独立控制章节内阅读顺序。
 - Projects 使用严格 schema；旧 `description`、`bullets`、`tags`、`githubUrl` 等字段已迁移为摘要、章节、分类与 `links`。新增案例从 `src/content/projects/structure.txt` 开始，不能复制旧字段。重复 slug、媒体来源、无效章节引用、缺失本地视频会使构建失败。
 
 ## 正式发布规则
@@ -87,7 +87,7 @@
 
 ## 页面质量
 
-- metadata 通过现有布局的 title/description 传入；共享站点信息复用配置。
+- metadata 通过现有布局的 title/description 传入；共享站点信息复用配置。联系方式的 URL 从 `src/config/site.ts` 的 `contactLinks` 派生，联系区、社交图标与页脚复用，组件只选择需要显示的入口。
 - 部署地址统一由 `src/config/deployment.mjs` 提供给 Astro，不在身份配置中重复维护。改动域名或 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径；原始 public / 站内路径通过 `withBase()` 渲染，Astro 图片 URL 不重复加 base。Markdown 链接由 Remark 处理；静态页面使用 trailing slash，404 输出为 `404.html`。操作步骤见 [部署说明](../github-pages-deployment.md)。
 - 图片提供恰当的替代文本和尺寸；装饰性图片使用空 alt。iframe 仅在存在真实媒体需求时渲染，并有可访问标题。
 - 键盘可达，焦点可见，交互状态可被辅助技术理解。先使用原生 HTML 语义，再按需添加 ARIA。

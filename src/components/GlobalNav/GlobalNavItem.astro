@@ -1,11 +1,9 @@
 ---
 import type { NavigationItem } from "./components";
 
-export interface GlobalNavItemProps extends NavigationItem {
+interface Props extends NavigationItem {
   isActive?: boolean;
 }
-
-type Props = GlobalNavItemProps;
 
 const { href, title, icon: Icon, isActive = false } = Astro.props;
 ---

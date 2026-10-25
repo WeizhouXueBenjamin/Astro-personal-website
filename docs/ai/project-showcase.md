@@ -15,7 +15,7 @@
 | 视频 | `ProjectVideo.astro`；本地或 HTTPS MP4/WebM，或按需加载 YouTube/Vimeo |
 | 共享选择规则 | `src/lib/content.ts` 负责排序、URL、重复 slug 与本地视频存在性；`project-media.ts` 负责阅读顺序、Figure 编号与封面 |
 
-独立页面由 `src/pages/projects/[slug].astro` 静态生成；沿用站点 `trailingSlash: never`，链接为 `/projects/project-slug`。不用为新案例复制页面代码。项目结构继续采用 YAML/YML/JSON Content Collection，不引入新的 CMS 或客户端框架。
+独立页面由 `src/pages/projects/[slug].astro` 静态生成；沿用站点 `trailingSlash: always`，链接通过 `getProjectPath()` 生成，包含部署 base 和末尾斜杠。不用为新案例复制页面代码。项目结构继续采用 YAML/YML/JSON Content Collection，不引入新的 CMS 或客户端框架。
 
 ## 内容契约
 

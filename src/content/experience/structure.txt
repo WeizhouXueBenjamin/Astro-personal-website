@@ -12,8 +12,6 @@ highLights: []
 # Optional fields: omit any that have not been provided.
 # location: "Auckland, NZ"
 # endDate: "Present"
-# order: 999
-# featured: false
 # companyWebsite: "https://example.com"
 # logo: "../../assets/actual-company-logo.png"
 

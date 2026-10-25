@@ -12,7 +12,9 @@ interface Props {
 
 const { media, number, priority = false } = Astro.props;
 const posterFormat = media.poster.format === "svg" ? "svg" : "webp";
-const poster = await getImage({ src: media.poster, width: Math.min(1600, media.poster.width), format: posterFormat });
+const poster = media.type === "video"
+  ? (await getImage({ src: media.poster, width: Math.min(1600, media.poster.width), format: posterFormat })).src
+  : undefined;
 const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
 ---
 
@@ -39,7 +41,7 @@ const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().pa
   style={`--media-ratio: ${media.poster.width} / ${media.poster.height}`}
 >
   {media.type === "video" ? (
-    <video controls playsinline preload="none" poster={poster.src}
+    <video controls playsinline preload="none" poster={poster}
       width={media.poster.width} height={media.poster.height}
       aria-label={media.title} aria-describedby={`caption-${media.id}`}>
       <source src={withBase(media.src)} type={/\.webm(?:\?|$)/.test(media.src) ? "video/webm" : "video/mp4"} />

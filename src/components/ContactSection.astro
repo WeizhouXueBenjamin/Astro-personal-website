@@ -1,16 +1,8 @@
 ---
 import { withBase } from "#base/lib/paths";
-import { site } from "#config/site";
+import { contactLinks, site } from "#config/site";
 
-const contactLinks = [
-  { label: "Email", href: `mailto:${site.email}`, external: false },
-  ...(site.social.linkedin
-    ? [{ label: "LinkedIn", href: `https://linkedin.com/in/${site.social.linkedin}`, external: true }]
-    : []),
-  ...(site.social.github
-    ? [{ label: "GitHub", href: `https://github.com/${site.social.github}`, external: true }]
-    : []),
-];
+const links = contactLinks.filter(({ icon }) => ["email", "linkedin", "github"].includes(icon));
 ---
 
 <section id="contact" class="contact-section container" aria-labelledby="contact-heading">
@@ -29,7 +21,7 @@ const contactLinks = [
       </a>
     </div>
     <ul class="contact-links" aria-label="Contact details">
-      {contactLinks.map((link) => (
+      {links.map((link) => (
         <li>
           <a
             href={link.href}

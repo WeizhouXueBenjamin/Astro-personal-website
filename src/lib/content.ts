@@ -50,8 +50,6 @@ export async function getExperiences() {
 
   return (await getCollection("experience")).sort(
     (a, b) =>
-      Number(b.data.featured) - Number(a.data.featured) ||
-      (a.data.order ?? 999) - (b.data.order ?? 999) ||
       dateValue(b.data.startDate) - dateValue(a.data.startDate) ||
       a.id.localeCompare(b.id, "en"),
   );

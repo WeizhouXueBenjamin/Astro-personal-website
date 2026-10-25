@@ -76,7 +76,18 @@ export default {
       (draft === undefined ? "" : "\ndraft: " + draft) + "\n---\n\n## Article body\n\nVerification content. [Projects](/projects/) and [icon][icon].\n\n[icon]: /favicon.svg\n");
   }
   writeJson("experience/fixture.json", {
-    jobTitle: "Fixture Engineer", company: "Fixture Systems", startDate: "Jan 2026",
+    jobTitle: "Fixture Engineer", company: "Fixture Systems", startDate: "Dec 2025",
+    featured: true, order: 1,
+    bullets: ["Verified contribution."],
+  });
+  writeJson("experience/newest.json", {
+    jobTitle: "Newest Fixture Role", company: "Fixture Systems", startDate: "Mar 2026",
+    endDate: "Present", featured: false, order: 999,
+    bullets: ["Verified contribution."],
+  });
+  writeJson("experience/oldest.json", {
+    jobTitle: "Oldest Fixture Role", company: "Fixture Systems", startDate: "Jan 2025",
+    featured: true, order: 0,
     bullets: ["Verified contribution."],
   });
   // Synthetic illustrations live only in this temporary test workspace.
@@ -175,6 +186,9 @@ export default {
   assert.ok(!home.includes("Fixture Plain Case"));
   const about = read("about/index.html");
   assert.ok(about.includes("Fixture Engineer"));
+  assert.ok(about.includes("Newest Fixture Role") && about.includes("Oldest Fixture Role"));
+  assert.ok(about.indexOf("Newest Fixture Role") < about.indexOf("Fixture Engineer"), "Newer experience must precede older featured entries");
+  assert.ok(about.indexOf("Fixture Engineer") < about.indexOf("Oldest Fixture Role"), "Start date must override manual order within a year");
   assert.ok(!about.includes("NaN") && !about.includes("Infinity"));
 
   const nav = home.match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
@@ -260,14 +274,16 @@ export default {
   for (const id of ["public", "newer", "draft"]) {
     unlinkSync(join(fixtureContent, "blogs/verification", id + (id === "newer" ? ".mdx" : ".md")));
   }
-  unlinkSync(join(fixtureContent, "experience/fixture.json"));
+  for (const id of ["fixture", "newest", "oldest"]) {
+    unlinkSync(join(fixtureContent, "experience", id + ".json"));
+  }
   build();
   assert.ok(read("blog/index.html").includes("No articles published yet"));
   assert.ok(!read("rss.xml").includes("<item>"));
   assert.ok(!read("sitemap-0.xml").includes("/blog/verification/"));
   assert.ok(!existsSync(join(dist, "blog/verification/public/index.html")));
   assert.ok(read("about/index.html").includes("Experience details will be added here"));
-  console.log("Site verification passed: publishing/RSS, project routes and category priority, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, Markdown/MDX links, and output validation failure cases.");
+  console.log("Site verification passed: publishing/RSS, experience chronology, project routes and category priority, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, Markdown/MDX links, and output validation failure cases.");
 } finally {
   // Remove only the newly created temporary workspace; unlink its dependency junction first.
   const dependencyLink = join(fixtureRoot, "node_modules");

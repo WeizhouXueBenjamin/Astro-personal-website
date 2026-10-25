@@ -195,3 +195,16 @@
 窄屏截图自查发现 SCADA 长流程文本撑宽了隐式网格列，进而使固定导航偏移；已将章节正文列限定为 `minmax(0, 1fr)`，长代码仅在自身容器内滚动。浏览器断言同步比较指定视口宽度、document clientWidth 与导航右边界，避免只比较随内容扩大的 innerWidth 而漏检。
 
 本轮没有重新运行 Ignition/CODESYS 仿真，没有把书面项目记录当成本轮独立实测。外部视频嵌入验证了加载机制，未用虚构视频 ID 宣称第三方实际播放通过；正式案例使用本地真实 MP4。未执行完整类型检查、WCAG 全站审核、真实手机/其他浏览器或线上部署。
+
+## 2026-10-22 Experience 时间排序与 OPC UA Blog
+
+所有者要求经历从新到旧展示，并将 OPC UA 排障记录整理为有证据的英文文章。本轮开始时工作树干净，保留既有 Project Showcase 实现。
+
+- `getExperiences()` 统一按开始日期倒序、同日按 id 排列，`featured` / `order` 不再覆盖时间顺序。当前 About 顺序为 RouterStack（Mar 2026）、Vision for Humanity（Dec 2025）、University of Auckland - WDCC（Jan 2025），年份分组沿用该顺序。
+- 新增 NZ English 文章 `/blog/opc-ua-codesys-factory-io-troubleshooting`，发布日期为 2026-10-22，通过既有发布选择器进入 Blog、详情、RSS 与 sitemap。原有 Hello Astro 草稿保持不公开。
+- 原始笔记来自所有者的 `smart-conveyor-sorting-codesys` 仓库，核对后固定到 `e3df9ffff416346389b01f5acacf66ee47c17b02` revision；文章分别叙述访问权限与旧映射问题、排查依据、修复与记录中的结果。真实 CODESYS 截图复用既有 ProjectMedia，保留完整比例、原图入口、alt 与 Figure caption。
+- 截图只证明设备连接与应用 RUN；18 个信号交换依据书面记录。文章明确个人本地仿真范围、版本差异与映射原因的推断边界，并将完整周期、联锁、jam detection 与故障恢复保留为后续验证，不增加未经提供的测试成果。
+- `pnpm run build` 通过，生成 9 个静态页面；`pnpm run verify:site` 通过，新增跨年及同年月份的经历排序回归场景，验证旧 featured / order 不会将较早经历提前。
+- 本机无界面 Chrome 检查 About、Blog、文章 × 1440/390/320px 共 9 组布局：顺序、文章入口、单一 h1/main、无横向溢出、导航边界、图片完整加载及无重复 ID 均通过。原图返回 200；无 JavaScript 的正文与证据入口可读，键盘焦点为 2px solid；正式 RSS 仅包含该文章。未捕获页面脚本异常或站内 HTTP 错误。
+
+按 distinctive-ai-design 对实际桌面/窄屏截图做自查，保留现有深色阅读列、技术章节和紧邻图片的 caption，没有独立评审者。浏览器证据保存在忽略目录 `.astro/opcua-*.png` 与 `.astro/opcua-review-results.json`。本轮没有重新运行 PLC/Factory I/O 仿真，也没有线上部署；完整映射变化截图、clean-restart 周期记录与 driver trace 仍不在现有公开证据中。

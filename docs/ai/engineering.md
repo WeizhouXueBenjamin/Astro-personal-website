@@ -62,7 +62,7 @@
 - Experience 当前日期是字符串，已有内容使用 `Dec 2025`、`Present` 等格式。不要未经迁移就改成 Date 字段、ISO 专用解析或新的任职状态模型。
 - Project `status` 仅接受 `In Progress` 或 `Completed`，没有默认值；所有者未提供状态时省略字段和 UI，不自行推断。
 - `logo` 使用 schema 的 `image()`，按实际内容文件位置提供可解析的图片，不把任意字符串当成已验证图片。
-- `order` 与 `featured` 是展示元数据。Experience 按 featured 优先、order 升序、开始日期倒序排列；Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
+- Experience 按开始日期倒序排列，相同日期按 id 稳定排序；`featured` 与 `order` 不改变经历的时间顺序。Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列，平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
 - Projects 使用严格 schema；旧 `description`、`bullets`、`tags`、`githubUrl` 等字段已迁移为摘要、章节、分类与 `links`。新增案例从 `src/content/projects/structure.txt` 开始，不能复制旧字段。重复 slug、媒体来源、无效章节引用、缺失本地视频会使构建失败。
 
 ## 正式发布规则
@@ -70,6 +70,8 @@
 公开 Blog 列表、详情静态路径和 RSS 通过 `getPublishedPosts()` 一致排除 `draft: true`，sitemap 不包含草稿页。详情路由为 `src/pages/blog/[...slug].astro`，支持内容子目录；单层旧文章 URL 保持 `/blog/文章id` 形式。
 
 列表和 RSS 复用 `getBlogPath()` 生成相同路径；构建详情时从已过滤的静态路径直接传入集合条目，不再二次按任意 slug 查询。日期统一使用英文显示，并固定时区，避免构建机器区域设置改变日期。
+
+有技术证据的文章可使用 MDX，沿用窄阅读列与 `.prose`。现有 OPC UA 文章复用 `ProjectMedia` 展示真实截图、Figure caption 与原图链接；图片可见状态、书面排障记录与推断分别说明，来源尽可能链接固定 revision。文章发布日期不代表实验发生日期，不将排障笔记表述为本轮重新执行的测试。
 
 新增或修改任何文章出口时，检查其他出口是否仍遵循同一规则。是否按未来日期定时发布尚未约定，不自行引入日期过滤或定时任务。
 

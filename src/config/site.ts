@@ -2,7 +2,6 @@ export const site = {
   title: "Automation & Software Integration",
   description:
     "Benjamin Xue's portfolio in automation, control systems, and software integration, featuring PLC/SCADA simulations, software delivery, and hands-on technical experience.",
-  siteUrl: "https://weizhouxuebenjamin.github.io",
 
   username: "Benjamin Xue",
   userTitle: "Automation / Control Systems & Software Integration",

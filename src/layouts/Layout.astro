@@ -3,6 +3,7 @@ import Footer from "../components/Footer.astro";
 import Navigation from "../components/GlobalNav/GlobalNav.astro";
 import { site } from "../config/site";
 import "../styles/global.css";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   title?: string;
@@ -11,11 +12,8 @@ interface Props {
 
 const { title = site.title, description = site.description } = Astro.props;
 
-const baseUrl = site.siteUrl.replace(/\/$/, "");
-const canonicalURL =
-  Astro.url.pathname === "/"
-    ? `${baseUrl}`
-    : new URL(Astro.url.pathname, `${baseUrl}`).href;
+const isNotFound = Astro.routePattern === "/404";
+const canonicalURL = new URL(isNotFound ? withBase("/404.html") : Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
@@ -27,6 +25,7 @@ const canonicalURL =
 
     <title>{title} - {site.username}</title>
     <meta name="description" content={description} />
+    {isNotFound && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalURL} />
 
     <meta property="og:type" content="website" />
@@ -39,8 +38,8 @@ const canonicalURL =
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
+    <link rel="icon" href={withBase("/favicon.ico")} />
   </head>
   <body>
     <header>

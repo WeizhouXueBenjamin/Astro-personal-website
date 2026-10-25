@@ -9,7 +9,7 @@
 | 要判断的内容 | 优先读取 |
 | --- | --- |
 | 依赖、包管理器、脚本、Node 固定值 | `package.json`，需要精确解析版本时再查 `pnpm-lock.yaml` |
-| 渲染、集成、站点地址、base | `astro.config.mjs` |
+| 渲染、集成、站点地址、base | `astro.config.mjs` 与 `src/config/deployment.mjs`；完整 URL 可通过 `SITE_URL` 设置 |
 | 个人身份与外部联系方式 | `src/config/site.ts` |
 | 教育、证书与能力分类 | `src/config/profile.ts` |
 | 集合名称、文件匹配方式、字段验证 | `src/content.config.ts` |
@@ -88,14 +88,16 @@
 ## 页面质量
 
 - metadata 通过现有布局的 title/description 传入；共享站点信息复用配置。
-- 改动站点域名或部署 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径。当前站点地址在两处配置中存在，不随意只改其中一处。
+- 部署地址统一由 `src/config/deployment.mjs` 提供给 Astro，不在身份配置中重复维护。改动域名或 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径；原始 public / 站内路径通过 `withBase()` 渲染，Astro 图片 URL 不重复加 base。Markdown 链接由 Remark 处理；静态页面使用 trailing slash，404 输出为 `404.html`。操作步骤见 [部署说明](../github-pages-deployment.md)。
 - 图片提供恰当的替代文本和尺寸；装饰性图片使用空 alt。iframe 仅在存在真实媒体需求时渲染，并有可访问标题。
 - 键盘可达，焦点可见，交互状态可被辅助技术理解。先使用原生 HTML 语义，再按需添加 ARIA。
 - 用测量结果报告性能与可访问性；未经实际运行，不宣称达到 Lighthouse 分数或完成 WCAG 验证。
 
 ## 命令与验证
 
-当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:design`、`pnpm run astro -- ...`。
+当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:output`、`pnpm run verify:design`、`pnpm run astro -- ...`。
+
+`verify:output` 在正式 build 后检查实际 `dist/` 的站内链接、资源、metadata、RSS、sitemap、大小写和体积。`verify:site` 另外覆盖根路径、Project Pages 和自定义域名子路径。CI 只构建一次正式站点并上传已验证的 Artifact；本地检查通过不代表远程发布或端到端自动化已验证。
 
 `verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
 

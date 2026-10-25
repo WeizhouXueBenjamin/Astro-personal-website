@@ -1,6 +1,7 @@
 ---
 import type { ProjectData, NumberedMedia } from "#base/lib/project-media";
 import ProjectMedia from "./ProjectMedia.astro";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   project: ProjectData;
@@ -11,7 +12,7 @@ const { project, evidence } = Astro.props;
 ---
 
 <header class="project-hero">
-  <a class="project-hero__back" href="/projects">← All projects</a>
+  <a class="project-hero__back" href={withBase("/projects/")}>← All projects</a>
   <div class="project-hero__intro">
     <div class="project-hero__heading">
       <p class="eyebrow">{project.category}</p>

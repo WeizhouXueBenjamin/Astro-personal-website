@@ -10,6 +10,7 @@
 pnpm install
 pnpm run dev
 pnpm run build
+pnpm run verify:output
 pnpm run preview
 pnpm run verify:site
 pnpm run verify:design
@@ -34,6 +35,8 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 旧地址通过 HTML meta refresh 和链接处理，不代表静态托管返回 HTTP 301/302。它们不进入主导航或 sitemap。
 
 ## 维护入口
+
+部署流程、GitHub Pages 首次启用、URL/base、排障与回滚见 [GitHub Pages 自动部署](docs/github-pages-deployment.md)。正式发布仅允许 `main`；PR 和其他分支的手动运行只验证构建。
 
 - 身份、方向、联系方式和英文简历下载路径：src/config/site.ts；公开 PDF 存放在 public/documents/。
 - 教育、证书、能力分类：src/config/profile.ts。

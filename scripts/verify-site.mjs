@@ -4,6 +4,8 @@ import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rm
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getDeploymentConfig } from "../src/config/deployment.mjs";
+import { verifyOutput } from "./verify-output.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureRoot = mkdtempSync(join(tmpdir(), "astro-portfolio-"));
@@ -13,11 +15,12 @@ const fixtureContent = join(fixtureRoot, "src/content");
 const dist = join(fixtureRoot, "dist");
 const read = (path) => readFileSync(join(dist, path), "utf8");
 
-function build(expectedError) {
+function build(expectedError, siteUrl = "https://portfolio.example/") {
   const result = spawnSync(process.execPath, [astroCli, "build", "--root", fixtureRoot], {
     cwd: fixtureRoot,
     encoding: "utf8",
     timeout: 120_000,
+    env: { ...process.env, SITE_URL: siteUrl },
   });
   const output = result.error?.message ?? result.stdout + result.stderr;
   if (expectedError) {
@@ -33,6 +36,11 @@ function writeJson(path, data) {
 }
 
 try {
+  assert.deepEqual(getDeploymentConfig({ repository: "Example/Example.github.io", siteUrl: "" }), { site: "https://example.github.io", base: "/" });
+  assert.deepEqual(getDeploymentConfig({ repository: "Example/Portfolio", siteUrl: "" }), { site: "https://example.github.io", base: "/Portfolio" });
+  assert.deepEqual(getDeploymentConfig({ siteUrl: "https://portfolio.example/" }), { site: "https://portfolio.example", base: "/" });
+  assert.deepEqual(getDeploymentConfig({ siteUrl: "https://portfolio.example/work/" }), { site: "https://portfolio.example", base: "/work" });
+  assert.throws(() => getDeploymentConfig({ siteUrl: "https://portfolio.example/?invalid=1" }));
   cpSync(join(projectRoot, "src"), join(fixtureRoot, "src"), {
     recursive: true,
     filter: (source) => source !== join(projectRoot, "src/content"),
@@ -63,12 +71,23 @@ export default {
     ["newer", "Fixture Newer Article", "2026-08-02", undefined],
     ["draft", "Fixture Draft Article", "2026-08-03", true],
   ]) {
-    writeFileSync(join(fixtureContent, "blogs/verification", id + ".md"),
+    writeFileSync(join(fixtureContent, "blogs/verification", id + (id === "newer" ? ".mdx" : ".md")),
       "---\ntitle: " + title + "\ndescription: Verification article\npubDate: " + date +
-      (draft === undefined ? "" : "\ndraft: " + draft) + "\n---\n\n## Article body\n\nVerification content.\n");
+      (draft === undefined ? "" : "\ndraft: " + draft) + "\n---\n\n## Article body\n\nVerification content. [Projects](/projects/) and [icon][icon].\n\n[icon]: /favicon.svg\n");
   }
   writeJson("experience/fixture.json", {
-    jobTitle: "Fixture Engineer", company: "Fixture Systems", startDate: "Jan 2026",
+    jobTitle: "Fixture Engineer", company: "Fixture Systems", startDate: "Dec 2025",
+    featured: true, order: 1,
+    bullets: ["Verified contribution."],
+  });
+  writeJson("experience/newest.json", {
+    jobTitle: "Newest Fixture Role", company: "Fixture Systems", startDate: "Mar 2026",
+    endDate: "Present", featured: false, order: 999,
+    bullets: ["Verified contribution."],
+  });
+  writeJson("experience/oldest.json", {
+    jobTitle: "Oldest Fixture Role", company: "Fixture Systems", startDate: "Jan 2025",
+    featured: true, order: 0,
     bullets: ["Verified contribution."],
   });
   // Synthetic illustrations live only in this temporary test workspace.
@@ -125,7 +144,7 @@ export default {
     assert.ok(output.indexOf("Fixture Newer Article") < output.indexOf("Fixture Public Article"));
   }
   assert.equal((rss.match(/<item>/g) ?? []).length, 2);
-  assert.ok(rss.includes("/blog/verification/public</link>"));
+  assert.ok(rss.includes("/blog/verification/public/</link>"));
   assert.ok(sitemap.includes("/blog/verification/public"));
   assert.ok(!sitemap.includes("/blog/verification/draft"));
   assert.ok(!existsSync(join(dist, "blog/verification/draft/index.html")));
@@ -134,20 +153,20 @@ export default {
 
   const projects = read("projects/index.html");
   assert.ok(projects.indexOf("Fixture Control Case") < projects.indexOf("Fixture Plain Case"));
-  assert.ok(projects.includes('href="/projects/control-case"'));
+  assert.ok(projects.includes('href="/projects/control-case/"'));
   assert.ok(!projects.includes('href="https://example.com/control"'));
   const plainCard = [...projects.matchAll(/<article\b[\s\S]*?<\/article>/g)]
     .map(([card]) => card).find((card) => card.includes("Fixture Plain Case"));
   assert.ok(plainCard);
   assert.equal((plainCard.match(/<a\b/g) ?? []).length, 1);
-  assert.ok(plainCard.includes('href="/projects/plain-case"'));
+  assert.ok(plainCard.includes('href="/projects/plain-case/"'));
   assert.ok(!plainCard.includes("In Progress") && !plainCard.includes("<img"));
   assert.ok(!projects.includes("<iframe") && !projects.includes("window.open"));
   const detail = read("projects/control-case/index.html");
   const plainDetail = read("projects/plain-case/index.html");
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
   assert.ok(detail.includes('href="https://example.com/control"'));
-  assert.ok(detail.includes('href="https://weizhouxuebenjamin.github.io/projects/control-case"'));
+  assert.ok(detail.includes('href="https://portfolio.example/projects/control-case/"'));
   assert.ok(sitemap.includes("/projects/control-case") && sitemap.includes("/projects/plain-case"));
   const figures = [...detail.matchAll(/<figure\b[^>]*id="figure-([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(figures, ["hero", "before", "after", "step-one", "step-two", "embed"]);
@@ -167,15 +186,19 @@ export default {
   assert.ok(!home.includes("Fixture Plain Case"));
   const about = read("about/index.html");
   assert.ok(about.includes("Fixture Engineer"));
+  assert.ok(about.includes("Newest Fixture Role") && about.includes("Oldest Fixture Role"));
+  assert.ok(about.indexOf("Newest Fixture Role") < about.indexOf("Fixture Engineer"), "Newer experience must precede older featured entries");
+  assert.ok(about.indexOf("Fixture Engineer") < about.indexOf("Oldest Fixture Role"), "Start date must override manual order within a year");
   assert.ok(!about.includes("NaN") && !about.includes("Infinity"));
 
   const nav = home.match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
   assert.ok(nav);
   assert.equal((nav.match(/<a\b/g) ?? []).length, 4);
   assert.ok(!nav.includes("/experience") && !nav.includes("/gallery"));
-  assert.match(read("experience/index.html"), /http-equiv="refresh"[^>]*\/about#work-experience/);
+  assert.match(read("experience/index.html"), /http-equiv="refresh"[^>]*\/about\/#work-experience/);
   assert.match(read("gallery/index.html"), /http-equiv="refresh"[^>]*url=\//);
   assert.ok(!sitemap.includes("/experience") && !sitemap.includes("/gallery"));
+  verifyOutput({ root: dist, site: "https://portfolio.example", base: "/" });
 
   // A video hero uses a poster and native controls, without eager video downloads.
   const localVideo = {
@@ -198,6 +221,32 @@ export default {
   assert.ok(!videoTag.includes("autoplay") && !videoTag.includes("loop"));
   assert.equal((videoDetail.match(/<video\b/g) ?? []).length, 1);
   assert.ok(videoDetail.includes("Read video description"));
+
+  // Check the same media and routes on Project Pages, then on a custom-domain subpath.
+  for (const siteUrl of ["https://example.github.io/Portfolio/", "https://portfolio.example/work/"]) {
+    build(undefined, siteUrl);
+    const config = getDeploymentConfig({ siteUrl });
+    verifyOutput({ root: dist, ...config });
+    const base = config.base;
+    assert.ok(read("projects/control-case/index.html").includes(`src="${base}/media/projects/feeder-demo.mp4"`));
+    assert.ok(read("projects/control-case/index.html").includes(`href="${siteUrl}projects/control-case/"`));
+    assert.ok(read("rss.xml").includes(`${siteUrl}blog/verification/public/</link>`));
+    assert.ok(read("blog/verification/public/index.html").includes(`href="${base}/projects/"`));
+    assert.ok(read("blog/verification/public/index.html").includes(`href="${base}/favicon.svg"`));
+    assert.ok(read("blog/verification/newer/index.html").includes(`href="${base}/projects/"`));
+    assert.ok(read("experience/index.html").includes(`${base}/about/#work-experience`));
+    const projectNav = read("projects/control-case/index.html").match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
+    assert.ok(projectNav?.includes(`href="${base}/projects/" class="toolbar-item toolbar-item--active"`));
+    const homeNav = read("index.html").match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
+    assert.equal((homeNav?.match(/aria-current="page"/g) ?? []).length, 1);
+
+    const validHome = read("index.html");
+    for (const [brokenUrl, expectedError] of [["/projects/", /URL escapes base/], [`${base}/PROJECTS/`, /Missing output or incorrect filename case/]]) {
+      writeFileSync(join(dist, "index.html"), validHome.replace(`href="${base}/projects/"`, `href="${brokenUrl}"`));
+      assert.throws(() => verifyOutput({ root: dist, ...config }), expectedError);
+    }
+    writeFileSync(join(dist, "index.html"), validHome);
+  }
   writeJson("projects/plain.json", plain);
 
   writeJson("projects/control.json", { ...control, media: [...control.media, { ...image("hero", "overview"), id: "duplicate" }] });
@@ -223,16 +272,18 @@ export default {
   assert.ok(!read("sitemap-0.xml").includes("/projects/control-case"));
 
   for (const id of ["public", "newer", "draft"]) {
-    unlinkSync(join(fixtureContent, "blogs/verification", id + ".md"));
+    unlinkSync(join(fixtureContent, "blogs/verification", id + (id === "newer" ? ".mdx" : ".md")));
   }
-  unlinkSync(join(fixtureContent, "experience/fixture.json"));
+  for (const id of ["fixture", "newest", "oldest"]) {
+    unlinkSync(join(fixtureContent, "experience", id + ".json"));
+  }
   build();
   assert.ok(read("blog/index.html").includes("No articles published yet"));
   assert.ok(!read("rss.xml").includes("<item>"));
   assert.ok(!read("sitemap-0.xml").includes("/blog/verification/"));
   assert.ok(!existsSync(join(dist, "blog/verification/public/index.html")));
   assert.ok(read("about/index.html").includes("Experience details will be added here"));
-  console.log("Site verification passed: publishing/RSS, project routes and category priority, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects.");
+  console.log("Site verification passed: publishing/RSS, experience chronology, project routes and category priority, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, Markdown/MDX links, and output validation failure cases.");
 } finally {
   // Remove only the newly created temporary workspace; unlink its dependency junction first.
   const dependencyLink = join(fixtureRoot, "node_modules");

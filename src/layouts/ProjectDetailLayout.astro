@@ -4,6 +4,7 @@ import { getProjectEvidence } from "#base/lib/project-media";
 import ProjectHero from "#components/ProjectList/ProjectHero.astro";
 import ProjectSection from "#components/ProjectList/ProjectSection.astro";
 import Layout from "./Layout.astro";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   project: CollectionEntry<"projects">;
@@ -24,8 +25,8 @@ const evidence = getProjectEvidence(project);
     </nav>
     {project.sections.map((section, index) => <ProjectSection section={section} index={index} evidence={evidence} />)}
     <footer class="project-detail__footer">
-      <a class="action-link" href="/projects">← Explore all projects</a>
-      <a href="/about">About my background →</a>
+      <a class="action-link" href={withBase("/projects/")}>← Explore all projects</a>
+      <a href={withBase("/about/")}>About my background →</a>
     </footer>
   </main>
 </Layout>

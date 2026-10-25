@@ -19,19 +19,19 @@ export const components: NavigationItem[] = [
   },
   {
     title: "About",
-    href: "/about",
+    href: "/about/",
     description: "Explore my background, experience, and engineering focus.",
     icon: AboutIcon,
   },
   {
     title: "Projects",
-    href: "/projects",
+    href: "/projects/",
     description: "Explore PLC/SCADA, automation, and software projects.",
     icon: WorkIcon,
   },
   {
     title: "Blog",
-    href: "/blog",
+    href: "/blog/",
     description: "Read my latest articles and insights.",
     icon: BlogIcon,
   },

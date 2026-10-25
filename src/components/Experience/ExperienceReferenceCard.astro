@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   experience: CollectionEntry<"experience">;
@@ -18,7 +19,7 @@ const extension = referenceLetter?.path.split(".").pop()?.toUpperCase() ?? "DOC"
         <p class="context">{company} · {jobTitle}</p>
       </div>
       <blockquote>{referenceLetter.refererSentence}</blockquote>
-      <a class="action-link" href={referenceLetter.path} target="_blank" rel="noopener noreferrer">
+      <a class="action-link" href={withBase(referenceLetter.path)} target="_blank" rel="noopener noreferrer">
         <span>{extension}</span>
         View Letter
         <strong aria-hidden="true">→</strong>

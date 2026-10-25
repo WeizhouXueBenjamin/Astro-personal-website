@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import ExperienceHighlights from "./ExperienceHighlights.astro";
+import { withBase } from "#base/lib/paths";
 
 interface Props {
   experience: CollectionEntry<"experience">;
@@ -64,7 +65,7 @@ const initials = company
 
       {
         referenceLetter && (
-          <a class="reference-link" href={referenceLetter.path} target="_blank" rel="noreferrer">
+          <a class="reference-link" href={withBase(referenceLetter.path)} target="_blank" rel="noreferrer">
             View Reference Letter
             <span aria-hidden="true">→</span>
           </a>

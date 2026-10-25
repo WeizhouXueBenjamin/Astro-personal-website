@@ -9,7 +9,7 @@
 | 要判断的内容 | 优先读取 |
 | --- | --- |
 | 依赖、包管理器、脚本、Node 固定值 | `package.json`，需要精确解析版本时再查 `pnpm-lock.yaml` |
-| 渲染、集成、站点地址、base | `astro.config.mjs` |
+| 渲染、集成、站点地址、base | `astro.config.mjs` 与 `src/config/deployment.mjs`；完整 URL 可通过 `SITE_URL` 设置 |
 | 个人身份与外部联系方式 | `src/config/site.ts` |
 | 教育、证书与能力分类 | `src/config/profile.ts` |
 | 集合名称、文件匹配方式、字段验证 | `src/content.config.ts` |
@@ -62,7 +62,7 @@
 - Experience 当前日期是字符串，已有内容使用 `Dec 2025`、`Present` 等格式。不要未经迁移就改成 Date 字段、ISO 专用解析或新的任职状态模型。
 - Project `status` 仅接受 `In Progress` 或 `Completed`，没有默认值；所有者未提供状态时省略字段和 UI，不自行推断。
 - `logo` 使用 schema 的 `image()`，按实际内容文件位置提供可解析的图片，不把任意字符串当成已验证图片。
-- `order` 与 `featured` 是展示元数据。Experience 按 featured 优先、order 升序、开始日期倒序排列；Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
+- Experience 按开始日期倒序排列，相同日期按 id 稳定排序；`featured` 与 `order` 不改变经历的时间顺序。Projects 先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列，平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。
 - Projects 使用严格 schema；旧 `description`、`bullets`、`tags`、`githubUrl` 等字段已迁移为摘要、章节、分类与 `links`。新增案例从 `src/content/projects/structure.txt` 开始，不能复制旧字段。重复 slug、媒体来源、无效章节引用、缺失本地视频会使构建失败。
 
 ## 正式发布规则
@@ -70,6 +70,8 @@
 公开 Blog 列表、详情静态路径和 RSS 通过 `getPublishedPosts()` 一致排除 `draft: true`，sitemap 不包含草稿页。详情路由为 `src/pages/blog/[...slug].astro`，支持内容子目录；单层旧文章 URL 保持 `/blog/文章id` 形式。
 
 列表和 RSS 复用 `getBlogPath()` 生成相同路径；构建详情时从已过滤的静态路径直接传入集合条目，不再二次按任意 slug 查询。日期统一使用英文显示，并固定时区，避免构建机器区域设置改变日期。
+
+有技术证据的文章可使用 MDX，沿用窄阅读列与 `.prose`。现有 OPC UA 文章复用 `ProjectMedia` 展示真实截图、Figure caption 与原图链接；图片可见状态、书面排障记录与推断分别说明，来源尽可能链接固定 revision。文章发布日期不代表实验发生日期，不将排障笔记表述为本轮重新执行的测试。
 
 新增或修改任何文章出口时，检查其他出口是否仍遵循同一规则。是否按未来日期定时发布尚未约定，不自行引入日期过滤或定时任务。
 
@@ -88,14 +90,16 @@
 ## 页面质量
 
 - metadata 通过现有布局的 title/description 传入；共享站点信息复用配置。
-- 改动站点域名或部署 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径。当前站点地址在两处配置中存在，不随意只改其中一处。
+- 部署地址统一由 `src/config/deployment.mjs` 提供给 Astro，不在身份配置中重复维护。改动域名或 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径；原始 public / 站内路径通过 `withBase()` 渲染，Astro 图片 URL 不重复加 base。Markdown 链接由 Remark 处理；静态页面使用 trailing slash，404 输出为 `404.html`。操作步骤见 [部署说明](../github-pages-deployment.md)。
 - 图片提供恰当的替代文本和尺寸；装饰性图片使用空 alt。iframe 仅在存在真实媒体需求时渲染，并有可访问标题。
 - 键盘可达，焦点可见，交互状态可被辅助技术理解。先使用原生 HTML 语义，再按需添加 ARIA。
 - 用测量结果报告性能与可访问性；未经实际运行，不宣称达到 Lighthouse 分数或完成 WCAG 验证。
 
 ## 命令与验证
 
-当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:design`、`pnpm run astro -- ...`。
+当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:output`、`pnpm run verify:design`、`pnpm run astro -- ...`。
+
+`verify:output` 在正式 build 后检查实际 `dist/` 的站内链接、资源、metadata、RSS、sitemap、大小写和体积。`verify:site` 另外覆盖根路径、Project Pages 和自定义域名子路径。CI 只构建一次正式站点并上传已验证的 Artifact；本地检查通过不代表远程发布或端到端自动化已验证。
 
 `verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
 

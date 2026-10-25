@@ -66,7 +66,7 @@
 | 领域 | 维护的信息 | 当前事实来源 | 生成约束 |
 | --- | --- | --- | --- |
 | Profile | 姓名、定位、介绍、联系方式 | `src/config/site.ts` | 首页与 About 复用同一定位，避免各自维护简介 |
-| Experience | 职务、组织、日期、贡献、技术与成果 | `experience` 集合 | 页面展示同一份经历，可按页面职责选择摘要或详情 |
+| Experience | 职务、组织、日期、贡献、技术与成果 | `experience` 集合 | 按开始日期从新到旧展示同一份经历，可按页面职责选择摘要或详情 |
 | Project | 项目事实、贡献、状态、成果和外部链接 | `projects` 集合，已有两项所有者提供的案例 | Automation / SCADA 优先，同组通过 featured 和 order 选择重点，不使用演示数组或猜测状态 |
 | Writing | 标题、摘要、日期、标签、作者、草稿与正文 | `blogs` 集合 | 列表、详情路径、RSS 使用一致的正式发布范围 |
 | Education / Skills | 教育、证书、能力分类 | `src/config/profile.ts` | 保留既有教育事实；能力说明区分个人仿真、软件交付与现场实践 |

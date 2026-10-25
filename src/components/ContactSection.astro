@@ -1,4 +1,5 @@
 ---
+import { withBase } from "#base/lib/paths";
 import { site } from "#config/site";
 
 const contactLinks = [
@@ -23,7 +24,7 @@ const contactLinks = [
       <a class="action-link action-link--primary" href={`mailto:${site.email}`}>
         Email me
       </a>
-      <a class="action-link" href={site.resumeUrl} download>
+      <a class="action-link" href={withBase(site.resumeUrl)} download>
         Download CV (PDF)
       </a>
     </div>

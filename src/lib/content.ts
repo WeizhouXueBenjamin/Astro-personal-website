@@ -1,11 +1,12 @@
 import { getCollection } from "astro:content";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { withBase } from "./paths";
 
 export const getBlogPath = (id: string) =>
-  `/blog/${id.split("/").map(encodeURIComponent).join("/")}`;
+  withBase(`/blog/${id.split("/").map(encodeURIComponent).join("/")}/`);
 
-export const getProjectPath = (slug: string) => `/projects/${slug}`;
+export const getProjectPath = (slug: string) => withBase(`/projects/${slug}/`);
 
 export async function getPublishedPosts() {
   return (await getCollection("blogs", ({ data }) => !data.draft)).sort(
@@ -49,8 +50,6 @@ export async function getExperiences() {
 
   return (await getCollection("experience")).sort(
     (a, b) =>
-      Number(b.data.featured) - Number(a.data.featured) ||
-      (a.data.order ?? 999) - (b.data.order ?? 999) ||
       dateValue(b.data.startDate) - dateValue(a.data.startDate) ||
       a.id.localeCompare(b.id, "en"),
   );

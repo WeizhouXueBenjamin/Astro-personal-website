@@ -21,6 +21,19 @@
 
 所有者随后明确授权提交、合入 `main`、配置 Pages 与真实发布。通过现有 Git credential helper 认证后，已创建 `github-pages` Environment，仅允许 `main` Branch，并启用 Pages 的 `workflow` Publishing Source。API 已确认 URL 为 `https://weizhouxuebenjamin.github.io/Astro-personal-website/`、`cname: null`、`https_enforced: true`。未设置 Custom Domain 或修改 DNS。发布在隔离的 `deploy/github-pages` worktree 准备；原有未提交文章、经历排序和相关文档修改保留在原工作区，不进入本次发布。
 
+## 当前生产配置（2026-10-25 已验证）
+
+| 项目 | 当前值 | Confidence |
+| --- | --- | --- |
+| Repository | `WeizhouXueBenjamin/Astro-personal-website` | Confirmed |
+| Default / Production Branch | `main` / `main` | Confirmed |
+| Deployment Type | Astro static / GitHub Project Pages | Confirmed |
+| Site URL | `https://weizhouxuebenjamin.github.io/Astro-personal-website/` | Confirmed：Pages API 与实际 HTTPS |
+| Astro Base Path | `/Astro-personal-website` | Confirmed：CI 产物与线上资源 |
+| Publishing Source | GitHub Actions（`build_type: workflow`） | Confirmed |
+| Custom Domain / HTTPS | 无 Custom Domain；HTTPS enforced | Confirmed |
+| Environment | `github-pages`，只允许 `main` Branch | Confirmed |
+
 ## 配置与流程
 
 Workflow：[`../.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)。
@@ -124,11 +137,22 @@ Configuration Ready、Deployment Verified、Full Automation Verified 是独立�
 | Dependency Installation | Pass：隔离发布 worktree 使用 `pnpm.cmd install --frozen-lockfile --offline --store-dir E:\.pnpm-store`；lockfile 仅新增官方 Markdown processor 的直接引用 |
 | Existing Tests | Pass：`pnpm.cmd run verify:site`，含既有内容场景、根路径、Project Pages、自定义域名子路径、Markdown / MDX 链接、错误根路径与大小写失败场景 |
 | Production Build | Pass：`pnpm.cmd run build`，输出 static；两项项目详情均生成 |
-| Static Output | Pass：隔离发布 worktree 的 `pnpm.cmd run verify:output`，43 个文件、176 个站内 URL、3,017,607 bytes；不包含原工作区未提交文章 |
+| Static Output | Pass：Windows 隔离 worktree 为 43 个文件、176 个站内 URL、3,017,607 bytes；Linux CI 为 43 个文件、176 个站内 URL、3,016,620 bytes。不包含原工作区未提交文章 |
 | 本地 Preview HTTP | Pass：Home、About、Projects、两个项目详情、Blog、RSS、sitemap、favicon、简历均为 HTTP 200；视频 Range 为 HTTP 206 / `video/mp4` / 1024 bytes；不存在的深层路径返回自定义 HTTP 404 |
-| Workflow 文件 | YAML 解析通过，已检查 triggers、Production guard、Job 依赖、权限和 Concurrency；尚未在 GitHub Actions 执行 |
+| Workflow / GitHub Actions | Pass：PR 与非生产分支的手动运行均 Build success / Deploy skipped；`main` 的真实 Push 自动完成 Build、Artifact 上传与 Deploy |
 | Astro / TypeScript Check | Not Run：项目没有独立配置，不把 build 当作类型检查 |
-| 浏览器视觉 / WCAG / 视频解码 | Not Verified：本轮采用产物与 HTTP 验证 |
-| GitHub Actions / Pages Deployment / Full Automation | Not Verified：尚未提交、Push、启用 Pages 或触发生产；预期公开 URL 实测 HTTP 404 |
+| 线上 HTTP / 媒体 | Pass：下载线上实际引用的 41 个文件并验证 176 个站内 URL；简历与视频 SHA-256 和本地原文件一致；视频 Range 返回 206，缺失深层地址返回自定义 404 |
+| 线上浏览器 / 视频解码 | Pass：1440 / 390 / 320px × 6 个页面共 18 组，无横向溢出、导航遮挡或图片失败；canonical、当前导航、筛选、减少动效、无 JavaScript 正文检查通过；1920×1080、87.27 秒视频实际播放；未捕获脚本异常或站内资源错误 |
+| 完整 WCAG / 跨浏览器审核 | Not Run：已检查 19 组对比度及 Chrome 实际页面，不等于完整 WCAG 或其他浏览器验证 |
+| Pages Deployment / Full Automation | Pass：真实 `main` Push、GitHub Actions、Pages Deployment 与更新后的线上网站均有证据 |
 
-Configuration Ready：**Yes**；Deployment Verified：**No**；Full Automation Verified：**No**。
+Configuration Ready：**Yes**；Deployment Verified：**Yes**；Full Automation Verified：**Yes**。
+
+首次自动发布证据：
+
+- [PR #1](https://github.com/WeizhouXueBenjamin/Astro-personal-website/pull/1)：合入既有 7 个功能提交及本轮部署提交，保留 Git History；原有未提交文章和经历排序未发布。
+- [PR validation run](https://github.com/WeizhouXueBenjamin/Astro-personal-website/actions/runs/40155201638)：Build success，Deploy skipped。
+- [非生产分支手动运行](https://github.com/WeizhouXueBenjamin/Astro-personal-website/actions/runs/40155487896)：`workflow_dispatch` 选择 `deploy/github-pages`，Build success，Deploy skipped；未覆盖生产。
+- [Production Push run](https://github.com/WeizhouXueBenjamin/Astro-personal-website/actions/runs/40155304852)：由合并提交 `c9719befa5bf474260e29ac03fd1e2099030ac97` 的 Push 自动触发，Build / Deploy success。
+- Pages Deployment ID `7307666609` 对应上述 Commit，状态 `success`；[Deployment log](https://github.com/WeizhouXueBenjamin/Astro-personal-website/actions/runs/40155304852/job/121055520690)。随后实际访问 [生产网站](https://weizhouxuebenjamin.github.io/Astro-personal-website/) 完成 HTTP 与浏览器检查。
+- 原工作区的浏览器截图与结果在忽略目录 `.astro/pages-live-review/`；HTTP 验证结果在 `.astro/pages-live-http-results.json`。这些本地证据不进入网站内容集合或公开站点。

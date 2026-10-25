@@ -1,9 +1,8 @@
 ---
 import type { GetStaticPaths } from "astro";
 import type { CollectionEntry } from "astro:content";
-import { render } from "astro:content";
 import { getPublishedPosts } from "#base/lib/content";
-import MainLayout from "#layouts/MainLayout.astro";
+import BlogDetailLayout from "#layouts/BlogDetailLayout.astro";
 
 export const getStaticPaths = (async () => {
   const posts = await getPublishedPosts();
@@ -18,38 +17,6 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
 ---
 
-<MainLayout
-  title={post.data.title}
-  description={post.data.description}
-  contentWidth="text"
->
-  <article>
-    <p class="post-meta">
-      <time datetime={post.data.pubDate.toISOString()}>
-        {post.data.pubDate.toLocaleDateString("en-NZ", {
-          year: "numeric",
-          month: "long",
-          day: "2-digit",
-          timeZone: "UTC",
-        })}
-      </time>
-      <span> · {post.data.author}</span>
-    </p>
-
-    <div class="post-body prose">
-      <Content />
-    </div>
-  </article>
-</MainLayout>
-
-<style>
-  .post-meta {
-    margin-bottom: var(--space-6);
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: var(--size-sm);
-  }
-</style>
+<BlogDetailLayout post={post} />

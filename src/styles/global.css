@@ -381,7 +381,8 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
+  :root,
+  :root[data-theme="dark"] {
     --duration-fast: 0ms;
   }
 

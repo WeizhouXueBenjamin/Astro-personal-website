@@ -16,8 +16,14 @@ const links = contactLinks.filter(({ icon }) => ["email", "linkedin", "github"].
       <a class="action-link action-link--primary" href={`mailto:${site.email}`}>
         Email me
       </a>
-      <a class="action-link" href={withBase(site.resumeUrl)} download>
-        Download CV (PDF)
+      <a
+        class="action-link"
+        href={withBase(site.resumeUrl)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View CV (PDF, opens in a new tab)"
+      >
+        View CV (PDF)
       </a>
     </div>
     <ul class="contact-links" aria-label="Contact details">

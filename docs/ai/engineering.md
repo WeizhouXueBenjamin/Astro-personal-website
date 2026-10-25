@@ -16,7 +16,7 @@
 | 已删除内容的缓存清理 | `src/lib/local-content-loader.ts` |
 | 页面路由与静态参数 | `src/pages/` |
 | HTML 文档、metadata、全站导航和页脚 | `src/layouts/Layout.astro` |
-| 内容页容器、主标题与宽度 | `src/layouts/MainLayout.astro` |
+| 内容页容器、主标题与宽度 | `src/layouts/MainLayout.astro`；文章阅读页使用 `BlogDetailLayout.astro` |
 | 颜色、表面、文字、边框与尺寸基础 | `src/styles/global.css` 与实际组件样式 |
 | 导航数据及状态 | `src/components/GlobalNav/` |
 
@@ -41,7 +41,7 @@
 - 跳转使用 `<a>`，改变页面状态使用 `<button type="button">`。可选 URL 不存在时省略链接，避免 `window.open(undefined)`。
 - 需要筛选时检查 `basic/filter.astro` 是否适用，保留按钮状态和可访问名称。无 JavaScript 时至少仍能阅读内容。
 - 动效和媒体按内容需要使用；尊重 `prefers-reduced-motion`，不要新增与真实项目无关的视频或装饰占位图。
-- 首页粒子以 `e9ea692`（2026-06-06）为回溯基准，使用原有 `particles.js` 与 `src/assets/particles.json` 配置；页面加载时开启减少动效则不创建粒子。英文简历从 `public/documents/` 提供，下载路径集中维护在 `site.resumeUrl`；更新文件时检查公开 PDF 与链接是否一致。
+- 首页粒子以 `e9ea692`（2026-06-06）为回溯基准，使用原有 `particles.js` 与 `src/assets/particles.json` 配置；页面加载时开启减少动效则不创建粒子。英文简历从 `public/documents/` 提供，路径集中维护在 `site.resumeUrl`；CV 链接统一使用 `target="_blank"`、`rel="noopener noreferrer"`，文案为 View CV，不添加 `download` 属性。更新文件时检查公开 PDF 与链接是否一致。
 
 ## 内容 schema
 
@@ -51,7 +51,7 @@
 | --- | --- | --- | --- |
 | `blogs` | `src/content/blogs/**/*.{md,mdx}` | `title`、`pubDate`（解析为 Date）、`description` | `author` 默认站点姓名，`tags` 默认 `[]`，`draft` 默认 `false` |
 | `experience` | `src/content/experience/**/*.{yaml,yml,json}` | `jobTitle`、`company`、`startDate`、至少一个 `bullets` | `location`、`endDate`、`tags`、`techStack`、`logo`、`companyWebsite`、`highLights`、`referenceLetter` |
-| `projects` | `src/content/projects/**/*.{yaml,yml,json}` | `title`、`slug`、`summary`、`category`、`projectType`、`role`、3–5 个 `techStack`、至少一个 `sections` | `period`、`year`、`status`、`links`、`featuredMedia`、`coverMedia`、`media`、`order`、`featured`；完整维护说明见 [project-showcase.md](project-showcase.md) |
+| `projects` | `src/content/projects/**/*.mdx` | `title`、`slug`、`summary`、`category`、`projectType`、`role`、3–5 个 `techStack`；正文至少一个 `##` 章节 | `period`、`year`、`status`、`links`、`hero`、`cover`、`order`、`featured`；完整维护说明见 [project-showcase.md](project-showcase.md) |
 
 容易出错的现有约束：
 
@@ -62,8 +62,8 @@
 - Experience 当前日期是字符串，已有内容使用 `Dec 2025`、`Present` 等格式。不要未经迁移就改成 Date 字段、ISO 专用解析或新的任职状态模型。
 - Project `status` 仅接受 `In Progress` 或 `Completed`，没有默认值；所有者未提供状态时省略字段和 UI，不自行推断。
 - `logo` 使用 schema 的 `image()`，按实际内容文件位置提供可解析的图片，不把任意字符串当成已验证图片。
-- Experience 按开始日期倒序排列，相同日期按 id 稳定排序；已移除 `featured` 与 `order`。Projects 保留这两个展示字段：先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项，不在缺少精选时自动编造精选标签。媒体条目的 `order` 独立控制章节内阅读顺序。
-- Projects 使用严格 schema；旧 `description`、`bullets`、`tags`、`githubUrl` 等字段已迁移为摘要、章节、分类与 `links`。新增案例从 `src/content/projects/structure.txt` 开始，不能复制旧字段。重复 slug、媒体来源、无效章节引用、缺失本地视频会使构建失败。
+- Experience 按开始日期倒序排列，相同日期按 id 稳定排序；已移除 `featured` 与 `order`。Projects 保留这两个展示字段：先将 Controls & Automation / SCADA 作为同一优先组，再按 featured 优先、order 升序、year 倒序排列；平局按 id 稳定排序。首页只取显式 featured 的前两项。项目媒体按 MDX 中的出现位置排序，不再维护媒体级 `order` 或 `section`。
+- Projects 使用严格 frontmatter schema；旧 YAML 的 `sections`、`media`、`featuredMedia`、`coverMedia` 已迁移为 Markdown、正文组件与 `hero/cover`。新增案例从 `src/content/projects/template.mdx.txt` 开始。`remark-projects.mjs` 仅处理 Projects，生成章节、Figure 编号及测试引用；`project-schema.ts` 共用 Hero 与正文媒体的校验。重复 slug/媒体/ID、缺少 alt/caption、错误证据引用、非法分组或缺失本地视频会使构建失败。
 
 ## 正式发布规则
 
@@ -73,18 +73,20 @@
 
 有技术证据的文章可使用 MDX，沿用窄阅读列与 `.prose`。现有 OPC UA 文章复用 `ProjectMedia` 展示真实截图、Figure caption 与原图链接；图片可见状态、书面排障记录与推断分别说明，来源尽可能链接固定 revision。文章发布日期不代表实验发生日期，不将排障笔记表述为本轮重新执行的测试。
 
+Blog 列表沿用宽版页面容器，以日期、最多三个既有主题标签、标题及摘要组成可点击条目。文章通过 `BlogDetailLayout.astro` 提供独立标题区和窄正文；`render()` 返回的 h2/h3 自动生成目录，桌面为侧栏，窄屏为原生 `<details>`。没有章节时省略目录，不新增作者维护字段或客户端依赖。
+
 新增或修改任何文章出口时，检查其他出口是否仍遵循同一规则。是否按未来日期定时发布尚未约定，不自行引入日期过滤或定时任务。
 
 内容 schema 变更属于完整迁移：一起检查所有内容条目、类型、页面、RSS、示例和手工模板。不要仅重命名字段或放宽验证来消除错误。没有真实数据时，提供空状态和待补充项。
 
-当前三个集合通过 `localGlob()` 包装 Astro glob loader：在同步前清理源文件已删除的缓存条目，覆盖 Astro 7.0.7 在目录为空时提前返回的行为。不要用清除整个缓存来掩盖内容删除失败；升级依赖后用 `verify:site` 的连续删除场景验证，再判断是否仍需要兼容处理。
+当前三个集合通过 `localGlob()` 包装 Astro glob loader：同步前清理源文件已删除的缓存条目，并在开发模式初始目录为空时保留 add/change 监听。Astro 7.0.7 的空目录提前返回会跳过缓存清理和原生 watcher 注册；首条有效内容加载后交回原生监听，并补扫监听建立期间新增的文件。不要用清除整个缓存或忽略集合警告来掩盖加载失败；升级依赖后用 `verify:site` 的连续删除及实时空目录恢复场景验证，再判断是否仍需要兼容处理。
 
 ## 样式与布局
 
 - 优先复用 `--bg`、`--surface`、`--surface-hover`、`--card`、`--border`、`--text`、`--text-secondary`、`--text-muted`、`--accent` 等现有 token，按设计规范区分其用途。
 - Tailwind 工具类与 Astro scoped CSS 均可使用；跟随所在模块的表达方式。全局 CSS 仅承载跨页面基础规则，不为单个卡片扩大影响范围。
 - 目前只有 dark token，HTML 也固定 dark。不得假定配置中出现 light 就表示已支持浅色主题；主题任务需统一 token、DOM 状态和组件行为。
-- 普通内容页使用 MainLayout 的宽度与主标题；项目详情使用 ProjectDetailLayout，并复用 Layout 的文档外壳。博客正文从 h2 开始，避免重复 h1。首页与项目详情自行提供唯一的 main/h1。
+- 普通内容页使用 MainLayout 的宽度与主标题；项目详情使用 ProjectDetailLayout，文章阅读页使用 BlogDetailLayout，均复用 Layout 的文档外壳。博客正文从 h2 开始，避免重复 h1。首页、项目详情与文章阅读页自行提供唯一的 main/h1。
 - 检查窄屏换行、长标题、长链接和空内容，不以固定卡片高度掩盖截断问题。
 
 ## 页面质量
@@ -101,7 +103,7 @@
 
 `verify:output` 在正式 build 后检查实际 `dist/` 的站内链接、资源、metadata、RSS、sitemap、大小写和体积。`verify:site` 另外覆盖根路径、Project Pages 和自定义域名子路径。CI 只构建一次正式站点并上传已验证的 Artifact；本地检查通过不代表远程发布或端到端自动化已验证。
 
-`verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
+`verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。`verify-content-dev.mjs` 另以真实 Astro dev 服务验证初始空目录、忽略文件、首条 MDX 新增、首页/详情、编辑、删除最后一项及重新添加，测试结束关闭服务。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
 
 临时工作区复用 node_modules 链接，但必须使用自己的 Astro `cacheDir` 与 Vite cache，避免默认缓存经链接污染正式构建。Projects 的集合 ID 使用完整源文件相对路径，与公开 slug 分开，防止默认 loader 用重复 slug 覆盖条目而绕过 URL 唯一性校验。
 

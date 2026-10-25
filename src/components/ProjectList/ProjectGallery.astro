@@ -1,22 +1,13 @@
 ---
-import type { NumberedMedia, ProjectSectionData } from "#base/lib/project-media";
-import ProjectMedia from "./ProjectMedia.astro";
-
 interface Props {
-  items: NumberedMedia[];
-  layout: ProjectSectionData["mediaLayout"];
+  layout?: "featured" | "comparison" | "sequence";
 }
 
-const { items, layout } = Astro.props;
+const { layout = "featured" } = Astro.props;
 ---
 
 <div class:list={["project-gallery", `project-gallery--${layout}`]}>
-  {items.map((item, index) => (
-    <div class="project-gallery__item">
-      {layout === "sequence" && <p class="eyebrow">Step {String(index + 1).padStart(2, "0")}</p>}
-      <ProjectMedia {...item} />
-    </div>
-  ))}
+  <slot />
 </div>
 
 <style>
@@ -29,17 +20,13 @@ const { items, layout } = Astro.props;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .project-gallery__item {
+  .project-gallery > :global(*) {
     min-width: 0;
   }
 
-  .project-gallery--sequence .project-gallery__item {
+  .project-gallery--sequence > :global(*) {
     padding-left: var(--space-4);
     border-left: 1px solid var(--border-control);
-  }
-
-  .project-gallery__item > .eyebrow {
-    margin-bottom: var(--space-3);
   }
 
   @media (max-width: 700px) {

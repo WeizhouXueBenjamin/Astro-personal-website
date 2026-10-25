@@ -9,24 +9,35 @@ const posts = await getPublishedPosts();
 <MainLayout
   title="Blog"
   description="Notes on automation, control systems, software, and engineering practice."
-  contentWidth="text"
 >
   <p class="page-intro">Notes on automation, control systems, software, and engineering practice.</p>
   {posts.length > 0 ? (
     <ul class="post-list">
-      {posts.map((post) => (
+      {posts.map((post, index) => (
         <li>
-          <article class="surface-card">
-            <h2><a href={getBlogPath(post.id)}>{post.data.title}</a></h2>
-            <time datetime={post.data.pubDate.toISOString()}>
-              {post.data.pubDate.toLocaleDateString("en-NZ", {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-                timeZone: "UTC",
-              })}
-            </time>
-            <p>{post.data.description}</p>
+          <article>
+            <a class="post-link" href={getBlogPath(post.id)} aria-labelledby={`post-title-${index}`}>
+              <div class="post-context">
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {post.data.pubDate.toLocaleDateString("en-NZ", {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    timeZone: "UTC",
+                  })}
+                </time>
+                {post.data.tags.length > 0 && (
+                  <ul class="tag-list" aria-label="Topics">
+                    {post.data.tags.slice(0, 3).map((tag) => <li>{tag}</li>)}
+                  </ul>
+                )}
+              </div>
+              <div class="post-summary">
+                <h2 id={`post-title-${index}`}>{post.data.title}</h2>
+                <p>{post.data.description}</p>
+                <span class="post-action" aria-hidden="true">Read article →</span>
+              </div>
+            </a>
           </article>
         </li>
       ))}
@@ -41,21 +52,51 @@ const posts = await getPublishedPosts();
 
 <style>
   .post-list {
-    display: grid;
-    gap: var(--space-5);
-    margin: var(--space-6) 0 0;
+    margin: var(--space-7) 0 0;
     padding: 0;
+    border-top: 1px solid var(--border);
     list-style: none;
   }
 
-  article {
-    display: grid;
-    gap: var(--space-3);
-    padding: var(--card-padding);
+  .post-list > li {
+    border-bottom: 1px solid var(--border);
   }
 
-  h2 {
-    font-size: var(--size-h3);
+  .post-link {
+    display: grid;
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+    gap: var(--space-7);
+    padding-block: var(--space-6);
+    color: var(--text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: background-color var(--duration-fast) ease;
+  }
+
+  .post-link:hover,
+  .post-link:focus-visible {
+    background: var(--surface);
+  }
+
+  .post-link:hover h2,
+  .post-link:focus-visible h2 {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+
+  .post-context,
+  .post-summary {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  .post-summary h2 {
+    max-width: var(--content-copy);
+    font-size: var(--size-h2);
+    text-wrap: pretty;
   }
 
   time {
@@ -64,8 +105,15 @@ const posts = await getPublishedPosts();
     font-size: var(--size-sm);
   }
 
-  article p {
+  .post-summary p {
+    max-width: var(--content-copy);
     color: var(--text-secondary);
+  }
+
+  .post-action {
+    color: var(--accent);
+    font-size: var(--size-sm);
+    font-weight: var(--weight-control);
   }
 
   .blog-empty {
@@ -75,5 +123,16 @@ const posts = await getPublishedPosts();
     margin-top: var(--space-6);
     padding-left: var(--space-5);
     border-left: 1px solid var(--border-control);
+  }
+
+  @media (max-width: 700px) {
+    .post-link {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+
+    .post-context {
+      gap: var(--space-3);
+    }
   }
 </style>

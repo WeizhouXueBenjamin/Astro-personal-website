@@ -1,20 +1,23 @@
 import type { CollectionEntry } from "astro:content";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 export type ProjectData = CollectionEntry<"projects">["data"];
-export type ProjectMediaData = ProjectData["media"][number];
-export type ProjectSectionData = ProjectData["sections"][number];
+export type ProjectMediaData = NonNullable<ProjectData["hero"]>;
 export type NumberedMedia = { media: ProjectMediaData; number: number };
 
-export function getProjectEvidence(project: ProjectData): NumberedMedia[] {
-  const sections = ["hero", ...project.sections.map((section) => section.id)];
-  return sections.flatMap((id) => project.media
-    .filter((media) => media.section === id)
-    .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id, "en")))
-    .map((media, index) => ({ media, number: index + 1 }));
+export function validateProjectMediaFiles(media: ProjectMediaData) {
+  if (media.type !== "video") return;
+  for (const path of [media.src, media.captions?.src]) {
+    if (path?.startsWith("/") && !existsSync(resolve("public", `.${path}`))) {
+      throw new Error(`Missing project media file: ${path}`);
+    }
+  }
 }
 
 export function getProjectCover(project: ProjectData) {
-  const media = project.media.find((item) => item.id === (project.coverMedia ?? project.featuredMedia));
+  if (project.cover) return project.cover;
+  const media = project.hero;
   if (!media) return undefined;
   return { src: media.type === "image" ? media.src : media.poster, alt: media.alt };
 }

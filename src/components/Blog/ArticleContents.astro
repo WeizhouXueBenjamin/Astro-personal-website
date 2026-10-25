@@ -1,0 +1,50 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+---
+
+<nav class="article-contents" aria-label="Article sections">
+  <ol>
+    {headings.map((heading) => (
+      <li class:list={{ "article-contents__subsection": heading.depth === 3 }}>
+        <a href={`#${heading.slug}`}>{heading.text}</a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .article-contents ol {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-contents a {
+    display: block;
+    padding: var(--space-2);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+    line-height: 1.5;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .article-contents a:hover,
+  .article-contents a:focus-visible {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .article-contents__subsection {
+    padding-left: var(--space-4);
+  }
+</style>

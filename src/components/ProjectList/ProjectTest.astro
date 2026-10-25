@@ -1,0 +1,65 @@
+---
+import { z } from "astro/zod";
+import { projectTestSchema } from "#base/lib/project-schema";
+
+type Props = z.input<typeof projectTestSchema> & {
+  evidenceNumber?: number;
+  evidenceTitle?: string;
+};
+
+const { evidenceNumber, evidenceTitle, ...data } = Astro.props;
+const test = projectTestSchema.parse(data);
+---
+
+<article class="project-test" aria-label={test.scenario}>
+  <h3>{test.scenario}</h3>
+  <dl>
+    <div><dt>Expected behaviour</dt><dd>{test.expected}</dd></div>
+    <div><dt>Actual result</dt><dd>{test.result}</dd></div>
+  </dl>
+  {test.evidence && (
+    <a href={`#figure-${test.evidence}`}>
+      Evidence: Figure {String(evidenceNumber).padStart(2, "0")} — {evidenceTitle}
+    </a>
+  )}
+</article>
+
+<style>
+  .project-test {
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--border-light);
+  }
+
+  h3 {
+    font-size: var(--size-body);
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin-block: var(--space-3);
+    font-size: var(--size-sm);
+  }
+
+  dt {
+    margin-bottom: var(--space-1);
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+
+  a {
+    font-size: var(--size-sm);
+  }
+
+  @media (max-width: 480px) {
+    dl {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+  }
+</style>

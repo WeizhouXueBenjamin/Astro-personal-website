@@ -81,6 +81,8 @@ Blog 列表沿用宽版页面容器，以日期、最多三个既有主题标签
 
 当前三个集合通过 `localGlob()` 包装 Astro glob loader：同步前清理源文件已删除的缓存条目，并在开发模式初始目录为空时保留 add/change 监听。Astro 7.0.7 的空目录提前返回会跳过缓存清理和原生 watcher 注册；首条有效内容加载后交回原生监听，并补扫监听建立期间新增的文件。不要用清除整个缓存或忽略集合警告来掩盖加载失败；升级依赖后用 `verify:site` 的连续删除及实时空目录恢复场景验证，再判断是否仍需要兼容处理。
 
+依赖安全维护需同步本地 Volta pin 与部署 Workflow 的 Node 值，并验证既有 Markdown processor API 和 loader 兼容层。直接依赖以 package.json 为准，解析版本与传递依赖以 lockfile 为准；本次验证快照见 [依赖安全维护记录](../dependency-security-maintenance.md)。
+
 ## 样式与布局
 
 - 优先复用 `--bg`、`--surface`、`--surface-hover`、`--card`、`--border`、`--text`、`--text-secondary`、`--text-muted`、`--accent` 等现有 token，按设计规范区分其用途。
@@ -93,6 +95,7 @@ Blog 列表沿用宽版页面容器，以日期、最多三个既有主题标签
 
 - metadata 通过现有布局的 title/description 传入；共享站点信息复用配置。联系方式的 URL 从 `src/config/site.ts` 的 `contactLinks` 派生，联系区、社交图标与页脚复用，组件只选择需要显示的入口。
 - 部署地址统一由 `src/config/deployment.mjs` 提供给 Astro，不在身份配置中重复维护。改动域名或 base 时同步核对 canonical、RSS、sitemap、站内链接和静态资源路径；原始 public / 站内路径通过 `withBase()` 渲染，Astro 图片 URL 不重复加 base。Markdown 链接由 Remark 处理；静态页面使用 trailing slash，404 输出为 `404.html`。操作步骤见 [部署说明](../github-pages-deployment.md)。
+- `src/pages/robots.txt.ts` 从 Astro site 与 `withBase()` 生成当前部署的 sitemap 地址，不写死生产域名；Project Pages 下仅生成项目子路径内的文件，不能控制 `github.io` 域名根目录的 robots.txt。
 - 图片提供恰当的替代文本和尺寸；装饰性图片使用空 alt。iframe 仅在存在真实媒体需求时渲染，并有可访问标题。
 - 键盘可达，焦点可见，交互状态可被辅助技术理解。先使用原生 HTML 语义，再按需添加 ARIA。
 - 用测量结果报告性能与可访问性；未经实际运行，不宣称达到 Lighthouse 分数或完成 WCAG 验证。
@@ -101,7 +104,7 @@ Blog 列表沿用宽版页面容器，以日期、最多三个既有主题标签
 
 当前可用项目命令：`pnpm run dev`、`pnpm run build`、`pnpm run preview`、`pnpm run verify:site`、`pnpm run verify:output`、`pnpm run verify:design`、`pnpm run astro -- ...`。
 
-`verify:output` 在正式 build 后检查实际 `dist/` 的站内链接、资源、metadata、RSS、sitemap、大小写和体积。`verify:site` 另外覆盖根路径、Project Pages 和自定义域名子路径。CI 只构建一次正式站点并上传已验证的 Artifact；本地检查通过不代表远程发布或端到端自动化已验证。
+`verify:output` 在正式 build 后检查实际 `dist/` 的站内链接、资源、metadata、RSS、sitemap、robots.txt 存在性、大小写和体积；动态 `_astro` 资源地址覆盖单引号、双引号与 template literal。`verify:site` 另外覆盖根路径、Project Pages 和自定义域名子路径，包括 robots.txt 的 sitemap 地址与动态脚本断链。CI 只构建一次正式站点并上传已验证的 Artifact；本地检查通过不代表远程发布或端到端自动化已验证。
 
 `verify:site` 使用 Node 内置断言，在独立临时工作区复制代码并构建内容场景，验证草稿、嵌套文章路径、RSS、项目分类优先级、独立详情路由、缺少可选数据、Figure 排序、三种媒体布局、本地视频与按需外部播放器、非法引用/重复来源/slug、空集合、导航和静态跳转。`verify-content-dev.mjs` 另以真实 Astro dev 服务验证初始空目录、忽略文件、首条 MDX 新增、首页/详情、编辑、删除最后一项及重新添加，测试结束关闭服务。测试插图只在临时目录生成，不进入正式内容，也不代替浏览器交互验证。
 

@@ -63,7 +63,7 @@
   --content-text: 50rem;
   --content-copy: 46rem;
   --page-gutter: clamp(var(--space-4), 4vw, var(--space-6));
-  --header-offset: 8rem;
+  --header-offset: 6rem;
   --section-gap: var(--space-7);
   --duration-fast: 140ms;
 

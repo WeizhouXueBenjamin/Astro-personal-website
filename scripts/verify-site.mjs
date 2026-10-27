@@ -143,6 +143,8 @@ export default {
   const blog = read("blog/index.html");
   const rss = read("rss.xml");
   const sitemap = read("sitemap-0.xml");
+  assert.equal(read("robots.txt"), "User-agent: *\nAllow: /\n\nSitemap: https://portfolio.example/sitemap-index.xml\n");
+  assert.ok(!sitemap.includes("/robots.txt"), "Crawler instructions must not appear in the sitemap");
   const article = read("blog/verification/public/index.html");
   for (const output of [blog, rss]) {
     assert.ok(output.includes("Fixture Public Article") && output.includes("Fixture Newer Article"));
@@ -265,6 +267,7 @@ export default {
     const config = getDeploymentConfig({ siteUrl });
     verifyOutput({ root: dist, ...config });
     const base = config.base;
+    assert.equal(read("robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}sitemap-index.xml\n`);
     assert.ok(read("projects/control-case/index.html").includes(`src="${base}/media/projects/feeder-demo.mp4"`));
     assert.ok(read("projects/control-case/index.html").includes(`href="${siteUrl}projects/control-case/"`));
     assert.ok(read("rss.xml").includes(`${siteUrl}blog/verification/public/</link>`));
@@ -278,6 +281,11 @@ export default {
     assert.equal((homeNav?.match(/aria-current="page"/g) ?? []).length, 1);
 
     const validHome = read("index.html");
+    const particleScript = validHome.match(/["'`]([^"'`\s<>]*\/_astro\/particles\.min[^"'`\s<>]+)["'`]/)?.[1];
+    assert.ok(particleScript, "The built Home must reference its on-demand particle script");
+    writeFileSync(join(dist, "index.html"), validHome.replace(particleScript, `${base}/_astro/missing-particles.js`));
+    assert.throws(() => verifyOutput({ root: dist, ...config }), /Missing output or incorrect filename case/);
+    writeFileSync(join(dist, "index.html"), validHome);
     for (const [brokenUrl, expectedError] of [["/projects/", /URL escapes base/], [`${base}/PROJECTS/`, /Missing output or incorrect filename case/]]) {
       writeFileSync(join(dist, "index.html"), validHome.replace(`href="${base}/projects/"`, `href="${brokenUrl}"`));
       assert.throws(() => verifyOutput({ root: dist, ...config }), expectedError);
@@ -330,7 +338,7 @@ export default {
   assert.ok(!existsSync(join(dist, "blog/verification/public/index.html")));
   assert.ok(read("about/index.html").includes("Experience details will be added here"));
   await verifyContentDev({ root: fixtureRoot, project: plain, writeProject });
-  console.log("Site verification passed: publishing/RSS, Blog contents anchors and short articles, experience chronology and stable ties, project routes/category priority/featured/order, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, Markdown/MDX links, and output validation failure cases.");
+  console.log("Site verification passed: publishing/RSS, Blog contents anchors and short articles, experience chronology and stable ties, project routes/category priority/featured/order, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, robots sitemap discovery, Markdown/MDX links, and output validation failure cases including on-demand scripts.");
 } finally {
   // Remove only the newly created temporary workspace; unlink its dependency junction first.
   const dependencyLink = join(fixtureRoot, "node_modules");

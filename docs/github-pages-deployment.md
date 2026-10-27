@@ -21,7 +21,7 @@
 
 所有者随后明确授权提交、合入 `main`、配置 Pages 与真实发布。通过现有 Git credential helper 认证后，已创建 `github-pages` Environment，仅允许 `main` Branch，并启用 Pages 的 `workflow` Publishing Source。API 已确认 URL 为 `https://weizhouxuebenjamin.github.io/Astro-personal-website/`、`cname: null`、`https_enforced: true`。未设置 Custom Domain 或修改 DNS。发布在隔离的 `deploy/github-pages` worktree 准备；原有未提交文章、经历排序和相关文档修改保留在原工作区，不进入本次发布。
 
-## 当前生产配置（2026-10-25 已验证）
+## 迁移前生产配置（2026-10-25 已验证）
 
 | 项目 | 当前值 | Confidence |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ Workflow：[`../.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)�
 
 `main` 的 Push、目标为 `main` 的 Pull Request、任意分支的 `workflow_dispatch` 均执行验证。只有 `main` 的 Push / 手动运行能够进入 Deployment Job。PR（包括 Fork PR）和其他分支的手动运行仅构建，不发布；不使用 `pull_request_target`，不需要部署 Secret。
 
-Build Job 只有 `contents: read`，执行官方 `withastro/action@v6`：安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。Node 固定为项目要求的 `22.12.0`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。没有配置独立 lint / Astro Check / TypeScript Check，不把 build 当作完整类型检查。
+Build Job 只有 `contents: read`，执行官方 `withastro/action@v6`：安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。Node 固定为项目要求的 `22.23.4`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。没有配置独立 lint / Astro Check / TypeScript Check，不把 build 当作完整类型检查。
 
 Deployment Job 依赖 Build 成功，只授予 `pages: write`、`id-token: write`，使用 `actions/deploy-pages@v5` 和 `github-pages` Environment。Concurrency 按 PR / Git ref 分组；生产构建与部署顺序运行，`cancel-in-progress: false`，新 Push 不会取消进行中的发布。GitHub 可以替换同一组中尚未开始的 pending run；保留最新待执行版本。
 
@@ -122,9 +122,36 @@ GitHub Pages 当前限制包括发布站点不超过 1 GB、Deployment 超过 10
 
 简单重跑旧 Workflow 可能重新发布旧 Artifact，却没有恢复 `main` 的内容，不能代替可审计的版本回滚。
 
-## 未来 Custom Domain
+## Custom Domain 迁移（2026-10-27）
 
-所有者确定真实域名后，按 GitHub 官方步骤配置 DNS、Pages Custom Domain 与 HTTPS；保留现有域名直到迁移方案确认。将 Repository Variable `SITE_URL` 设置为实际完整 URL（根域名通常为 `https://实际域名/`），本地也使用相同变量，重新构建检查，再运行 `main` 的 Workflow。`site` 和 `base` 自动从该值统一推导，无须改写 Workflow 或逐个改内容路径。Actions 发布不依赖 `public/CNAME` 判断域名生效。
+所有者指定 `benjaminxue.nastu.net`。目标 Repository Variable 为 `SITE_URL=https://benjaminxue.nastu.net/`，现有部署 Workflow 从该变量读取 URL，Astro 自动推导 `site: https://benjaminxue.nastu.net` 与 `base: /`。本地构建与产物检查也需设置相同的 `SITE_URL`。页面、内容和媒体路径继续复用现有 base 工具，无须逐个修改。
+
+该域名拥有独立的 NS / SOA 区域，DNS 管理面板在此区域的 `@` 添加以下 A 记录；如果管理的是父区域 `nastu.net`，主机名为 `benjaminxue`：
+
+| 类型 | 主机名 | 值 |
+| --- | --- | --- |
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+
+GitHub **Settings → Pages → Custom domain** 使用 `benjaminxue.nastu.net`。Actions 发布不依赖 `public/CNAME`；证书签发后在 Pages 启用 **Enforce HTTPS**。DNS 记录和证书可能异步生效，需分别确认解析、HTTP / HTTPS、资源和跳转，不能用本地构建代替线上验收。
+
+迁移验证记录：
+
+- 发布源为 `main` 的 `d9c32c5a055cad8eddab2e9ad675eb53661181fc`，没有提交原工作区的 CSS 修改或开发分支内容。
+- 隔离导出该版本后，以新域名运行 `pnpm.cmd run build`、`pnpm.cmd run verify:site` 和 `pnpm.cmd run verify:output` 全部通过，产物包含 44 个文件、196 个站内 URL。
+- `SITE_URL` Repository Variable 已设置为 `https://benjaminxue.nastu.net/`；Pages API 确认 `cname: benjaminxue.nastu.net`、`build_type: workflow`。
+- [迁移部署任务](https://github.com/WeizhouXueBenjamin/Astro-personal-website/actions/runs/40443442220) 的 Build / Deploy 均为 success，无须修改 Workflow 或新增源代码提交。
+- 公共 DNS 已返回全部 4 条 A 记录；GitHub Pages DNS Health 确认 `is_apex_domain`、`is_valid`、`is_pointed_to_github_pages_ip`、`is_https_eligible` 均为 true。
+- 部署后 HTTP 首页返回 200，canonical 为 `https://benjaminxue.nastu.net/`，不再包含旧 `/Astro-personal-website/` base。下载实际引用的 42 个公开文件后，线上产物通过 196 个站内 URL 检查；主要路由、旧路由跳转页、RSS、sitemap、简历和媒体可访问，视频 Range 返回 206，缺失深层地址返回自定义 404。
+- HTTPS 证书为 `approved`，域名校验与 TLS 连接通过；Pages `https_enforced: true`。HTTP 首页与旧 GitHub Pages 深层地址均 301 至正确的新 HTTPS 地址，保留对应页面路径；HTTPS 简历返回 200，视频 Range 返回 206 / 1024 bytes。
+- 新域名的 HTTPS 浏览器检查通过：1440 / 390 / 320px × 6 个页面共 18 组，无横向溢出、图片失败、脚本异常或站内资源错误；导航、筛选、减少动效、正常粒子启动、无 JavaScript 正文和视频实际播放检查通过，并目视检查桌面首页与窄屏项目详情截图。
+- 本机 DNS 仍缓存迁移前的空回答。HTTP、TLS 与浏览器验收仅在各验证进程内将域名解析至已由公共 DNS 与 GitHub Health 确认的 `185.199.108.153`，没有修改系统 DNS 或关闭证书校验。公共 DNS 和 GitHub DNS Health 均已确认解析正确。
+- 后续访问失败排查：清除 Windows DNS Client 缓存后，默认路由器 DNS `192.168.1.1` 仍返回空 A 回答，普通 HTTPS 请求无法解析域名；Cloudflare、Google 公共 DNS 与两台权威 DNS 的 TCP 直查均返回正确记录。当前证据定位到本机默认 DNS 解析路径，不能仅归因于 Windows 缓存，也不能根据一次 UDP 旧回答断言权威区域配置不一致。未改动系统 DNS Server Assignment 或 hosts；可在 Chrome 的 Security 设置选择 Cloudflare Secure DNS，或经所有者选择后调整本机 WiFi DNS。
+- 证书初次未生成时，按 GitHub 官方恢复流程移除并立即重新添加同一域名，随后签发成功；没有修改 DNS、源代码或其他仓库设置。
+
+DNS 与证书配置依据：[GitHub Custom Domain 文档](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)。
 
 ## 验收状态
 

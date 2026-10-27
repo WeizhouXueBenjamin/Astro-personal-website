@@ -7,6 +7,7 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { getDeploymentConfig } from "./src/config/deployment.mjs";
 import remarkBasePaths from "./src/lib/remark-base-paths.mjs";
+import remarkProjects from "./src/lib/remark-projects.mjs";
 
 const { site, base } = getDeploymentConfig();
 
@@ -16,7 +17,7 @@ export default defineConfig({
   output: "static",
   trailingSlash: "always",
   markdown: {
-    processor: unified({ remarkPlugins: [[remarkBasePaths, { base }]] }),
+    processor: unified({ remarkPlugins: [[remarkBasePaths, { base }], remarkProjects] }),
   },
   integrations: [
     mdx(),

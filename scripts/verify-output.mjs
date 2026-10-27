@@ -24,7 +24,7 @@ export function verifyOutput({ root = "dist", site, base }) {
   }
   walk();
   assert.ok(totalBytes < 1_000_000_000, "Pages published site must stay below 1 GB");
-  for (const required of ["index.html", "about/index.html", "projects/index.html", "blog/index.html", "404.html", "rss.xml", "sitemap-index.xml"]) {
+  for (const required of ["index.html", "about/index.html", "projects/index.html", "blog/index.html", "404.html", "rss.xml", "robots.txt", "sitemap-index.xml"]) {
     assert.ok(files.has(required), `Missing static output: ${required}`);
   }
 
@@ -71,8 +71,8 @@ export function verifyOutput({ root = "dist", site, base }) {
       for (const [, value] of text.matchAll(/url\(\s*["']?([^\s"')]+)["']?\s*\)/g)) check(value, from);
     }
     if (path.endsWith(".js") || path.endsWith(".html")) {
-      // Includes the particle vendor script loaded on demand by Home.
-      for (const [, value] of text.matchAll(/["']([^"'\s<>]*\/_astro\/[^"'\s<>]+)["']/g)) check(value, from);
+      // Includes single/double-quoted and template-literal URLs emitted by Vite.
+      for (const match of text.matchAll(/(["'`])([^"'`\s<>]*\/_astro\/[^"'`\s<>]+)\1/g)) check(match[2], from);
     }
   }
   return { files: files.size, checked, totalBytes, largest };

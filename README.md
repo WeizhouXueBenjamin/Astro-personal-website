@@ -29,6 +29,7 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 | /blog | 正式文章列表 | blogs 集合 |
 | /blog/文章id | 正式文章详情，支持子目录 | blogs 集合 |
 | /rss.xml | 与文章页面一致的正式文章 Feed | getPublishedPosts() |
+| /robots.txt | 允许抓取并声明当前部署的 sitemap 地址 | Astro site、withBase() |
 | /experience | 跳转至 /about#work-experience | 静态跳转页 |
 | /gallery | 暂缓，跳转首页 | 静态跳转页 |
 
@@ -50,7 +51,9 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 
 两项自动化项目素材由所有者提供，均按个人仿真项目展示。未提供的生产部署、认证、项目状态和指标不补写。Starter Kit 文章作为草稿保留。
 
-当前 Astro 7.0.7 的 glob loader 在目录清空时可能保留缓存条目；src/lib/local-content-loader.ts 在同步前清理已删除文件对应的条目。升级 Astro 后用 verify:site 复核这一行为，再决定是否移除兼容处理。
+src/lib/local-content-loader.ts 保留针对早期 Astro 7.0.7 的 glob loader 空目录问题的兼容处理，包括清理已删除文件对应的缓存条目和恢复开发监听。每次依赖升级后继续用 verify:site 复核这些场景，再单独决定是否移除兼容层。
+
+本次安全升级的版本选择、验证结果和已知构建告警见 [依赖安全维护记录](docs/dependency-security-maintenance.md)。
 
 ## AI 协作
 

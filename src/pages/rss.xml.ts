@@ -10,7 +10,7 @@ export const GET: APIRoute = async (context) => {
   const siteUrl = new URL(withBase("/"), context.site);
   const items = posts.map((post) => ({
     title: post.data.title,
-    description: post.data.description ?? post.data.title,
+    description: post.data.description,
     pubDate: post.data.pubDate,
     link: new URL(getBlogPath(post.id), siteUrl).href,
   }));

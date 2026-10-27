@@ -1,80 +1,15 @@
 ---
-import { site } from "../config/site";
+import { contactLinks } from "#config/site";
 import Icon from "./assets/Icon.astro";
-
-const { email, social } = site;
-
-type SocialEntry = {
-  label: string;
-  href: string;
-  icon: "email" | "twitter" | "instagram" | "facebook" | "linkedin" | "github";
-  external: boolean;
-};
-
-const links: SocialEntry[] = [];
-
-if (email) {
-  links.push({
-    label: "Send email",
-    href: `mailto:${email}`,
-    icon: "email",
-    external: false,
-  });
-}
-
-if (social.twitter) {
-  links.push({
-    label: "Twitter profile",
-    href: `https://twitter.com/${social.twitter}`,
-    icon: "twitter",
-    external: true,
-  });
-}
-
-if (social.instagram) {
-  links.push({
-    label: "Instagram profile",
-    href: `https://instagram.com/${social.instagram}`,
-    icon: "instagram",
-    external: true,
-  });
-}
-
-if (social.facebook) {
-  links.push({
-    label: "Facebook profile",
-    href: `https://facebook.com/${social.facebook}`,
-    icon: "facebook",
-    external: true,
-  });
-}
-
-if (social.linkedin) {
-  links.push({
-    label: "LinkedIn profile",
-    href: `https://linkedin.com/in/${social.linkedin}`,
-    icon: "linkedin",
-    external: true,
-  });
-}
-
-if (social.github) {
-  links.push({
-    label: "GitHub profile",
-    href: `https://github.com/${social.github}`,
-    icon: "github",
-    external: true,
-  });
-}
 ---
 
 <nav class="social-links" aria-label="Social links">
   {
-    links.map((link) => (
+    contactLinks.map((link) => (
       <a
         class="icon-button action-link"
         href={link.href}
-        aria-label={link.label}
+        aria-label={link.icon === "email" ? "Send email" : `${link.label} profile`}
         {...(link.external
           ? { target: "_blank", rel: "noopener noreferrer" }
           : {})}

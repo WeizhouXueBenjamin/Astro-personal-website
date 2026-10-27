@@ -1,9 +1,7 @@
 ---
-type Tag = string;
-
-interface Props<TTag extends Tag = Tag> {
+interface Props {
   /** Tags shown in the filter. Duplicate values are removed. */
-  tags: readonly TTag[];
+  tags: readonly string[];
   /** id of the element containing items with a `data-filter-tags` attribute. */
   target: string;
   label?: string;
@@ -58,10 +56,6 @@ const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
 }
 
 <script>
-  type FilterItem = HTMLElement & {
-    dataset: DOMStringMap & { filterTags?: string };
-  };
-
   const setupTagFilter = (filter: HTMLElement) => {
     if (filter.dataset.initialized === "true") return;
 
@@ -74,14 +68,11 @@ const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
     const buttons = Array.from(
       filter.querySelectorAll<HTMLButtonElement>("[data-filter-value]"),
     );
-    const items = Array.from(
-      target.querySelectorAll<FilterItem>("[data-filter-tags]"),
-    );
     const count = filter.querySelector<HTMLOutputElement>(
       ".tag-filter__count",
     );
 
-    const getTags = (item: FilterItem): string[] => {
+    const getTags = (item: HTMLElement): string[] => {
       try {
         return JSON.parse(item.dataset.filterTags ?? "[]");
       } catch {
@@ -89,12 +80,17 @@ const uniqueTags = [...new Set(tags)].sort((a, b) => a.localeCompare(b));
       }
     };
 
+    const items = Array.from(
+      target.querySelectorAll<HTMLElement>("[data-filter-tags]"),
+      (element) => ({ element, tags: getTags(element) }),
+    );
+
     const applyFilter = (selectedTag: string) => {
       let visibleItems = 0;
 
-      items.forEach((item) => {
-        const isVisible = !selectedTag || getTags(item).includes(selectedTag);
-        item.hidden = !isVisible;
+      items.forEach(({ element, tags }) => {
+        const isVisible = !selectedTag || tags.includes(selectedTag);
+        element.hidden = !isVisible;
         if (isVisible) visibleItems += 1;
       });
 

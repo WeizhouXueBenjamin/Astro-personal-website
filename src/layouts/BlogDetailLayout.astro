@@ -1,0 +1,234 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import ArticleContents from "#components/Blog/ArticleContents.astro";
+import { withBase } from "#base/lib/paths";
+import Layout from "./Layout.astro";
+
+interface Props {
+  post: CollectionEntry<"blogs">;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const sections = headings.filter(({ depth }) => depth === 2 || depth === 3);
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+  <main class="blog-detail container">
+    <a class="blog-back" href={withBase("/blog/")}>← All articles</a>
+    <article>
+      <header class="article-header">
+        <h1>{post.data.title}</h1>
+        <p class="article-meta">
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString("en-NZ", {
+              year: "numeric",
+              month: "long",
+              day: "2-digit",
+              timeZone: "UTC",
+            })}
+          </time>
+          <span>{post.data.author}</span>
+        </p>
+        {post.data.tags.length > 0 && (
+          <ul class="tag-list" aria-label="Article topics">
+            {post.data.tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        )}
+      </header>
+
+      <div class:list={["article-reading", { "article-reading--with-contents": sections.length > 0 }]}>
+        {sections.length > 0 && (
+          <>
+            <aside class="article-rail">
+              <p class="eyebrow">In this article</p>
+              <ArticleContents headings={sections} />
+            </aside>
+            <details class="article-mobile-contents">
+              <summary>In this article</summary>
+              <ArticleContents headings={sections} />
+            </details>
+          </>
+        )}
+        <div class="post-body prose">
+          <Content />
+        </div>
+      </div>
+
+      <footer class="article-footer">
+        <a class="blog-back" href={withBase("/blog/")}>← All articles</a>
+      </footer>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  .blog-detail {
+    padding-block: var(--header-offset) var(--space-8);
+    overflow-wrap: anywhere;
+  }
+
+  .blog-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-height);
+    font-size: var(--size-sm);
+    text-decoration: none;
+  }
+
+  .blog-back:hover {
+    text-decoration: underline;
+  }
+
+  .article-header {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-sm);
+  }
+
+  .article-reading {
+    padding-top: var(--space-7);
+  }
+
+  .article-reading--with-contents {
+    display: grid;
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+
+  .article-rail {
+    position: sticky;
+    top: var(--header-offset);
+    align-self: start;
+    max-height: calc(100svh - var(--header-offset) - var(--space-5));
+    overflow-y: auto;
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+    border-left: 1px solid var(--border);
+  }
+
+  .article-rail .eyebrow {
+    margin-bottom: var(--space-3);
+    padding-left: var(--space-2);
+  }
+
+  .article-mobile-contents {
+    display: none;
+  }
+
+  .post-body {
+    min-width: 0;
+    font-size: var(--size-lead);
+  }
+
+  .post-body > :global(:where(p, ul, ol, blockquote, h2, h3, h4)) {
+    max-width: 70ch;
+  }
+
+  .post-body > :global(:where(h2, h3, h4)) {
+    margin-top: var(--space-7);
+    scroll-margin-top: var(--header-offset);
+    text-wrap: pretty;
+  }
+
+  .post-body > :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .post-body :global(li + li) {
+    margin-top: var(--space-2);
+  }
+
+  .post-body :global(strong) {
+    color: var(--text);
+    font-weight: var(--weight-control);
+  }
+
+  .post-body :global(:not(pre) > code) {
+    padding: var(--space-1);
+    border-radius: var(--radius-tag);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .post-body :global(table) {
+    display: block;
+    border-collapse: collapse;
+    font-size: var(--size-body);
+  }
+
+  .post-body :global(:where(th, td)) {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .post-body :global(th) {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .article-footer {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 900px) {
+    .article-reading--with-contents {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+
+    .article-rail {
+      display: none;
+    }
+
+    .article-mobile-contents {
+      display: block;
+      min-width: 0;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-control);
+    }
+
+    .article-mobile-contents summary {
+      min-height: var(--control-height);
+      align-content: center;
+      color: var(--accent);
+      font-size: var(--size-sm);
+      font-weight: var(--weight-control);
+      cursor: pointer;
+    }
+
+    .article-mobile-contents[open] summary {
+      margin-bottom: var(--space-3);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .article-header h1 {
+      font-size: clamp(var(--size-h2), 9vw, var(--size-h1));
+    }
+
+    .post-body {
+      font-size: var(--size-body);
+    }
+
+    .article-reading {
+      padding-top: var(--space-6);
+    }
+  }
+</style>

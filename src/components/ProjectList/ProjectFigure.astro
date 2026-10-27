@@ -1,0 +1,36 @@
+---
+import type { ImageMetadata } from "astro";
+import { z } from "astro/zod";
+import { projectMediaSchema } from "#base/lib/project-schema";
+import { validateProjectMediaFiles, type ProjectMediaData } from "#base/lib/project-media";
+import ProjectMedia from "./ProjectMedia.astro";
+
+type Props = ProjectMediaData & { number: number; step?: number };
+
+const { number, step, ...data } = Astro.props;
+// Astro SVG imports are component functions carrying the same image metadata.
+const image = z.custom<ImageMetadata>((value) =>
+  !!value && (typeof value === "object" || typeof value === "function") &&
+  "src" in value && typeof value.src === "string" &&
+  "width" in value && typeof value.width === "number" &&
+  "height" in value && typeof value.height === "number" && "format" in value,
+  "Use an imported local image",
+);
+const media = projectMediaSchema(image).parse({ type: "image", ...data });
+validateProjectMediaFiles(media);
+---
+
+<div class="project-figure">
+  {step && <p class="eyebrow">Step {String(step).padStart(2, "0")}</p>}
+  <ProjectMedia media={media} number={number} />
+</div>
+
+<style>
+  .project-figure {
+    min-width: 0;
+  }
+
+  .project-figure > .eyebrow {
+    margin-bottom: var(--space-3);
+  }
+</style>

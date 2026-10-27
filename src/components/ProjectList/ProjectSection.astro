@@ -1,57 +1,20 @@
 ---
-import type { NumberedMedia, ProjectSectionData } from "#base/lib/project-media";
-import ProjectGallery from "./ProjectGallery.astro";
-
 interface Props {
-  section: ProjectSectionData;
+  id: string;
+  title: string;
   index: number;
-  evidence: NumberedMedia[];
 }
 
-const { section, index, evidence } = Astro.props;
-const media = evidence.filter((item) => item.media.section === section.id);
+const { id, title, index } = Astro.props;
 ---
 
-<section class="project-section" id={section.id} aria-labelledby={`heading-${section.id}`}>
+<section class="project-section" id={id} aria-labelledby={`heading-${id}`}>
   <div class="project-section__heading">
     <p class="eyebrow" aria-hidden="true">{String(index + 1).padStart(2, "0")}</p>
-    <h2 id={`heading-${section.id}`}>{section.title}</h2>
+    <h2 id={`heading-${id}`}>{title}</h2>
   </div>
-  <div class="project-section__body">
-    <div class="prose">
-      {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-      {section.bullets.length > 0 && <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>}
-    </div>
-    {section.code && (
-      <div class="project-section__code">
-        <h3>{section.code.title}</h3>
-        <pre tabindex="0" aria-label={section.code.title}><code class={`language-${section.code.language}`}>{section.code.content}</code></pre>
-      </div>
-    )}
-    {media.length > 0 && <ProjectGallery items={media} layout={section.mediaLayout} />}
-    {section.tests.length > 0 && (
-      <ol class="project-tests" aria-label="Test scenarios and results">
-        {section.tests.map((test) => {
-          const reference = evidence.find((item) => item.media.id === test.evidence);
-          return (
-            <li>
-              <h3>{test.scenario}</h3>
-              <dl>
-                <div><dt>Expected behaviour</dt><dd>{test.expected}</dd></div>
-                <div><dt>Actual result</dt><dd>{test.result}</dd></div>
-              </dl>
-              {reference && <a href={`#figure-${reference.media.id}`}>Evidence: Figure {String(reference.number).padStart(2, "0")} — {reference.media.title}</a>}
-            </li>
-          );
-        })}
-      </ol>
-    )}
-    {section.significance && <p class="project-section__significance">{section.significance}</p>}
-    {section.sources.length > 0 && (
-      <ul class="project-section__sources" aria-label="Technical sources">
-        {section.sources.map(({ label, url }) => <li><a href={url}>{label} ↗</a></li>)}
-      </ul>
-    )}
+  <div class="project-section__body prose">
+    <slot />
   </div>
 </section>
 
@@ -79,83 +42,17 @@ const media = evidence.filter((item) => item.media.section === section.id);
   .project-section__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-5);
     min-width: 0;
   }
 
-  .project-section__body > .prose {
+  .project-section__body > :global(p),
+  .project-section__body > :global(ul),
+  .project-section__body > :global(blockquote) {
     max-width: var(--content-copy);
   }
 
-  .project-section__code h3,
-  .project-tests h3 {
-    font-size: var(--size-body);
-  }
-
-  .project-section__code pre {
-    overflow-x: auto;
-    margin: var(--space-3) 0 0;
-    padding: var(--space-4);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    font-family: var(--font-mono);
-    font-size: var(--size-sm);
-  }
-
-  .project-section__code pre:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 3px;
-  }
-
-  .project-tests {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .project-tests li {
-    padding-block: var(--space-5);
-    border-top: 1px solid var(--border-light);
-  }
-
-  .project-tests dl {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-5);
-    margin-block: var(--space-3);
-    font-size: var(--size-sm);
-  }
-
-  .project-tests dt {
-    margin-bottom: var(--space-1);
-    color: var(--text-muted);
-  }
-
-  .project-tests dd {
-    margin: 0;
-    color: var(--text-secondary);
-  }
-
-  .project-tests a {
-    font-size: var(--size-sm);
-  }
-
-  .project-section__significance {
-    max-width: var(--content-copy);
-    padding-left: var(--space-4);
-    border-left: 2px solid var(--border-control);
-    color: var(--text-secondary);
-  }
-
-  .project-section__sources {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-5);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: var(--size-sm);
+  .project-section__body > :global(.project-test + .project-test) {
+    margin-block-start: 0;
   }
 
   @media (max-width: 800px) {
@@ -167,13 +64,6 @@ const media = evidence.filter((item) => item.media.section === section.id);
     .project-section__heading {
       grid-template-columns: auto minmax(0, 1fr);
       align-items: baseline;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .project-tests dl {
-      grid-template-columns: 1fr;
-      gap: var(--space-3);
     }
   }
 </style>

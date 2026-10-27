@@ -12,6 +12,7 @@
 
 | 工作 | 读取 |
 | --- | --- |
+| 前端与 UI 修改前（页面、组件、样式及交互） | 自动读取并结合 `distinctive-ai-design` Skill，按 [设计检查流程](docs/ai/workflows.md#前端与-ui-修改前的设计检查) 执行 |
 | 定位、文案、页面职责、导航与范围 | [业务定义与决策](docs/ai/business.md) |
 | 组件、样式、内容集合、schema、路由与 metadata | [工程与内容约定](docs/ai/engineering.md) |
 | 视觉方向、色彩、排版、卡片、动效与可读性 | [视觉与交互规范](docs/ai/design-system.md) |
@@ -26,7 +27,7 @@
 
 - 技术栈、包管理器、可执行脚本：`package.json`。精确依赖版本看 lockfile，不沿用旧文档版本号。
 - 静态构建、集成与部署 URL：`astro.config.mjs`。
-- 身份、联系方式与英文简历下载路径：`src/config/site.ts`；公开简历文件位于 `public/documents/`。
+- 身份、联系方式与英文简历访问路径：`src/config/site.ts`；公开简历文件位于 `public/documents/`。
 - 教育与能力分类：`src/config/profile.ts`。项目事实来自 `projects` 内容集合；用户提供的两项自动化案例都是个人仿真项目。
 - 内容契约：`src/content.config.ts`。集合名是 `blogs`、`experience`、`projects`；公开文章路由是 `/blog`。
 - 布局：`Layout.astro` 提供文档与 metadata，`MainLayout.astro` 提供内容页容器与主标题。

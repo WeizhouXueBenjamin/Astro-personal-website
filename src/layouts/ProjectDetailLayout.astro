@@ -1,8 +1,11 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getProjectEvidence } from "#base/lib/project-media";
+import { render } from "astro:content";
 import ProjectHero from "#components/ProjectList/ProjectHero.astro";
 import ProjectSection from "#components/ProjectList/ProjectSection.astro";
+import ProjectFigure from "#components/ProjectList/ProjectFigure.astro";
+import ProjectGallery from "#components/ProjectList/ProjectGallery.astro";
+import ProjectTest from "#components/ProjectList/ProjectTest.astro";
 import Layout from "./Layout.astro";
 import { withBase } from "#base/lib/paths";
 
@@ -10,20 +13,23 @@ interface Props {
   project: CollectionEntry<"projects">;
 }
 
-const { project: { data: project } } = Astro.props;
-const evidence = getProjectEvidence(project);
+const { project: entry } = Astro.props;
+const project = entry.data;
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const sections = remarkPluginFrontmatter.projectSections as { id: string; title: string }[];
+if (!sections?.length) throw new Error(`Missing project sections: ${entry.id}`);
 ---
 
 <Layout title={project.title} description={project.summary}>
   <main class="project-detail container">
-    <ProjectHero project={project} evidence={evidence.find((item) => item.media.id === project.featuredMedia)} />
+    <ProjectHero project={project} evidence={project.hero ? { media: project.hero, number: 1 } : undefined} />
     <nav class="project-detail__contents" aria-label="Case study sections">
       <p class="eyebrow">In this case study</p>
       <ol>
-        {project.sections.map((section) => <li><a href={`#${section.id}`}>{section.title}</a></li>)}
+        {sections.map((section) => <li><a href={`#${section.id}`}>{section.title}</a></li>)}
       </ol>
     </nav>
-    {project.sections.map((section, index) => <ProjectSection section={section} index={index} evidence={evidence} />)}
+    <Content components={{ ProjectSection, Figure: ProjectFigure, Gallery: ProjectGallery, Test: ProjectTest }} />
     <footer class="project-detail__footer">
       <a class="action-link" href={withBase("/projects/")}>← Explore all projects</a>
       <a href={withBase("/about/")}>About my background →</a>

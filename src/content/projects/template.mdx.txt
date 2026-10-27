@@ -1,0 +1,32 @@
+---
+# Reference only: replace all placeholders with real facts, then save as .mdx.
+# This .txt file is excluded from the collection. See docs/ai/project-showcase.md.
+title: REPLACE_WITH_REAL_TITLE
+slug: real-project-slug
+summary: REPLACE_WITH_FACTUAL_SUMMARY
+category: Software Engineering # Select the actual supported category.
+projectType: REPLACE_WITH_ACTUAL_PROJECT_TYPE
+role: REPLACE_WITH_YOUR_CONTRIBUTION
+techStack:
+  - REPLACE_WITH_TECHNOLOGY_1
+  - REPLACE_WITH_TECHNOLOGY_2
+  - REPLACE_WITH_TECHNOLOGY_3
+# Optional: period, year, status, links, hero, cover, featured, order.
+# Omit unknown values. Copy media syntax from the maintenance guide only with real assets.
+---
+
+## Overview
+
+REPLACE_WITH_REAL_GOAL_AND_SCOPE
+
+## Architecture & approach
+
+REPLACE_WITH_VERIFIABLE_TECHNICAL_DECISIONS
+
+## Testing & validation
+
+REPLACE_WITH_ACTUAL_TEST_METHOD_EVIDENCE_AND_LIMITATIONS
+
+## Outcomes & lessons
+
+REPLACE_WITH_VERIFIABLE_OUTCOMES_AND_CLEARLY_LABELLED_PLANNED_WORK

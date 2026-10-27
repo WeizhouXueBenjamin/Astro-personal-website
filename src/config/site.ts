@@ -27,4 +27,17 @@ export const site = {
   },
 } as const;
 
-export type SiteConfig = typeof site;
+// Shared URLs for the contact section, social icons and footer.
+export const contactLinks = [
+  { label: "Email", href: `mailto:${site.email}`, icon: "email" as const, external: false },
+  ...([
+    ["twitter", "Twitter", "https://twitter.com/"],
+    ["instagram", "Instagram", "https://instagram.com/"],
+    ["facebook", "Facebook", "https://facebook.com/"],
+    ["linkedin", "LinkedIn", "https://linkedin.com/in/"],
+    ["github", "GitHub", "https://github.com/"],
+  ] as const).flatMap(([icon, label, baseUrl]) => {
+    const handle = site.social[icon];
+    return handle ? [{ label, href: `${baseUrl}${handle}`, icon, external: true }] : [];
+  }),
+];

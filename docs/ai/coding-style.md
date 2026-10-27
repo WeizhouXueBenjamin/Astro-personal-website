@@ -22,7 +22,7 @@
 - 组件通过 `interface Props` 或 `type Props` 声明输入。若已有公开的 Props 类型，给它增加本地 `Props` 别名以便 Astro 识别，保持调用接口。
 - 领域组件优先接收完整的 `CollectionEntry<"projects">` / `CollectionEntry<"experience">`；展示组件只接收其需要的数据，不接收整个站点配置。
 - 可选内容在模板中显式判断后渲染。缺少可选链接时不生成空 href、不可用按钮或占位媒体。
-- 普通页面标题由 MainLayout 提供；正文从 h2 开始。首页和项目详情复用 Layout，并分别提供一个 main 和 h1；ProjectHero 负责案例标题。
+- 普通页面标题由 MainLayout 提供；正文从 h2 开始。首页、项目详情和文章阅读页复用 Layout，并分别提供一个 main 和 h1；ProjectHero 负责案例标题，BlogDetailLayout 负责文章标题与阅读布局。
 - CSS 类使用有业务含义的 kebab-case；动态状态使用 `class:list` 或原生状态属性，避免依赖文本内容选择元素。
 
 ## TypeScript 与数据

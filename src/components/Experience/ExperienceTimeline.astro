@@ -13,21 +13,13 @@ const yearFrom = (startDate: string) => {
   return match ? match[0] : "Current";
 };
 
-const groupedExperiences = experiences.reduce(
-  (groups, experience) => {
-    const year = yearFrom(experience.data.startDate);
-    const group = groups.find((item) => item.year === year);
-
-    if (group) {
-      group.experiences.push(experience);
-    } else {
-      groups.push({ year, experiences: [experience] });
-    }
-
-    return groups;
-  },
-  [] as { year: string; experiences: CollectionEntry<"experience">[] }[],
-);
+const groupedExperiences = new Map<string, CollectionEntry<"experience">[]>();
+for (const experience of experiences) {
+  const year = yearFrom(experience.data.startDate);
+  const group = groupedExperiences.get(year) ?? [];
+  group.push(experience);
+  groupedExperiences.set(year, group);
+}
 ---
 
 <section class="experience-section" aria-labelledby="career-heading">
@@ -38,11 +30,11 @@ const groupedExperiences = experiences.reduce(
 
   <div class="timeline-grid">
     {
-      groupedExperiences.map((group) => (
-        <section class="year-group" aria-labelledby={`year-${group.year}`}>
-          <p class="year-label" id={`year-${group.year}`}>{group.year}</p>
+      [...groupedExperiences].map(([year, entries]) => (
+        <section class="year-group" aria-labelledby={`year-${year}`}>
+          <p class="year-label" id={`year-${year}`}>{year}</p>
           <div class="cards">
-            {group.experiences.map((experience) => (
+            {entries.map((experience) => (
               <ExperienceCard experience={experience} />
             ))}
           </div>

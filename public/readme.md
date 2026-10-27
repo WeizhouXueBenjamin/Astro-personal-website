@@ -1,1 +1,0 @@
-My non-code, unprocessed assets (fonts, icons, etc.)

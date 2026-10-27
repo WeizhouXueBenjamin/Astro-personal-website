@@ -6,6 +6,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDeploymentConfig } from "../src/config/deployment.mjs";
 import { verifyOutput } from "./verify-output.mjs";
+import { verifyContentDev } from "./verify-content-dev.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureRoot = mkdtempSync(join(tmpdir(), "astro-portfolio-"));
@@ -35,6 +36,11 @@ function writeJson(path, data) {
   writeFileSync(join(fixtureContent, path), JSON.stringify(data, null, 2));
 }
 
+function writeProject(name, { body, ...metadata }) {
+  writeFileSync(join(fixtureContent, "projects", `${name}.mdx`),
+    `---\n${JSON.stringify(metadata, null, 2)}\n---\n\n${body}\n`);
+}
+
 try {
   assert.deepEqual(getDeploymentConfig({ repository: "Example/Example.github.io", siteUrl: "" }), { site: "https://example.github.io", base: "/" });
   assert.deepEqual(getDeploymentConfig({ repository: "Example/Portfolio", siteUrl: "" }), { site: "https://example.github.io", base: "/Portfolio" });
@@ -46,7 +52,7 @@ try {
     filter: (source) => source !== join(projectRoot, "src/content"),
   });
   cpSync(join(projectRoot, "public"), join(fixtureRoot, "public"), { recursive: true });
-  for (const file of ["package.json", "tsconfig.json", "tailwind.config.mjs"]) {
+  for (const file of ["package.json", "tsconfig.json"]) {
     cpSync(join(projectRoot, file), join(fixtureRoot, file));
   }
   cpSync(join(projectRoot, "astro.config.mjs"), join(fixtureRoot, "astro.base.config.mjs"));
@@ -71,25 +77,25 @@ export default {
     ["newer", "Fixture Newer Article", "2026-08-02", undefined],
     ["draft", "Fixture Draft Article", "2026-08-03", true],
   ]) {
+    const body = id === "newer"
+      ? "A short article without section headings. [Projects](/projects/) and [icon](/favicon.svg)."
+      : "## Article body\n\nVerification content. [Projects](/projects/) and [icon][icon].\n\n### Mapping & symbols\n\nNested section.\n\n## Article body\n\nRepeated heading.\n\n#### A minor detail\n\nNot a contents entry.\n\n[icon]: /favicon.svg";
     writeFileSync(join(fixtureContent, "blogs/verification", id + (id === "newer" ? ".mdx" : ".md")),
       "---\ntitle: " + title + "\ndescription: Verification article\npubDate: " + date +
-      (draft === undefined ? "" : "\ndraft: " + draft) + "\n---\n\n## Article body\n\nVerification content. [Projects](/projects/) and [icon][icon].\n\n[icon]: /favicon.svg\n");
+      (draft === undefined ? "" : "\ndraft: " + draft) + "\n---\n\n" + body + "\n");
   }
-  writeJson("experience/fixture.json", {
-    jobTitle: "Fixture Engineer", company: "Fixture Systems", startDate: "Dec 2025",
-    featured: true, order: 1,
-    bullets: ["Verified contribution."],
-  });
-  writeJson("experience/newest.json", {
-    jobTitle: "Newest Fixture Role", company: "Fixture Systems", startDate: "Mar 2026",
-    endDate: "Present", featured: false, order: 999,
-    bullets: ["Verified contribution."],
-  });
-  writeJson("experience/oldest.json", {
-    jobTitle: "Oldest Fixture Role", company: "Fixture Systems", startDate: "Jan 2025",
-    featured: true, order: 0,
-    bullets: ["Verified contribution."],
-  });
+  const experienceFixtures = [
+    ["fixture", "Fixture Engineer", "Jan 2026"],
+    ["newest", "Newest Fixture Role", "Mar 2026"],
+    ["oldest", "Oldest Fixture Role", "Aug 2025"],
+    ["a-tied", "Tied Fixture Role", "Jan 2026"],
+  ];
+  for (const [id, jobTitle, startDate] of experienceFixtures) {
+    writeJson(`experience/${id}.json`, {
+      jobTitle, company: "Fixture Systems", startDate,
+      bullets: ["Verified contribution."],
+    });
+  }
   // Synthetic illustrations live only in this temporary test workspace.
   const imageDirectory = join(fixtureRoot, "src/assets/verification");
   mkdirSync(imageDirectory, { recursive: true });
@@ -97,8 +103,8 @@ export default {
     writeFileSync(join(imageDirectory, `${name}.svg`),
       `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="#171e27"/><text x="100" y="200" fill="white" font-size="80">TEST FIXTURE: ${name}</text></svg>`);
   }
-  const image = (id, section, order = 0) => ({
-    id, section, order, type: "image", src: `../../assets/verification/${id}.svg`,
+  const image = (id) => ({
+    id, type: "image", src: `../../assets/verification/${id}.svg`,
     title: `Fixture ${id}`, alt: `Synthetic test image ${id}`, caption: `Test-only evidence for ${id}.`,
   });
   const control = {
@@ -106,28 +112,28 @@ export default {
     category: "SCADA", projectType: "Simulation", role: "Test fixture",
     techStack: ["PLC", "SCADA", "Simulation"], status: "In Progress", featured: true, order: 2,
     links: [{ label: "GitHub", url: "https://example.com/control" }],
-    featuredMedia: "hero",
-    media: [
-      image("hero", "hero"), image("after", "comparison", 2), image("before", "comparison", 1),
-      image("step-two", "sequence", 2), { ...image("step-one", "sequence", 1), aspectRatio: "native" },
-      { ...image("embed", "video"), type: "embed", src: "https://www.youtube.com/watch?v=abcdefghijk", poster: "../../assets/verification/embed.svg", highlights: ["Test-only highlight"], timestamps: [{ seconds: 30, label: "Test chapter" }] },
-    ],
-    sections: [
-      { id: "overview", title: "Overview", paragraphs: ["Fixture introduction."] },
-      { id: "comparison", title: "Comparison", paragraphs: ["Before and after fixtures."], mediaLayout: "comparison" },
-      { id: "sequence", title: "Sequence", paragraphs: ["Ordered fixture steps."], mediaLayout: "sequence" },
-      { id: "video", title: "Video", paragraphs: ["An embed is loaded only on request."] },
-      { id: "validation", title: "Testing", paragraphs: ["Test results."], tests: [{ scenario: "Fixture", expected: "Expected state", result: "Observed state", evidence: "after" }] },
-    ],
+    hero: image("hero"),
+    body: [
+      ...["hero", "before", "after", "step-one", "step-two", "embed"].map((id) => `import ${id.replaceAll("-", "")} from "../../assets/verification/${id}.svg";`),
+      "## Overview\n\nFixture introduction. [Projects](/projects/).",
+      "## Comparison\n\nBefore and after fixtures.",
+      '<Gallery layout="comparison">\n<Figure id="before" src={before} title="Fixture before" alt="Synthetic test image before" caption="Test-only evidence for before." />\n<Figure id="after" src={after} title="Fixture after" alt="Synthetic test image after" caption="Test-only evidence for after." />\n</Gallery>',
+      "## Sequence\n\nOrdered fixture steps.",
+      '<Gallery layout="sequence">\n<Figure id="step-one" src={stepone} title="Fixture step-one" alt="Synthetic test image step-one" caption="Test-only evidence for step-one." aspectRatio="native" />\n<Figure id="step-two" src={steptwo} title="Fixture step-two" alt="Synthetic test image step-two" caption="Test-only evidence for step-two." />\n</Gallery>',
+      "## Video\n\nAn embed is loaded only on request.",
+      '<Figure id="embed" type="embed" src="https://www.youtube.com/watch?v=abcdefghijk" poster={embed} title="Fixture embed" alt="Synthetic test image embed" caption="Test-only evidence for embed." highlights={["Test-only highlight"]} timestamps={[{ seconds: 30, label: "Test chapter" }]} />',
+      "## Testing [#validation]\n\nTest results.",
+      '<Test scenario="Fixture" expected="Expected state" result="Observed state" evidence="after" />',
+    ].join("\n\n"),
   };
   const plain = {
     title: "Fixture Plain Case", slug: "plain-case", summary: "A case without optional links or status.",
     category: "Software Engineering", projectType: "Application", role: "Software development",
     techStack: ["Astro", "TypeScript", "CSS"], order: 1,
-    sections: [{ id: "overview", title: "Application overview", paragraphs: ["Software integration."] }],
+    body: "## Application overview\n\nSoftware integration.",
   };
-  writeJson("projects/control.json", control);
-  writeJson("projects/plain.json", plain);
+  writeProject("control", control);
+  writeProject("plain", plain);
 
   build();
   if (process.env.VERIFY_SITE_REVIEW === "1") {
@@ -137,6 +143,8 @@ export default {
   const blog = read("blog/index.html");
   const rss = read("rss.xml");
   const sitemap = read("sitemap-0.xml");
+  assert.equal(read("robots.txt"), "User-agent: *\nAllow: /\n\nSitemap: https://portfolio.example/sitemap-index.xml\n");
+  assert.ok(!sitemap.includes("/robots.txt"), "Crawler instructions must not appear in the sitemap");
   const article = read("blog/verification/public/index.html");
   for (const output of [blog, rss]) {
     assert.ok(output.includes("Fixture Public Article") && output.includes("Fixture Newer Article"));
@@ -150,6 +158,20 @@ export default {
   assert.ok(!existsSync(join(dist, "blog/verification/draft/index.html")));
   assert.equal((article.match(/<h1\b/g) ?? []).length, 1);
   assert.ok(article.includes("Article body"));
+  const articleSections = [...article.matchAll(/<h[23]\b[^>]*id="([^"]+)"/g)].map((match) => match[1]);
+  assert.equal(articleSections.length, 3);
+  assert.equal(new Set(articleSections).size, 3, "Repeated headings must have distinct anchors");
+  const articleContents = [...article.matchAll(/<nav\b[^>]*aria-label="Article sections"[\s\S]*?<\/nav>/g)].map(([nav]) => nav);
+  assert.equal(articleContents.length, 2, "Desktop and native mobile contents must be rendered statically");
+  for (const contents of articleContents) {
+    assert.deepEqual([...contents.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]), articleSections);
+    assert.ok(!contents.includes("A minor detail"));
+  }
+  const shortArticle = read("blog/verification/newer/index.html");
+  assert.ok(!shortArticle.includes('aria-label="Article sections"'), "Short articles must not show empty contents");
+  for (const [entry] of blog.matchAll(/<article\b[\s\S]*?<\/article>/g)) {
+    assert.equal((entry.match(/<a\b/g) ?? []).length, 1, "Each article entry must have one keyboard navigation target");
+  }
 
   const projects = read("projects/index.html");
   assert.ok(projects.indexOf("Fixture Control Case") < projects.indexOf("Fixture Plain Case"));
@@ -174,6 +196,7 @@ export default {
     assert.ok(detail.includes(`Figure ${String(number).padStart(2, "0")}`));
   }
   assert.ok(detail.includes('href="#figure-after"'));
+  assert.ok(detail.includes('id="validation"') && detail.includes('href="#validation"'));
   assert.ok(detail.includes("project-gallery--comparison") && detail.includes("project-gallery--sequence"));
   assert.ok(detail.includes("project-media__image--native"));
   assert.ok(detail.includes('target="_blank"') && detail.includes("Open full-size image"));
@@ -186,9 +209,9 @@ export default {
   assert.ok(!home.includes("Fixture Plain Case"));
   const about = read("about/index.html");
   assert.ok(about.includes("Fixture Engineer"));
-  assert.ok(about.includes("Newest Fixture Role") && about.includes("Oldest Fixture Role"));
-  assert.ok(about.indexOf("Newest Fixture Role") < about.indexOf("Fixture Engineer"), "Newer experience must precede older featured entries");
-  assert.ok(about.indexOf("Fixture Engineer") < about.indexOf("Oldest Fixture Role"), "Start date must override manual order within a year");
+  assert.ok(about.indexOf("Newest Fixture Role") < about.indexOf("Tied Fixture Role"), "Newer start dates must appear first within a year");
+  assert.ok(about.indexOf("Tied Fixture Role") < about.indexOf("Fixture Engineer"), "Equal start dates must use stable ID order");
+  assert.ok(about.indexOf("Fixture Engineer") < about.indexOf("Oldest Fixture Role"), "Experience years must remain newest first");
   assert.ok(!about.includes("NaN") && !about.includes("Infinity"));
 
   const nav = home.match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
@@ -200,17 +223,33 @@ export default {
   assert.ok(!sitemap.includes("/experience") && !sitemap.includes("/gallery"));
   verifyOutput({ root: dist, site: "https://portfolio.example", base: "/" });
 
+  // Controls & Automation and SCADA share one priority group: featured, then order.
+  const groupedPlain = { ...plain, category: "Controls & Automation", order: 999, featured: true };
+  const comparison = control.body.match(/<Gallery layout="comparison">[\s\S]*?<\/Gallery>/)[0];
+  const reordered = comparison.replace(/(<Figure id="before"[^\n]*\/>)[\s\S]*?(<Figure id="after"[^\n]*\/>)/, "$2\n$1");
+  writeProject("control", { ...control, featured: false, body: control.body.replace(comparison, reordered) });
+  writeProject("plain", groupedPlain);
+  build();
+  assert.ok(read("projects/index.html").indexOf("Fixture Plain Case") < read("projects/index.html").indexOf("Fixture Control Case"), "Featured must override manual order in the same category group");
+  const reorderedDetail = read("projects/control-case/index.html");
+  assert.ok(reorderedDetail.indexOf('id="figure-after"') < reorderedDetail.indexOf('id="figure-before"'));
+  assert.match(reorderedDetail, /Evidence: Figure 02[^<]*Fixture after/, "Evidence numbers must follow MDX reading order");
+  writeProject("plain", { ...groupedPlain, featured: false, order: 1 });
+  build();
+  assert.ok(read("projects/index.html").indexOf("Fixture Plain Case") < read("projects/index.html").indexOf("Fixture Control Case"), "Manual order must apply across the shared category group");
+  assert.ok(!read("index.html").includes("selected-projects-heading"), "No featured projects must leave the home selection hidden");
+
   // A video hero uses a poster and native controls, without eager video downloads.
   const localVideo = {
     ...control,
     featured: false,
-    media: control.media.map((item) => item.id === "hero" ? {
-      ...item, type: "video", src: "/media/projects/feeder-demo.mp4", poster: item.src,
+    hero: {
+      ...control.hero, type: "video", src: "/media/projects/feeder-demo.mp4", poster: control.hero.src,
       description: "Test-only video description.",
-    } : item),
+    },
   };
-  writeJson("projects/control.json", localVideo);
-  writeJson("projects/plain.json", { ...plain, featured: true });
+  writeProject("control", localVideo);
+  writeProject("plain", { ...plain, featured: true });
   build();
   const priorityProjects = read("projects/index.html");
   assert.ok(priorityProjects.indexOf("Fixture Control Case") < priorityProjects.indexOf("Fixture Plain Case"));
@@ -228,6 +267,7 @@ export default {
     const config = getDeploymentConfig({ siteUrl });
     verifyOutput({ root: dist, ...config });
     const base = config.base;
+    assert.equal(read("robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}sitemap-index.xml\n`);
     assert.ok(read("projects/control-case/index.html").includes(`src="${base}/media/projects/feeder-demo.mp4"`));
     assert.ok(read("projects/control-case/index.html").includes(`href="${siteUrl}projects/control-case/"`));
     assert.ok(read("rss.xml").includes(`${siteUrl}blog/verification/public/</link>`));
@@ -241,29 +281,45 @@ export default {
     assert.equal((homeNav?.match(/aria-current="page"/g) ?? []).length, 1);
 
     const validHome = read("index.html");
+    const particleScript = validHome.match(/["'`]([^"'`\s<>]*\/_astro\/particles\.min[^"'`\s<>]+)["'`]/)?.[1];
+    assert.ok(particleScript, "The built Home must reference its on-demand particle script");
+    writeFileSync(join(dist, "index.html"), validHome.replace(particleScript, `${base}/_astro/missing-particles.js`));
+    assert.throws(() => verifyOutput({ root: dist, ...config }), /Missing output or incorrect filename case/);
+    writeFileSync(join(dist, "index.html"), validHome);
     for (const [brokenUrl, expectedError] of [["/projects/", /URL escapes base/], [`${base}/PROJECTS/`, /Missing output or incorrect filename case/]]) {
       writeFileSync(join(dist, "index.html"), validHome.replace(`href="${base}/projects/"`, `href="${brokenUrl}"`));
       assert.throws(() => verifyOutput({ root: dist, ...config }), expectedError);
     }
     writeFileSync(join(dist, "index.html"), validHome);
   }
-  writeJson("projects/plain.json", plain);
+  writeProject("plain", plain);
 
-  writeJson("projects/control.json", { ...control, media: [...control.media, { ...image("hero", "overview"), id: "duplicate" }] });
-  build(/Do not repeat the same media source/);
-  writeJson("projects/control.json", { ...control, media: control.media.map((item) => item.id === "before" ? { ...item, section: "missing" } : item) });
-  build(/Unknown media section/);
-  writeJson("projects/control.json", { ...localVideo, media: localVideo.media.map((item) => item.id === "hero" ? { ...item, src: "/media/missing.mp4" } : item) });
+  const invalidBodies = [
+    [control.body + '\n<Figure id="duplicate" src={hero} title="Duplicate" alt="Duplicate" caption="Duplicate" />', /Do not repeat the same media source/],
+    [control.body.replace('id="after"', 'id="before"'), /Duplicate figure ID/],
+    [control.body.replace('## Sequence', '## Sequence [#comparison]'), /Invalid or duplicate section ID/],
+    [control.body.replace('evidence="after"', 'evidence="missing"'), /Unknown test evidence/],
+    [control.body.replace('alt="Synthetic test image before"', ''), /alt|Invalid input/],
+    [control.body.replace(/<Figure id="after"[^\n]*\/>/, ''), /Comparison gallery needs two media items/],
+    [control.body.replace('## Overview', '# Overview'), /start the body with ##/],
+    [control.body.replace('## Overview', '<h1>Overview</h1>'), /start the body with ##/],
+    [control.body.replace('## Sequence', '## Sequence [#heading-overview]'), /anchors must be unique/],
+  ];
+  for (const [body, expected] of invalidBodies) {
+    writeProject("control", { ...control, body });
+    build(expected);
+  }
+  writeProject("control", { ...localVideo, hero: { ...localVideo.hero, src: "/media/missing.mp4" } });
   build(/Missing project media file/);
-  writeJson("projects/control.json", { ...control, slug: "../bad" });
+  writeProject("control", { ...control, slug: "../bad" });
   build(/Invalid string|Invalid input|pattern/);
-  writeJson("projects/control.json", control);
-  writeJson("projects/plain.json", { ...plain, slug: "control-case" });
+  writeProject("control", control);
+  writeProject("plain", { ...plain, slug: "control-case" });
   build(/Duplicate project slug/);
-  writeJson("projects/plain.json", plain);
+  writeProject("plain", plain);
 
-  unlinkSync(join(fixtureContent, "projects/control.json"));
-  unlinkSync(join(fixtureContent, "projects/plain.json"));
+  unlinkSync(join(fixtureContent, "projects/control.mdx"));
+  unlinkSync(join(fixtureContent, "projects/plain.mdx"));
   build();
   assert.ok(read("projects/index.html").includes("Project write-ups will appear here"));
   assert.ok(!read("projects/index.html").includes("data-filter-value"));
@@ -274,21 +330,20 @@ export default {
   for (const id of ["public", "newer", "draft"]) {
     unlinkSync(join(fixtureContent, "blogs/verification", id + (id === "newer" ? ".mdx" : ".md")));
   }
-  for (const id of ["fixture", "newest", "oldest"]) {
-    unlinkSync(join(fixtureContent, "experience", id + ".json"));
-  }
+  for (const [id] of experienceFixtures) unlinkSync(join(fixtureContent, `experience/${id}.json`));
   build();
   assert.ok(read("blog/index.html").includes("No articles published yet"));
   assert.ok(!read("rss.xml").includes("<item>"));
   assert.ok(!read("sitemap-0.xml").includes("/blog/verification/"));
   assert.ok(!existsSync(join(dist, "blog/verification/public/index.html")));
   assert.ok(read("about/index.html").includes("Experience details will be added here"));
-  console.log("Site verification passed: publishing/RSS, experience chronology, project routes and category priority, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, Markdown/MDX links, and output validation failure cases.");
+  await verifyContentDev({ root: fixtureRoot, project: plain, writeProject });
+  console.log("Site verification passed: publishing/RSS, Blog contents anchors and short articles, experience chronology and stable ties, project routes/category priority/featured/order, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, robots sitemap discovery, Markdown/MDX links, and output validation failure cases including on-demand scripts.");
 } finally {
   // Remove only the newly created temporary workspace; unlink its dependency junction first.
   const dependencyLink = join(fixtureRoot, "node_modules");
   if (existsSync(dependencyLink) && lstatSync(dependencyLink).isSymbolicLink()) unlinkSync(dependencyLink);
   assert.equal(dirname(resolve(fixtureRoot)), resolve(tmpdir()));
   assert.ok(basename(fixtureRoot).startsWith("astro-portfolio-"));
-  rmSync(fixtureRoot, { recursive: true, force: true });
+  rmSync(fixtureRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 }

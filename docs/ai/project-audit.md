@@ -208,3 +208,42 @@
 - 本机无界面 Chrome 检查 About、Blog、文章 × 1440/390/320px 共 9 组布局：顺序、文章入口、单一 h1/main、无横向溢出、导航边界、图片完整加载及无重复 ID 均通过。原图返回 200；无 JavaScript 的正文与证据入口可读，键盘焦点为 2px solid；正式 RSS 仅包含该文章。未捕获页面脚本异常或站内 HTTP 错误。
 
 按 distinctive-ai-design 对实际桌面/窄屏截图做自查，保留现有深色阅读列、技术章节和紧邻图片的 caption，没有独立评审者。浏览器证据保存在忽略目录 `.astro/opcua-*.png` 与 `.astro/opcua-review-results.json`。本轮没有重新运行 PLC/Factory I/O 仿真，也没有线上部署；完整映射变化截图、clean-restart 周期记录与 driver trace 仍不在现有公开证据中。
+
+## 2026-10-25 组件一致性与冗余清理
+
+所有者要求检查 Projects 的精选/排序是否弃用，并梳理组件与架构。核对当前调用链后，确认 Projects 的 `featured`、项目级 `order` 及媒体级 `order` 均有实际用途，全部保留。所有者另行确认 Experience 改为按开始日期倒序，并删除无调用者的旧组件。
+
+- 移除 Experience 的 `featured/order` schema、内容和模板字段；同日按 id 稳定排序，年份分组沿用排序后的顺序。新增隔离场景覆盖年内日期、跨年和同日起始日期；同时补查 Projects 同优先组的 featured/order 与首页无精选状态。
+- 删除五个旧 Experience 组件、两个旧导航图标、未使用的图标分支/类型/导航描述、脚手架说明、React JSX 设置，以及未接入当前 Tailwind 构建的 DaisyUI 依赖与旧配置。现有页面、布局和领域目录继续保留。
+- 联系方式 URL 在 `site.ts` 派生后供联系区、社交图标与页脚共用；筛选器初始化时解析标签，点击时复用；经历按年份分组改用 Map。移除已由 schema 保证的重复默认处理，外部视频只生成实际使用的响应式 Poster。
+- 同步工程、设计与项目展示文档；纠正项目展示说明中旧的 trailing slash 规则。项目详情路由补齐集合 Props 与静态路径类型，与 Blog 的路由约定一致。
+- `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:output` 通过；正式产物包含 9 个页面，176 个站内 URL/资源引用有效。场景验证保留内容发布、媒体、错误输入、空集合、静态跳转及根路径/Project Pages/自定义子路径检查。
+- 本地 Chrome 检查 6 个页面 × 1440/390/320px 共 18 组，无横向溢出、导航遮挡或损坏图片，每页一个 h1/main；Enter 分类筛选、结果计数与恢复全部、2px 键盘焦点、Experience 展示顺序、视频解码播放、减少动效停用粒子、普通模式加载粒子及禁用 JavaScript 的案例正文均通过。未捕获脚本或站内请求错误，抽查了移动首页与桌面案例截图。结果保留在忽略目录 `.astro/cleanup-browser-after/`。
+
+本轮未引入新的架构层、客户端框架或业务事实；未执行完整类型检查、WCAG 全站审核或线上部署。构建与本机浏览器结果不代表真实设备及其他浏览器均已验收。
+
+## 2026-10-25 Projects 单文件 MDX 迁移
+
+所有者选择单文件 MDX 方案，并要求先同步远端 main。获取 `origin/main` 最新提交 `d9c32c5` 后，将其合并到 `optimization/component-and-framework`，产生合并提交 `23d078a`。保留本分支的组件清理提交与远端 OPC UA 文章；工程说明、历史审计和经历场景验证的冲突按已确认的日期排序规则整合。迁移结束再次 fetch，验证 origin/main 仍为该提交且是当前 HEAD 的祖先。
+
+- 两份 YAML 迁移为 `distribution-feeder-scada.mdx` 与 `smart-conveyor-sorting.mdx`，公开 slug 不变。元数据保留精选/排序、角色与真实来源，Hero 集中配置，卡片复用其图片/Poster；正文直接使用 Markdown、代码块与就近的 Figure/Test。新增未发布的 `template.mdx.txt`，移除旧 YAML 模板。
+- Projects loader 与严格 schema 同步迁移；Hero 和正文媒体复用 `project-schema.ts`。`remark-projects.mjs` 仅处理项目 MDX，生成章节、目录、Figure/Step 编号和测试引用，并验证重复来源/ID、无效引用与分组。标题可用 `[#existing-id]` 保留旧锚点。复用既有播放器与 Caption，没有新增依赖或客户端框架。
+- 保留 PNG 等位图及 Astro SVG import 的元数据处理，支持原生视频、按需外部播放器、字幕与三种媒体布局。缺少 alt/caption、媒体文件、无效 slug、错误证据或锚点冲突会阻止构建。
+- `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:output` 通过。正式构建为 10 个页面，196 个站内 URL/资源引用有效，无 fixture 内容。隔离场景覆盖 MDX 媒体顺序变化后证据编号更新、三种布局、缺少可选数据、错误输入、空集合及根路径/Project Pages/自定义子路径；原有 Blog、RSS、经历顺序和静态跳转场景继续通过。
+- 迁移前后核对两案例的 106 项标题、正文、代码、测试与说明文字，Hero 元数据、Figure 顺序及旧章节锚点均保留；合并的 OPC UA 文章可见正文一致。结果在忽略目录 `.astro/mdx-content-parity.json`。
+- Chrome 检查 7 页 × 1440/390/320px 共 21 组：每页一个 h1/main，无横向溢出、重复 ID、坏图片、失效目录锚点或导航遮挡。键盘筛选、2px 焦点、经历顺序、本地视频播放、减少动效与禁用 JavaScript 的案例阅读通过，未捕获脚本或站内请求错误。另用隔离样例检查 comparison 桌面双列/窄屏单列、sequence 步骤与按需 iframe 创建；外部播放器响应使用测试替身，只验证加载机制，不宣称真实第三方视频播放通过。
+- 实际截图自查修正了 Markdown 段落与网格间距重复叠加的问题，保留代码自身横向滚动与窄屏可读性。浏览器结果和截图在 `.astro/mdx-browser-review/`。
+
+MDX 迁移修改留在工作区，未推送或部署；本轮没有重新运行工业仿真，未执行完整类型检查、完整 WCAG 审核或真实设备/其他浏览器验证。
+
+## 2026-10-26 修复开发模式 Projects 集合为空
+
+所有者报告 `The collection "projects" does not exist or is empty`。实际访问原有 `localhost:4321`，Projects 返回 200 但显示空状态；两份正式 MDX 均存在，生产构建缓存含两项项目，开发缓存却没有 Projects。核对安装的 Astro 7.0.7 glob loader，发现初次匹配为空时提前返回，跳过了 watcher 注册。MDX 迁移中曾短暂出现目录无匹配文件，长时间运行的开发服务因而未加载后来生成的文件。
+
+- 扩展现有 `localGlob()` 兼容处理：初始空目录在开发模式继续监听 add/change；首条有效内容进入集合后解除临时监听，交回原生 glob，并补扫监听建立期间新增的内容。保留此前删除源文件时的缓存清理，不通过清缓存、添加占位项目或隐藏警告处理问题。
+- 新增 `scripts/verify-content-dev.mjs`，并接入 `verify:site`。修复前，隔离 dev 服务启动后新增第一份 MDX，15 秒内始终返回空列表；修复后，同一回归覆盖初始为空、忽略文件、首条新增、首页精选与详情、编辑、删除最后一项和重新添加，全部无需重启即可通过。测试通过 IPC 关闭独立服务，避免影响正式内容或现有开发进程。
+- 重启原有本地开发服务以加载修复，保留 `localhost:4321` 地址；实际列表恢复两项项目，首页精选及两项详情均可访问。
+- `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:output` 与 diff 检查通过；正式构建仍为 10 个页面，196 个站内资源/URL 引用有效。
+- 按 `distinctive-ai-design` 以既有深色工程作品集 brief 自查截图：Home、Projects、两项详情 × 1440/390/320px 共 12 组浏览器检查通过。列表与首页均有两张项目卡片，每页一个 h1/main，无横向溢出、主标题遮挡、损坏图片或页面脚本错误；证据保存在忽略目录 `.astro/projects-recovery-browser/`。
+
+本轮保留所有者原有已暂存修改，没有提交、推送或线上部署；未执行完整类型检查或独立设计评审。

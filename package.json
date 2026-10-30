@@ -10,6 +10,8 @@
     "verify:site": "node scripts/verify-site.mjs",
     "verify:output": "node scripts/verify-output.mjs",
     "verify:design": "node scripts/verify-design.mjs",
+    "verify:ai-docs": "node scripts/verify-ai-docs.mjs",
+    "test:ai-docs": "node --test scripts/verify-ai-docs.test.mjs",
     "astro": "astro"
   },
   "imports": {

@@ -1,6 +1,6 @@
 # 项目展示与 MDX 维护规范
 
-每个项目维护一个 `src/content/projects/<name>.mdx`。顶部 frontmatter 保存卡片、概览与排序所需的数据，正文直接写 Markdown。沿用 Hybrid Case Study、现有深色 token 与 [business.md](business.md) 的事实边界。
+每个项目维护一个 `src/content/projects/<name>.mdx`。顶部 frontmatter 保存卡片与概览数据，正文写 Markdown。事实边界见[业务规范](business.md#项目事实与证据边界)，构图见[设计规范](design-system.md#页面构图与信息节奏)。
 
 ## 页面与组件
 
@@ -16,9 +16,9 @@
 
 `/projects/[slug]/` 保持不变，链接通过 `getProjectPath()` 统一生成根路径。`Figure`、`Gallery` 和 `Test` 由布局注入，不需要逐篇导入；图片使用普通的 default import。没有客户端框架或新增内容服务。
 
-首页卡片优先显示标题，列表在桌面采用左图右文，窄屏统一单列；卡片只显示前三项核心技术，详情保留完整技术列表。当前项目列表暂不显示分类筛选，分类仍作为元数据展示，不根据项目数自行切换交互。
+卡片只显示前三项核心技术，详情保留完整技术列表；分类作为元数据，筛选的产品选择以业务规范为准。
 
-`ProjectHero` 负责标题、摘要、角色和元数据，成果媒体由详情布局在正文起点渲染一次。桌面目录与成果媒体并排并保持 sticky，窄屏目录为媒体前的原生 `<details>`。章节编号与标题同行，正文约 70ch，媒体按内容列宽展示；章节锚点与 Figure 编号规则不变。
+`ProjectHero` 提供标题和元数据；布局在正文起点渲染成果媒体一次。目录与章节来自 MDX，正文约 70ch，媒体按内容列宽展示。
 
 ## 顶部元数据
 
@@ -30,7 +30,7 @@
 | `techStack` | 3–5 个核心技术 |
 | `period` / `year` / `status` | 可选时间、排序年份与 Completed / In Progress；未知时省略 |
 | `links` | `{ label, url }[]`，真实 HTTP(S) 地址 |
-| `featured` / `order` | 首页显式精选与同组排序，行为不变 |
+| `featured` / `order` | 精选与排序按[工程约定](engineering.md#数据流与内容选择) |
 | `hero` | 可选成果媒体对象；只在顶部显示一次，自动为 Figure 01 |
 | `cover` | 可选 `{ src, alt }`；不提供时卡片复用 Hero 图片或 Poster |
 
@@ -86,12 +86,12 @@ The command request and breaker feedback are checked separately.
 2. 核对标题、角色、生命周期状态、项目性质与证据来源；保留参考教程归属，不将个人仿真描述为现场投运。
 3. 有真实成果时配置 Hero；否则省略。卡片自动复用其图片或 Poster。
 4. 正文使用 Markdown，就近插入 Figure、Gallery 与 Test；媒体保存在现有 assets/public 目录，使用真实本地文件和来源。
-5. 执行 `pnpm run build`、`pnpm run verify:site`、`pnpm run verify:output`，核对既有 URL/锚点、目录、Figure 引用和资源。检查 320/390px 与桌面、键盘、减少动效及无 JavaScript。配色变更另运行 `verify:design`。
+5. 按[验证选择](workflows.md#验证选择)执行项目内容、产物与 UI 检查，核对既有 URL/锚点、目录、Figure 引用和资源。
 
 
-## 2026-10-21 来源与处理记录
+## 素材来源与证据边界
 
-本轮只使用所有者已链接的公开项目仓库，未生成项目截图或新测试结果。
+以下素材于 2026-10-21 从所有者已提供的公开仓库接入。来源说明记录已有证据，不代表重新运行了工业仿真。截图、书面记录与推断须分清，参考教程归属不得省略。
 
 | 本地资源 | 真实来源 | 处理 |
 | --- | --- | --- |
@@ -107,7 +107,7 @@ The command request and breaker feedback are checked separately.
 ffmpeg -i source.mp4 -c:v libx264 -preset medium -crf 23 -r 15 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart feeder-demo.mp4
 ```
 
-SCADA 技术说明来自 [README](https://github.com/WeizhouXueBenjamin/distribution-feeder-scada) 与 [Tag export](https://github.com/WeizhouXueBenjamin/distribution-feeder-scada/blob/main/ignition/Feeder01-tags.json)。输送线技术说明来自 [Architecture notes](https://github.com/WeizhouXueBenjamin/smart-conveyor-sorting-codesys/blob/main/notes/PLC%20Architecture%20-%2015Aug2026.md) 与 [Troubleshooting record](https://github.com/WeizhouXueBenjamin/smart-conveyor-sorting-codesys/blob/main/notes/2%20issues%20faced.md)。正文中的流程文本是这些已记录结构的排版，不是重新仿真生成的证据。
+SCADA 技术说明来自 [README](https://github.com/WeizhouXueBenjamin/distribution-feeder-scada) 与 [Tag export](https://github.com/WeizhouXueBenjamin/distribution-feeder-scada/blob/main/ignition/Feeder01-tags.json)。输送线技术说明来自 [Architecture notes](https://github.com/WeizhouXueBenjamin/smart-conveyor-sorting-codesys/blob/main/notes/PLC%20Architecture%20-%2015Aug2026.md) 与 [Troubleshooting record](https://github.com/WeizhouXueBenjamin/smart-conveyor-sorting-codesys/blob/main/notes/2%20issues%20faced.md)。正文流程文本仅为这些已记录结构的排版。输送线 OPC UA、18 个信号与状态机依据技术笔记；Manual/Auto、联锁、Jam Detection、故障恢复与正式 FAT-style 记录须在实现并验证后补入。SCADA 的 PLC/OPC UA 连接仍属计划范围。
 
 ## 待补充的真实资源
 

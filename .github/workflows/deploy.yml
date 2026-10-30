@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 22.23.4
           # pnpm version comes from package.json; CI enforces the frozen lockfile.
-          build-cmd: pnpm run verify:site && pnpm run build && pnpm run verify:output
+          build-cmd: pnpm run test:ai-docs && pnpm run verify:ai-docs && pnpm run verify:site && pnpm run build && pnpm run verify:output
 
   deploy:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')

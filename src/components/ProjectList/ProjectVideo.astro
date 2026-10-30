@@ -2,7 +2,6 @@
 import { getImage, Image } from "astro:assets";
 import { getEmbedUrl, type NumberedMedia } from "#base/lib/project-media";
 import ProjectCaption from "./ProjectCaption.astro";
-import { withBase } from "#base/lib/paths";
 
 interface Props {
   media: Exclude<NumberedMedia["media"], { type: "image" }>;
@@ -44,9 +43,9 @@ const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().pa
     <video controls playsinline preload="none" poster={poster}
       width={media.poster.width} height={media.poster.height}
       aria-label={media.title} aria-describedby={`caption-${media.id}`}>
-      <source src={withBase(media.src)} type={/\.webm(?:\?|$)/.test(media.src) ? "video/webm" : "video/mp4"} />
-      {media.captions && <track kind="captions" src={withBase(media.captions.src)} srclang={media.captions.language} label={media.captions.label} default />}
-      <p>Your browser cannot play this video. <a href={withBase(media.src)}>Open the video file</a>.</p>
+      <source src={media.src} type={/\.webm(?:\?|$)/.test(media.src) ? "video/webm" : "video/mp4"} />
+      {media.captions && <track kind="captions" src={media.captions.src} srclang={media.captions.language} label={media.captions.label} default />}
+      <p>Your browser cannot play this video. <a href={media.src}>Open the video file</a>.</p>
     </video>
   ) : (
     <a class="project-video__poster" href={media.src} data-embed-src={getEmbedUrl(media.src)} data-video-title={media.title}
@@ -58,7 +57,7 @@ const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().pa
 </div>
 <ProjectCaption media={media} number={number}>
   <div class="project-video__notes">
-    <a href={withBase(media.src)}>{media.type === "video" ? "Open video file" : "Watch on original site"} ↗</a>
+    <a href={media.src}>{media.type === "video" ? "Open video file" : "Watch on original site"} ↗</a>
     {media.highlights.length > 0 && (
       <div>
         <p class="project-video__label">Demo highlights</p>

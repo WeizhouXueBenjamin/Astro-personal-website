@@ -19,7 +19,7 @@ export async function verifyContentDev({ root, project, writeProject }) {
   // Use Astro's dev API with IPC so Windows can close Vite/esbuild gracefully.
   const serverCode = `
 import { dev } from ${JSON.stringify(import.meta.resolve("astro"))};
-const ready = dev({ root: ${JSON.stringify(root)}, site: "https://portfolio.example/", base: "/", server: { host: "127.0.0.1", port: ${port} } });
+const ready = dev({ root: ${JSON.stringify(root)}, site: "https://portfolio.example/", server: { host: "127.0.0.1", port: ${port} } });
 process.on("message", async (message) => {
   if (message === "stop") { await (await ready).stop(); process.exit(0); }
 });

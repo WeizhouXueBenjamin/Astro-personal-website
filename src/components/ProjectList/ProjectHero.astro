@@ -1,29 +1,27 @@
 ---
-import type { ProjectData, NumberedMedia } from "#base/lib/project-media";
-import ProjectMedia from "./ProjectMedia.astro";
-import { withBase } from "#base/lib/paths";
+import type { ProjectData } from "#base/lib/project-media";
 
 interface Props {
   project: ProjectData;
-  evidence?: NumberedMedia;
 }
 
-const { project, evidence } = Astro.props;
+const { project } = Astro.props;
 ---
 
 <header class="project-hero">
-  <a class="project-hero__back" href={withBase("/projects/")}>← All projects</a>
-  <div class="project-hero__intro">
-    <div class="project-hero__heading">
-      <p class="eyebrow">{project.category}</p>
-      <h1>{project.title}</h1>
-      <p class="project-hero__summary">{project.summary}</p>
-    </div>
-    <dl class="project-hero__facts">
-      <div><dt>Project type</dt><dd>{project.projectType}</dd></div>
-      <div><dt>My role</dt><dd>{project.role}</dd></div>
-      {project.period && <div><dt>Period</dt><dd>{project.period}</dd></div>}
-      {project.status && <div><dt>Status</dt><dd>{project.status}</dd></div>}
+  <a class="project-hero__back" href="/projects/">← All projects</a>
+  <div class="project-hero__heading">
+    <p class="project-hero__meta">
+      <span class="eyebrow">{project.category}</span>
+      <span>{project.projectType}</span>
+      {project.period && <span>{project.period}</span>}
+      {project.status && <span class="tag">{project.status}</span>}
+    </p>
+    <h1>{project.title}</h1>
+    <p class="project-hero__summary">{project.summary}</p>
+    <dl class="project-hero__role">
+      <dt>My role</dt>
+      <dd>{project.role}</dd>
     </dl>
   </div>
   <div class="project-hero__tools">
@@ -36,25 +34,27 @@ const { project, evidence } = Astro.props;
       </div>
     )}
   </div>
-  {evidence && <ProjectMedia {...evidence} priority />}
 </header>
 
 <style>
   .project-hero {
     display: grid;
-    gap: var(--space-6);
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
   }
 
   .project-hero__back {
+    display: inline-flex;
+    align-items: center;
     justify-self: start;
+    min-height: var(--control-height);
     font-size: var(--size-sm);
+    text-decoration: none;
   }
 
-  .project-hero__intro {
-    display: grid;
-    grid-template-columns: minmax(0, 2.4fr) minmax(13rem, 1fr);
-    align-items: end;
-    gap: var(--space-7);
+  .project-hero__back:hover {
+    text-decoration: underline;
   }
 
   .project-hero__heading {
@@ -62,31 +62,36 @@ const { project, evidence } = Astro.props;
     gap: var(--space-4);
   }
 
-  .project-hero__heading h1 {
-    max-width: 23ch;
+  .project-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+    color: var(--text-muted);
+    font-size: var(--size-sm);
   }
 
   .project-hero__summary {
-    max-width: var(--content-copy);
+    max-width: 70ch;
     color: var(--text-secondary);
     font-size: var(--size-lead);
   }
 
-  .project-hero__facts {
-    display: grid;
-    gap: var(--space-3);
+  .project-hero__role {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
     margin: 0;
-    padding-left: var(--space-5);
-    border-left: 1px solid var(--border-control);
     font-size: var(--size-sm);
   }
 
-  .project-hero__facts dt {
+  .project-hero__role dt {
     color: var(--text-muted);
   }
 
-  .project-hero__facts dd {
+  .project-hero__role dd {
     margin: 0;
+    color: var(--text-secondary);
   }
 
   .project-hero__tools,
@@ -102,17 +107,9 @@ const { project, evidence } = Astro.props;
     gap: var(--space-4);
   }
 
-  @media (max-width: 800px) {
-    .project-hero__intro {
-      grid-template-columns: 1fr;
-      gap: var(--space-5);
-    }
-
-    .project-hero__facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      padding: var(--space-4) 0 0;
-      border-left: 0;
-      border-top: 1px solid var(--border);
+  @media (max-width: 600px) {
+    .project-hero__heading h1 {
+      font-size: clamp(var(--size-h2), 9vw, var(--size-h1));
     }
 
     .project-hero__summary {

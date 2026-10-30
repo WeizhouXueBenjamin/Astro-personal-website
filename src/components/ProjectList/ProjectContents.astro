@@ -1,0 +1,56 @@
+---
+interface Props {
+  sections: { id: string; title: string }[];
+}
+
+const { sections } = Astro.props;
+---
+
+<nav class="project-contents" aria-label="Case study sections">
+  <ol>
+    {sections.map((section, index) => (
+      <li>
+        <a href={`#${section.id}`}>
+          <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+          {section.title}
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .project-contents ol {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-contents a {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+    font-size: var(--size-sm);
+    line-height: 1.5;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .project-contents a:hover,
+  .project-contents a:focus-visible {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .project-contents a span {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--size-xs);
+  }
+</style>

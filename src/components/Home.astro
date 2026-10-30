@@ -3,7 +3,6 @@ import { site } from "#config/site";
 import { getProjects } from "#base/lib/content";
 import ContactSection from "./ContactSection.astro";
 import ProjectCard from "./ProjectList/ProjectCard.astro";
-import { withBase } from "#base/lib/paths";
 
 const featuredProjects = (await getProjects())
   .filter(({ data }) => data.featured)
@@ -19,12 +18,12 @@ const featuredProjects = (await getProjects())
       <p class="hero-subtitle">{site.userTitle}</p>
       <p class="hero-description">{site.userDescription}</p>
       <div class="home-actions">
-        <a class="action-link action-link--primary" href={withBase("/projects/")}>
+        <a class="action-link action-link--primary" href="/projects/">
           View projects →
         </a>
         <a
           class="action-link"
-          href={withBase(site.resumeUrl)}
+          href={site.resumeUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="View CV (PDF, opens in a new tab)"
@@ -50,7 +49,7 @@ const featuredProjects = (await getProjects())
         <p class="eyebrow">Personal projects</p>
         <h2 id="selected-projects-heading">Control systems in simulation</h2>
       </div>
-      <a href={withBase("/projects/")}>All projects →</a>
+      <a href="/projects/">All projects →</a>
     </div>
     <div class="featured-projects">
       {featuredProjects.map((project) => (
@@ -68,7 +67,7 @@ const featuredProjects = (await getProjects())
       with hands-on work diagnosing and replacing technical equipment. These experiences
       support my focus on automation and integrated systems.
     </p>
-    <a href={withBase("/about/#work-experience")}>Read my professional experience →</a>
+    <a href="/about/#work-experience">Read my professional experience →</a>
   </div>
 </section>
 

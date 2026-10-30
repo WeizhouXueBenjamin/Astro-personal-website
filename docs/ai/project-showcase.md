@@ -6,15 +6,19 @@
 
 | 职责 | 实现 |
 | --- | --- |
-| 列表与首页精选 | `ProjectCard.astro`；保持单一详情入口 |
-| 详情外壳、Hero 与目录 | `ProjectDetailLayout.astro`、`ProjectHero.astro`；复用 `Layout.astro` |
+| 列表与首页精选 | `ProjectCard.astro`；列表传入 `layout="wide"`，首页默认 compact，保持单一详情入口 |
+| 详情外壳、Hero 与目录 | `ProjectDetailLayout.astro`、`ProjectHero.astro`、`ProjectContents.astro`；复用 `Layout.astro` |
 | Markdown 章节 | `remark-projects.mjs` 从 `##` 自动生成目录与 `ProjectSection.astro` |
 | 正文图片、视频与 Figure | `<Figure />` → `ProjectFigure.astro` → `ProjectMedia.astro`；复用原图、Caption 与视频播放器 |
 | 媒体分组 | `<Gallery layout="comparison|sequence|featured">`；默认 featured |
 | 测试记录 | `<Test />` → `ProjectTest.astro`；预期、实际结果与可选证据链接 |
 | 选择与校验 | `content.ts` 负责排序与 slug 唯一性；`project-schema.ts` 共用媒体/测试契约，`project-media.ts` 检查本地视频 |
 
-`/projects/[slug]/` 保持不变，链接通过 `getProjectPath()` 添加部署 base。`Figure`、`Gallery` 和 `Test` 由布局注入，不需要逐篇导入；图片使用普通的 default import。没有客户端框架或新增内容服务。
+`/projects/[slug]/` 保持不变，链接通过 `getProjectPath()` 统一生成根路径。`Figure`、`Gallery` 和 `Test` 由布局注入，不需要逐篇导入；图片使用普通的 default import。没有客户端框架或新增内容服务。
+
+首页卡片优先显示标题，列表在桌面采用左图右文，窄屏统一单列；卡片只显示前三项核心技术，详情保留完整技术列表。当前项目列表暂不显示分类筛选，分类仍作为元数据展示，不根据项目数自行切换交互。
+
+`ProjectHero` 负责标题、摘要、角色和元数据，成果媒体由详情布局在正文起点渲染一次。桌面目录与成果媒体并排并保持 sticky，窄屏目录为媒体前的原生 `<details>`。章节编号与标题同行，正文约 70ch，媒体按内容列宽展示；章节锚点与 Figure 编号规则不变。
 
 ## 顶部元数据
 

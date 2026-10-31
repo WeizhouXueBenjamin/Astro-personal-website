@@ -1,5 +1,7 @@
 # GitHub Pages 自动部署
 
+当前采用自定义域名根路径部署，默认公开地址为 `https://benjaminxue.nastu.net/`，由 `src/config/deployment.mjs` 统一维护。GitHub Pages 继续负责托管与自动发布。下方带日期的初始检测、旧地址及迁移验收属于历史记录；当前配置以“配置与流程”为准。
+
 ## 初始检测记录（2026-10-25）
 
 | 项目 | 结果 | Confidence / 证据 |
@@ -40,28 +42,26 @@ Workflow：[`../.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)�
 
 `main` 的 Push、目标为 `main` 的 Pull Request、任意分支的 `workflow_dispatch` 均执行验证。只有 `main` 的 Push / 手动运行能够进入 Deployment Job。PR（包括 Fork PR）和其他分支的手动运行仅构建，不发布；不使用 `pull_request_target`，不需要部署 Secret。
 
-Build Job 只有 `contents: read`，执行官方 `withastro/action@v6`：安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。Node 固定为项目要求的 `22.23.4`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。没有配置独立 lint / Astro Check / TypeScript Check，不把 build 当作完整类型检查。
+Quality Job 只有 `contents: read`，先按 frozen lockfile 安装含开发工具的依赖，再分别运行 `verify:ai-docs`、`typecheck`、`lint`、`test:quality`、`test:ai-docs` 和 `verify:design`。每项使用独立具名步骤，日志保留文件、行号和检查名称。类型错误、Lint Error 和测试失败阻断后续构建；Lint Warning 保持可见，需人工评估，不使用 `continue-on-error` 或日志过滤掩盖失败。类型与 Lint 范围见[验证选择](ai/workflows.md#验证选择)。
+
+Build Job 依赖 Quality 成功，只有 `contents: read`，执行官方 `withastro/action@v6`：该 Job 安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。两个验证 Job 的 Node 均固定为项目要求的 `22.23.4`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。构建通过与类型检查通过分别报告。
 
 Deployment Job 依赖 Build 成功，只授予 `pages: write`、`id-token: write`，使用 `actions/deploy-pages@v5` 和 `github-pages` Environment。Concurrency 按 PR / Git ref 分组；生产构建与部署顺序运行，`cancel-in-progress: false`，新 Push 不会取消进行中的发布。GitHub 可以替换同一组中尚未开始的 pending run；保留最新待执行版本。
 
-`SITE_URL` 表示**包含挂载子路径的完整 HTTPS URL**。优先级为：
+默认公开地址在 `src/config/deployment.mjs` 的 `DEFAULT_SITE_URL` 中维护。`SITE_URL` 可覆盖域名（Actions 从同名 Repository Variable 读取）；空值使用默认地址。本地与 CI 不再从 Git remote 或 `GITHUB_REPOSITORY` 推导域名，下载归档后也可直接构建。
 
-1. 环境变量 `SITE_URL`（Actions 从同名 Repository Variable 读取）。
-2. Actions 提供的 `GITHUB_REPOSITORY`。
-3. 本地唯一且已核实的 `origin` GitHub remote。
+站点仅部署在域名根路径 `/`。配置接受 HTTPS origin，拒绝子路径、凭据、query 和 fragment；不再支持 `github.io/<repo>/` 等子目录挂载。迁移域名时同步更新该默认值、Actions Variable 与 Pages Custom domain，并验证新地址。
 
-普通 Repository 推导 `/<repo>/`，`<owner>.github.io` Repository 推导 `/`。代码不写死个人 GitHub 地址。下载归档或移除 Git 信息后，需要显式设置 `SITE_URL`。复制到其他 Remote / Fork 后应重新核实发布目标；推导值不能代替实际 Pages 设置。
+Astro 使用 `output: static`、`trailingSlash: always` 和目录 `index.html`，与 Pages 的目录路由一致。页面、Markdown / MDX 的站内链接及 public 资源直接使用根路径，Astro 图片使用其生成的 URL；已移除 `withBase()` 与 Remark base 改写插件。Markdown processor 仍复用官方 `@astrojs/markdown-remark` 和项目章节插件，版本以 package.json 与 lockfile 为准；`verify:output` 检查最终资源和链接。
 
-Astro 使用 `output: static`、`trailingSlash: always` 和目录 `index.html`，与 Pages 的目录路由一致。`withBase()` 只用于渲染原始站内路径，不对 Astro 已处理的图片 URL 二次添加 base。Markdown / MDX 的 Markdown 链接、图片和链接定义通过 Remark 同步处理 base；为使用 Astro 7 当前的 processor API，显式声明已在依赖树中的官方 `@astrojs/markdown-remark@7.2.1`，不使用已弃用的 `markdown.remarkPlugins` 配置。MDX 中自行编写的组件或 HTML 属性需要使用路径工具；`verify:output` 会检查最终产物是否存在遗漏。
-
-`404.html` 复用现有布局并使用绝对 base 资源路径，包含 `noindex`；跳转页和 404 不进入 sitemap。`/experience/` 使用 HTML 跳转至 `/about/#work-experience`，`/gallery/` 跳转首页；静态跳转不等于 HTTP 301/302。
+`404.html` 复用现有布局并使用根路径资源，包含 `noindex`；跳转页和 404 不进入 sitemap。`/experience/` 使用 HTML 跳转至 `/about/#work-experience`，`/gallery/` 跳转首页；静态跳转不等于 HTTP 301/302。
 
 ## 首次启用与授权边界
 
 1. 先审阅 `feature/basic-setup` 与 `main` 的 7 个既有提交差异，并明确哪些未提交内容需要发布。不要只把 Workflow 复制到旧 `main`：它还缺少本次配套脚本和网站实现。
 2. 在所有者授权后，将完整、审阅过的部署改动通过 PR 合入 `main`，保留已有 Git History。
 3. 仓库 **Settings → Pages → Build and deployment → Source → GitHub Actions**。如果实际设置显示已存在域名或其他发布源，先核实迁移影响，再调整；不要直接覆盖。
-4. 如果实际 Pages URL 与推导地址不同，在 **Settings → Secrets and variables → Actions → Variables** 添加 `SITE_URL`，填写实际完整公开 URL。普通 Project Pages 不需要这个 Variable。
+4. 确认 **Settings → Pages → Custom domain** 与默认公开域名一致。需要覆盖域名时，在 **Settings → Secrets and variables → Actions → Variables** 设置 `SITE_URL`，填写 HTTPS 域名根地址，不添加 Repository 子路径。
 5. Pages 创建 `github-pages` Environment 后，检查 **Settings → Environments → github-pages**。如当前 Plan 支持且所有者授权，可限制 Deployment Branch 为 `main`，保留原有审批规则。Workflow 已有分支条件，但 Environment 限制能进一步保护生产。
 6. 首次启用晚于 Push 时，前往 **Actions → Validate and deploy Astro → Run workflow**，选择 `main`。手动发布成功只能证明 Deployment；随后仍需一次真实 Push 验证自动更新。
 
@@ -70,9 +70,9 @@ GitHub 插件能管理 Repository / PR，但不提供 Pages / Environment 设置
 ## 日常更新
 
 - 代码：修改 `src/` 中对应页面或组件。
-- Projects：修改 `src/content/projects/` 的 YAML/YML/JSON，字段与事实规则见 [项目展示规范](ai/project-showcase.md)。项目详情在构建阶段由 `getStaticPaths()` 生成。
+- Projects：修改 `src/content/projects/` 的 MDX，字段与事实规则见 [项目展示规范](ai/project-showcase.md)。项目详情在构建阶段由 `getStaticPaths()` 生成。
 - 截图和视频 poster：存放在 `src/assets/projects/`，在项目条目中按源文件相对路径引用，由 Astro 处理。
-- 本地视频 / 字幕：存放在 `public/media/projects/`，内容中仍填写 `/media/projects/实际文件.mp4` 或 `.vtt`，不手工加入 Repository 名。渲染时统一添加 base。
+- 本地视频 / 字幕：存放在 `public/media/projects/`，内容中填写 `/media/projects/实际文件.mp4` 或 `.vtt`，直接使用根路径。
 - 简历和推荐材料：放在 `public/documents/`，只添加实际存在且可公开的文件。
 - Blog：修改 `src/content/blogs/`；`draft: true` 保持从列表、详情路径、RSS 和 sitemap 一致排除。
 
@@ -98,7 +98,7 @@ Windows 如遇 PowerShell 执行策略限制，使用 `pnpm.cmd`。本机现有�
 | Build 失败 | 从首个失败步骤读取完整错误，本地运行同一命令；区分依赖、schema、缺失媒体与构建错误，修复后正常 Push。不要跳过验证 |
 | lockfile 安装失败 | 使用 `package.json` 指定的 pnpm 版本，确认依赖声明与 lockfile 一起更新；不在 CI 删除 lockfile 或关闭 frozen 安装 |
 | Pages 未启用 / 404 | 核对 Source 是否为 GitHub Actions、当前运行是否为 `main`、部署是否成功，以及实际 Pages URL；404 API 响应也可能来自访问权限不足 |
-| 资源 / 内部链接 404 | 对照实际 Pages 地址核对 `SITE_URL` 与 base，执行 `build` 后再执行 `verify:output`；检查文件名大小写。内容中的 public 路径不含 base，输出应包含 base |
+| 资源 / 内部链接 404 | 确认 `SITE_URL` 与 Pages Custom domain 一致且使用根路径，执行 `build` 后再执行 `verify:output`；检查文件名大小写及 public 路径，不添加 Repository 名 |
 | Deploy 权限或保护规则失败 | 检查 Job 的 Pages/OIDC 权限、`github-pages` Environment 的分支规则和审批，以及仓库 / 组织 Actions Policy；不要删除保护规则来绕过失败 |
 | 非 `main` 手动运行未发布 | 这是预期保护；发布生产需使用 `main` |
 | 网站没有更新 | 核对最新 Commit、触发事件、Build / Deploy 结论、Pages URL 与缓存；不要只看首页能否打开 |
@@ -124,7 +124,7 @@ GitHub Pages 当前限制包括发布站点不超过 1 GB、Deployment 超过 10
 
 ## Custom Domain 迁移（2026-10-27）
 
-所有者指定 `benjaminxue.nastu.net`。目标 Repository Variable 为 `SITE_URL=https://benjaminxue.nastu.net/`，现有部署 Workflow 从该变量读取 URL，Astro 自动推导 `site: https://benjaminxue.nastu.net` 与 `base: /`。本地构建与产物检查也需设置相同的 `SITE_URL`。页面、内容和媒体路径继续复用现有 base 工具，无须逐个修改。
+迁移时所有者指定 `benjaminxue.nastu.net`，Repository Variable 为 `SITE_URL=https://benjaminxue.nastu.net/`，Workflow 从该变量读取 URL。当时本地构建需设置同一变量，并通过 base 工具适配域名。2026-10-31 已统一默认自定义域名与根路径，移除这些兼容工具；当前本地构建无需额外设置变量。
 
 该域名拥有独立的 NS / SOA 区域，DNS 管理面板在此区域的 `@` 添加以下 A 记录；如果管理的是父区域 `nastu.net`，主机名为 `benjaminxue`：
 

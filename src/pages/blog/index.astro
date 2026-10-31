@@ -1,7 +1,6 @@
 ---
 import { getBlogPath, getPublishedPosts } from "#base/lib/content";
 import MainLayout from "#layouts/MainLayout.astro";
-import { withBase } from "#base/lib/paths";
 
 const posts = await getPublishedPosts();
 ---
@@ -45,7 +44,7 @@ const posts = await getPublishedPosts();
   ) : (
     <div class="empty-state blog-empty">
       <p>No articles published yet. Engineering notes and project write-ups will appear here.</p>
-      <a href={withBase("/projects/")}>Explore projects →</a>
+      <a href="/projects/">Explore projects →</a>
     </div>
   )}
 </MainLayout>

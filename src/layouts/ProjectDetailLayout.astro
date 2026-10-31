@@ -1,13 +1,15 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import type { ComponentProps } from "astro/types";
 import { render } from "astro:content";
 import ProjectHero from "#components/ProjectList/ProjectHero.astro";
+import ProjectContents from "#components/ProjectList/ProjectContents.astro";
+import ProjectMedia from "#components/ProjectList/ProjectMedia.astro";
 import ProjectSection from "#components/ProjectList/ProjectSection.astro";
 import ProjectFigure from "#components/ProjectList/ProjectFigure.astro";
 import ProjectGallery from "#components/ProjectList/ProjectGallery.astro";
 import ProjectTest from "#components/ProjectList/ProjectTest.astro";
 import Layout from "./Layout.astro";
-import { withBase } from "#base/lib/paths";
 
 interface Props {
   project: CollectionEntry<"projects">;
@@ -16,24 +18,31 @@ interface Props {
 const { project: entry } = Astro.props;
 const project = entry.data;
 const { Content, remarkPluginFrontmatter } = await render(entry);
-const sections = remarkPluginFrontmatter.projectSections as { id: string; title: string }[];
+const sections = remarkPluginFrontmatter.projectSections as ComponentProps<typeof ProjectContents>["sections"];
 if (!sections?.length) throw new Error(`Missing project sections: ${entry.id}`);
 ---
 
 <Layout title={project.title} description={project.summary}>
   <main class="project-detail container">
-    <ProjectHero project={project} evidence={project.hero ? { media: project.hero, number: 1 } : undefined} />
-    <nav class="project-detail__contents" aria-label="Case study sections">
-      <p class="eyebrow">In this case study</p>
-      <ol>
-        {sections.map((section) => <li><a href={`#${section.id}`}>{section.title}</a></li>)}
-      </ol>
-    </nav>
-    <Content components={{ ProjectSection, Figure: ProjectFigure, Gallery: ProjectGallery, Test: ProjectTest }} />
-    <footer class="project-detail__footer">
-      <a class="action-link" href={withBase("/projects/")}>← Explore all projects</a>
-      <a href={withBase("/about/")}>About my background →</a>
-    </footer>
+    <ProjectHero project={project} />
+    <div class="project-detail__reading">
+      <aside class="project-detail__rail">
+        <p class="eyebrow">In this case study</p>
+        <ProjectContents sections={sections} />
+      </aside>
+      <details class="project-detail__mobile-contents">
+        <summary>In this case study</summary>
+        <ProjectContents sections={sections} />
+      </details>
+      <div class="project-detail__body">
+        {project.hero && <ProjectMedia media={project.hero} number={1} priority />}
+        <Content components={{ ProjectSection, Figure: ProjectFigure, Gallery: ProjectGallery, Test: ProjectTest }} />
+        <footer class="project-detail__footer">
+          <a class="action-link" href="/projects/">← All projects</a>
+          <a href="/about/">About my background →</a>
+        </footer>
+      </div>
+    </div>
   </main>
 </Layout>
 
@@ -43,28 +52,44 @@ if (!sections?.length) throw new Error(`Missing project sections: ${entry.id}`);
     overflow-wrap: anywhere;
   }
 
-  .project-detail__contents {
+  .project-detail__reading {
     display: grid;
-    grid-template-columns: 13rem minmax(0, 1fr);
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
     gap: var(--space-7);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: 1px solid var(--border);
+    padding-top: var(--space-6);
   }
 
-  .project-detail__contents ol {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-5);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: var(--size-sm);
+  .project-detail__rail {
+    position: sticky;
+    top: calc(var(--header-offset) + var(--space-4));
+    align-self: start;
+    max-height: calc(100svh - var(--header-offset) - var(--space-6));
+    overflow-y: auto;
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+    border-left: 1px solid var(--border);
   }
 
-  .project-detail__contents a {
-    display: inline-block;
-    padding-block: var(--space-2);
+  .project-detail__rail .eyebrow {
+    margin-bottom: var(--space-3);
+    padding-left: var(--space-2);
+  }
+
+  .project-detail__mobile-contents {
+    display: none;
+  }
+
+  .project-detail__body {
+    min-width: 0;
+  }
+
+  .project-detail__body > :global(.project-section:first-child) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .project-detail__body > :global(.project-media) {
+    margin-bottom: var(--space-6);
+    scroll-margin-top: calc(var(--header-offset) + var(--space-4));
   }
 
   .project-detail__footer {
@@ -77,10 +102,35 @@ if (!sections?.length) throw new Error(`Missing project sections: ${entry.id}`);
     border-top: 1px solid var(--border);
   }
 
-  @media (max-width: 800px) {
-    .project-detail__contents {
+  @media (max-width: 900px) {
+    .project-detail__reading {
       grid-template-columns: 1fr;
-      gap: var(--space-3);
+      gap: var(--space-6);
+    }
+
+    .project-detail__rail {
+      display: none;
+    }
+
+    .project-detail__mobile-contents {
+      display: block;
+      min-width: 0;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-control);
+    }
+
+    .project-detail__mobile-contents summary {
+      min-height: var(--control-height);
+      align-content: center;
+      color: var(--accent);
+      font-size: var(--size-sm);
+      font-weight: var(--weight-control);
+      cursor: pointer;
+    }
+
+    .project-detail__mobile-contents[open] summary {
+      margin-bottom: var(--space-3);
     }
   }
 </style>

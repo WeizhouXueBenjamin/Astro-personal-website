@@ -4,7 +4,7 @@ import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rm
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getDeploymentConfig } from "../src/config/deployment.mjs";
+import { DEFAULT_SITE_URL, getDeploymentConfig } from "../src/config/deployment.mjs";
 import { verifyOutput } from "./verify-output.mjs";
 import { verifyContentDev } from "./verify-content-dev.mjs";
 
@@ -42,11 +42,15 @@ function writeProject(name, { body, ...metadata }) {
 }
 
 try {
-  assert.deepEqual(getDeploymentConfig({ repository: "Example/Example.github.io", siteUrl: "" }), { site: "https://example.github.io", base: "/" });
-  assert.deepEqual(getDeploymentConfig({ repository: "Example/Portfolio", siteUrl: "" }), { site: "https://example.github.io", base: "/Portfolio" });
-  assert.deepEqual(getDeploymentConfig({ siteUrl: "https://portfolio.example/" }), { site: "https://portfolio.example", base: "/" });
-  assert.deepEqual(getDeploymentConfig({ siteUrl: "https://portfolio.example/work/" }), { site: "https://portfolio.example", base: "/work" });
-  assert.throws(() => getDeploymentConfig({ siteUrl: "https://portfolio.example/?invalid=1" }));
+  assert.deepEqual(getDeploymentConfig({ siteUrl: "" }), { site: new URL(DEFAULT_SITE_URL).origin });
+  assert.deepEqual(getDeploymentConfig({ siteUrl: "https://portfolio.example/" }), { site: "https://portfolio.example" });
+  for (const siteUrl of [
+    "https://portfolio.example/work/", "http://portfolio.example/",
+    "https://portfolio.example/?invalid=1", "https://portfolio.example/#fragment",
+    "https://user:password@portfolio.example/",
+  ]) {
+    assert.throws(() => getDeploymentConfig({ siteUrl }), /SITE_URL must be an HTTPS origin/);
+  }
   cpSync(join(projectRoot, "src"), join(fixtureRoot, "src"), {
     recursive: true,
     filter: (source) => source !== join(projectRoot, "src/content"),
@@ -110,14 +114,14 @@ export default {
   const control = {
     title: "Fixture Control Case", slug: "control-case", summary: "A control simulation.",
     category: "SCADA", projectType: "Simulation", role: "Test fixture",
-    techStack: ["PLC", "SCADA", "Simulation"], status: "In Progress", featured: true, order: 2,
+    techStack: ["PLC", "SCADA", "Simulation", "OPC UA", "Structured Text"], status: "In Progress", featured: true, order: 2,
     links: [{ label: "GitHub", url: "https://example.com/control" }],
     hero: image("hero"),
     body: [
       ...["hero", "before", "after", "step-one", "step-two", "embed"].map((id) => `import ${id.replaceAll("-", "")} from "../../assets/verification/${id}.svg";`),
       "## Overview\n\nFixture introduction. [Projects](/projects/).",
       "## Comparison\n\nBefore and after fixtures.",
-      '<Gallery layout="comparison">\n<Figure id="before" src={before} title="Fixture before" alt="Synthetic test image before" caption="Test-only evidence for before." />\n<Figure id="after" src={after} title="Fixture after" alt="Synthetic test image after" caption="Test-only evidence for after." />\n</Gallery>',
+      '<Gallery layout="comparison">\n<Figure id="before" src={before} title="Fixture before" alt="Synthetic test image before" caption="Test-only evidence for before." />\n<Figure id="after" type="image" src={after} title="Fixture after" alt="Synthetic test image after" caption="Test-only evidence for after." />\n</Gallery>',
       "## Sequence\n\nOrdered fixture steps.",
       '<Gallery layout="sequence">\n<Figure id="step-one" src={stepone} title="Fixture step-one" alt="Synthetic test image step-one" caption="Test-only evidence for step-one." aspectRatio="native" />\n<Figure id="step-two" src={steptwo} title="Fixture step-two" alt="Synthetic test image step-two" caption="Test-only evidence for step-two." />\n</Gallery>',
       "## Video\n\nAn embed is loaded only on request.",
@@ -177,6 +181,8 @@ export default {
   assert.ok(projects.indexOf("Fixture Control Case") < projects.indexOf("Fixture Plain Case"));
   assert.ok(projects.includes('href="/projects/control-case/"'));
   assert.ok(!projects.includes('href="https://example.com/control"'));
+  assert.ok(!projects.includes("data-filter-value"), "The current project index must not expose category filters");
+  assert.ok(!projects.includes("Structured Text"), "Index cards must keep supplementary technologies for the detail page");
   const plainCard = [...projects.matchAll(/<article\b[\s\S]*?<\/article>/g)]
     .map(([card]) => card).find((card) => card.includes("Fixture Plain Case"));
   assert.ok(plainCard);
@@ -187,6 +193,16 @@ export default {
   const detail = read("projects/control-case/index.html");
   const plainDetail = read("projects/plain-case/index.html");
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
+  assert.ok(detail.includes("Structured Text"), "The detail page must retain the complete technology list");
+  for (const page of [detail, plainDetail]) {
+    const sectionIds = [...page.matchAll(/<section\b[^>]*id="([^"]+)"/g)].map((match) => match[1]);
+    const contents = [...page.matchAll(/<nav\b[^>]*aria-label="Case study sections"[\s\S]*?<\/nav>/g)].map(([nav]) => nav);
+    assert.equal(contents.length, 2, "Case-study contents must be available in both responsive layouts without JavaScript");
+    for (const nav of contents) {
+      assert.deepEqual([...nav.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]), sectionIds);
+    }
+    assert.match(page, /<summary\b[^>]*>In this case study<\/summary>/);
+  }
   assert.ok(detail.includes('href="https://example.com/control"'));
   assert.ok(detail.includes('href="https://portfolio.example/projects/control-case/"'));
   assert.ok(sitemap.includes("/projects/control-case") && sitemap.includes("/projects/plain-case"));
@@ -221,7 +237,7 @@ export default {
   assert.match(read("experience/index.html"), /http-equiv="refresh"[^>]*\/about\/#work-experience/);
   assert.match(read("gallery/index.html"), /http-equiv="refresh"[^>]*url=\//);
   assert.ok(!sitemap.includes("/experience") && !sitemap.includes("/gallery"));
-  verifyOutput({ root: dist, site: "https://portfolio.example", base: "/" });
+  verifyOutput({ root: dist, site: "https://portfolio.example" });
 
   // Controls & Automation and SCADA share one priority group: featured, then order.
   const groupedPlain = { ...plain, category: "Controls & Automation", order: 999, featured: true };
@@ -261,35 +277,38 @@ export default {
   assert.equal((videoDetail.match(/<video\b/g) ?? []).length, 1);
   assert.ok(videoDetail.includes("Read video description"));
 
-  // Check the same media and routes on Project Pages, then on a custom-domain subpath.
-  for (const siteUrl of ["https://example.github.io/Portfolio/", "https://portfolio.example/work/"]) {
-    build(undefined, siteUrl);
+  // The temporary root has no Git metadata: default and overridden origins must both work.
+  for (const siteUrl of [DEFAULT_SITE_URL, "https://preview.example/"]) {
+    build(undefined, siteUrl === DEFAULT_SITE_URL ? "" : siteUrl);
     const config = getDeploymentConfig({ siteUrl });
     verifyOutput({ root: dist, ...config });
-    const base = config.base;
     assert.equal(read("robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}sitemap-index.xml\n`);
-    assert.ok(read("projects/control-case/index.html").includes(`src="${base}/media/projects/feeder-demo.mp4"`));
+    assert.ok(read("projects/control-case/index.html").includes('src="/media/projects/feeder-demo.mp4"'));
     assert.ok(read("projects/control-case/index.html").includes(`href="${siteUrl}projects/control-case/"`));
     assert.ok(read("rss.xml").includes(`${siteUrl}blog/verification/public/</link>`));
-    assert.ok(read("blog/verification/public/index.html").includes(`href="${base}/projects/"`));
-    assert.ok(read("blog/verification/public/index.html").includes(`href="${base}/favicon.svg"`));
-    assert.ok(read("blog/verification/newer/index.html").includes(`href="${base}/projects/"`));
-    assert.ok(read("experience/index.html").includes(`${base}/about/#work-experience`));
+    assert.ok(read("blog/verification/public/index.html").includes('href="/projects/"'));
+    assert.ok(read("blog/verification/public/index.html").includes('href="/favicon.svg"'));
+    assert.ok(read("blog/verification/newer/index.html").includes('href="/projects/"'));
+    assert.ok(read("experience/index.html").includes("/about/#work-experience"));
     const projectNav = read("projects/control-case/index.html").match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
-    assert.ok(projectNav?.includes(`href="${base}/projects/" class="toolbar-item toolbar-item--active"`));
+    assert.ok(projectNav?.includes('href="/projects/" class="toolbar-item toolbar-item--active"'));
     const homeNav = read("index.html").match(/<nav\b[^>]*aria-label="top-level navigation"[\s\S]*?<\/nav>/)?.[0];
     assert.equal((homeNav?.match(/aria-current="page"/g) ?? []).length, 1);
 
     const validHome = read("index.html");
     const particleScript = validHome.match(/["'`]([^"'`\s<>]*\/_astro\/particles\.min[^"'`\s<>]+)["'`]/)?.[1];
     assert.ok(particleScript, "The built Home must reference its on-demand particle script");
-    writeFileSync(join(dist, "index.html"), validHome.replace(particleScript, `${base}/_astro/missing-particles.js`));
+    writeFileSync(join(dist, "index.html"), validHome.replace(particleScript, "/_astro/missing-particles.js"));
     assert.throws(() => verifyOutput({ root: dist, ...config }), /Missing output or incorrect filename case/);
     writeFileSync(join(dist, "index.html"), validHome);
-    for (const [brokenUrl, expectedError] of [["/projects/", /URL escapes base/], [`${base}/PROJECTS/`, /Missing output or incorrect filename case/]]) {
-      writeFileSync(join(dist, "index.html"), validHome.replace(`href="${base}/projects/"`, `href="${brokenUrl}"`));
-      assert.throws(() => verifyOutput({ root: dist, ...config }), expectedError);
+    for (const brokenUrl of ["/missing-projects/", "/PROJECTS/"]) {
+      writeFileSync(join(dist, "index.html"), validHome.replace('href="/projects/"', `href="${brokenUrl}"`));
+      assert.throws(() => verifyOutput({ root: dist, ...config }), /Missing output or incorrect filename case/);
     }
+    writeFileSync(join(dist, "index.html"), validHome.replace(
+      /(<link\b[^>]*rel="canonical"[^>]*href=")[^"]+/, "$1https://incorrect.example/",
+    ));
+    assert.throws(() => verifyOutput({ root: dist, ...config }), /Incorrect canonical/);
     writeFileSync(join(dist, "index.html"), validHome);
   }
   writeProject("plain", plain);
@@ -338,7 +357,7 @@ export default {
   assert.ok(!existsSync(join(dist, "blog/verification/public/index.html")));
   assert.ok(read("about/index.html").includes("Experience details will be added here"));
   await verifyContentDev({ root: fixtureRoot, project: plain, writeProject });
-  console.log("Site verification passed: publishing/RSS, Blog contents anchors and short articles, experience chronology and stable ties, project routes/category priority/featured/order, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, root/project/custom-domain paths, robots sitemap discovery, Markdown/MDX links, and output validation failure cases including on-demand scripts.");
+  console.log("Site verification passed: publishing/RSS, Blog contents anchors and short articles, experience chronology and stable ties, project routes/category priority/featured/order, cards, optional media/links/status, figure numbering/order, comparison/sequence, native video and deferred embed, invalid media/references/slugs, empty collections and removed routes, navigation and redirects, default custom domain without Git and overridden origins, robots sitemap discovery, Markdown/MDX links, and output validation failure cases including canonical URLs and on-demand scripts.");
 } finally {
   // Remove only the newly created temporary workspace; unlink its dependency junction first.
   const dependencyLink = join(fixtureRoot, "node_modules");

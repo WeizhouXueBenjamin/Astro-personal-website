@@ -53,12 +53,15 @@
 | 受影响范围 | 执行与观察 |
 | --- | --- |
 | 代码或网站内容 | `pnpm run build`，再验证实际受影响行为 |
+| Astro、TypeScript、JavaScript 或检查配置 | `pnpm run typecheck` 与 `pnpm run lint`；检查入口或 Lint 配置变更另运行 `pnpm run test:quality` |
 | 集合、发布、列表、导航或跳转 | 加 `pnpm run verify:site`；核对草稿、日期/排序、空集合、可选值与旧地址 |
 | 正式构建产物、域名或公开资源 | build 后运行 `pnpm run verify:output`，核对链接、metadata、RSS、sitemap 与 robots |
 | 颜色或前景/背景配对 | 加 `pnpm run verify:design`，并检查实际文字、控件及焦点 |
 | 前端或 UI | 按上文设计检查，验证键盘、窄屏、无 JavaScript 及 [iframe 可访问标题](engineering.md#iframe-可访问标题)；动效变化检查减少动效 |
 | 指导文档 | `pnpm run verify:ai-docs`，核对事实和 diff；纯文档不运行无关站点测试 |
 | 文档检查器或其测试 | 加 `pnpm run test:ai-docs` 与 build，覆盖隔离样例及只读行为 |
+
+typecheck 先确认本地依赖存在，再运行 `astro check`，缺少依赖或类型错误均失败；沿用 strict，不全局启用 JavaScript `checkJs`，MDX 不在其完整类型检查范围。Lint 范围与规则以 [eslint.config.mjs](../../eslint.config.mjs) 为准：检查 Astro、TS、JS/MJS 及组件内脚本，区分 Node 与浏览器；排除生成目录及两份第三方脚本，不处理 MDX。正确性和基础可访问性错误阻断，unused、显式 any、非空断言与字幕检查先警告；不强制格式、不自动修复。质量检查配置的隔离测试不等于全量业务测试。
 
 文档检查扫描入口、README、领域规范、历史归档，以及仓库 `.agents/skills`、旧 `.codex` 中的 Skill 入口和 `references` Markdown/MDX；不扫描 Skill 脚本、输出素材或用户级目录。检查本地链接及 Markdown/MDX 标题锚点，项目章节复用现有插件；仅编译 MDX，不执行导入或表达式，动态标题无法静态确定时明确报错。代码示例中的假链接不参与。
 

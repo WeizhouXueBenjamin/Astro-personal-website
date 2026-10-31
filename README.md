@@ -9,6 +9,9 @@
 ```sh
 pnpm install
 pnpm run dev
+pnpm run typecheck
+pnpm run lint
+pnpm run test:quality
 pnpm run build
 pnpm run verify:output
 pnpm run preview
@@ -19,6 +22,8 @@ pnpm run test:ai-docs
 ```
 
 build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离临时工作区验证发布规则、RSS、项目列表与空状态、导航和静态跳转，不修改正式内容。verify:design 检查深色主题常用 token 配对的 WCAG 对比度。
+
+typecheck 与 lint 独立执行，不自动修复文件；覆盖范围和验证边界见[验证选择](docs/ai/workflows.md#验证选择)。test:quality 验证检查入口的失败行为、Lint 规则、视频加载和 CI 门禁。CI 依赖关系与发布条件见[部署流程](docs/github-pages-deployment.md#配置与流程)。
 
 ## 页面与内容
 
@@ -55,7 +60,7 @@ build 生成 dist；preview 用于检查构建结果。verify:site 使用隔离�
 
 src/lib/local-content-loader.ts 保留针对早期 Astro 7.0.7 的 glob loader 空目录问题的兼容处理，包括清理已删除文件对应的缓存条目和恢复开发监听。每次依赖升级后继续用 verify:site 复核这些场景，再单独决定是否移除兼容层。
 
-历史安全维护的版本选择、验证结果和已知构建告警见 [依赖安全维护记录](docs/dependency-security-maintenance.md)。
+历史安全维护的版本选择、验证结果和旧构建告警分析见 [依赖安全维护记录](docs/dependency-security-maintenance.md)。当前版本以 package.json 和 lockfile 为准。
 
 ## AI 协作
 

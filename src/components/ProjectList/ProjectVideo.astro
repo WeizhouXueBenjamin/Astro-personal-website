@@ -22,10 +22,12 @@ const timeLabel = (seconds: number) => `${Math.floor(seconds / 60).toString().pa
   document.querySelectorAll<HTMLAnchorElement>("[data-embed-src]").forEach((link) => {
     link.addEventListener("click", (event) => {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const { embedSrc, videoTitle } = link.dataset;
+      if (!embedSrc || !videoTitle?.trim()) return;
       event.preventDefault();
       const frame = document.createElement("iframe");
-      frame.src = link.dataset.embedSrc!;
-      frame.title = link.dataset.videoTitle!;
+      frame.src = embedSrc;
+      frame.title = videoTitle;
       frame.allow = "fullscreen; picture-in-picture";
       frame.allowFullscreen = true;
       frame.referrerPolicy = "strict-origin-when-cross-origin";

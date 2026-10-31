@@ -42,7 +42,9 @@ Workflow：[`../.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)�
 
 `main` 的 Push、目标为 `main` 的 Pull Request、任意分支的 `workflow_dispatch` 均执行验证。只有 `main` 的 Push / 手动运行能够进入 Deployment Job。PR（包括 Fork PR）和其他分支的手动运行仅构建，不发布；不使用 `pull_request_target`，不需要部署 Secret。
 
-Build Job 只有 `contents: read`，执行官方 `withastro/action@v6`：安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。Node 固定为项目要求的 `22.23.4`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。没有配置独立 lint / Astro Check / TypeScript Check，不把 build 当作完整类型检查。
+Quality Job 只有 `contents: read`，先按 frozen lockfile 安装含开发工具的依赖，再分别运行 `verify:ai-docs`、`typecheck`、`lint`、`test:quality`、`test:ai-docs` 和 `verify:design`。每项使用独立具名步骤，日志保留文件、行号和检查名称。类型错误、Lint Error 和测试失败阻断后续构建；Lint Warning 保持可见，需人工评估，不使用 `continue-on-error` 或日志过滤掩盖失败。类型与 Lint 范围见[验证选择](ai/workflows.md#验证选择)。
+
+Build Job 依赖 Quality 成功，只有 `contents: read`，执行官方 `withastro/action@v6`：该 Job 安装一次依赖，运行 `verify:site`、正式 `build`、`verify:output`，最后上传一次 Artifact。`verify:site` 的额外构建用于隔离内容场景，并非重复构建正式站点。两个验证 Job 的 Node 均固定为项目要求的 `22.23.4`，pnpm 从 `package.json` 读取；CI 下按 frozen lockfile 安装。构建通过与类型检查通过分别报告。
 
 Deployment Job 依赖 Build 成功，只授予 `pages: write`、`id-token: write`，使用 `actions/deploy-pages@v5` 和 `github-pages` Environment。Concurrency 按 PR / Git ref 分组；生产构建与部署顺序运行，`cancel-in-progress: false`，新 Push 不会取消进行中的发布。GitHub 可以替换同一组中尚未开始的 pending run；保留最新待执行版本。
 

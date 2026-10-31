@@ -121,7 +121,7 @@ export default {
       ...["hero", "before", "after", "step-one", "step-two", "embed"].map((id) => `import ${id.replaceAll("-", "")} from "../../assets/verification/${id}.svg";`),
       "## Overview\n\nFixture introduction. [Projects](/projects/).",
       "## Comparison\n\nBefore and after fixtures.",
-      '<Gallery layout="comparison">\n<Figure id="before" src={before} title="Fixture before" alt="Synthetic test image before" caption="Test-only evidence for before." />\n<Figure id="after" src={after} title="Fixture after" alt="Synthetic test image after" caption="Test-only evidence for after." />\n</Gallery>',
+      '<Gallery layout="comparison">\n<Figure id="before" src={before} title="Fixture before" alt="Synthetic test image before" caption="Test-only evidence for before." />\n<Figure id="after" type="image" src={after} title="Fixture after" alt="Synthetic test image after" caption="Test-only evidence for after." />\n</Gallery>',
       "## Sequence\n\nOrdered fixture steps.",
       '<Gallery layout="sequence">\n<Figure id="step-one" src={stepone} title="Fixture step-one" alt="Synthetic test image step-one" caption="Test-only evidence for step-one." aspectRatio="native" />\n<Figure id="step-two" src={steptwo} title="Fixture step-two" alt="Synthetic test image step-two" caption="Test-only evidence for step-two." />\n</Gallery>',
       "## Video\n\nAn embed is loaded only on request.",

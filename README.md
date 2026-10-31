@@ -1,7 +1,5 @@
 # Benjamin Xue · Automation & Software Integration
 
-[Temporary CI negative control](quality-gate-missing-fixture.md)
-
 基于 Astro 静态生成的个人职业展示网站，重点呈现 PLC/SCADA、工业自动化、系统集成与软件开发。网站正文使用 NZ English，业务文档与 AI instructions 使用中文。
 
 ## 本地运行

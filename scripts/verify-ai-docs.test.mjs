@@ -3,7 +3,8 @@ import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import test from "node:test";
-import { AI_DOC_BUDGETS, verifyAiDocs } from "./verify-ai-docs.mjs";
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+import { AI_DOC_BUDGETS, formatAiDocReport, verifyAiDocs } from "./verify-ai-docs.mjs";
 
 const domainNames = ["business", "engineering", "coding-style", "design-system", "project-showcase", "workflows"];
 const activePaths = ["AGENTS.md", ...domainNames.map((name) => `docs/ai/${name}.md`), "docs/ai/project-audit.md"];
@@ -155,6 +156,8 @@ test("duplicate long paragraphs warn without failing; archive and code examples 
 test("repeated checks are deterministic and leave all fixture files unchanged", async (t) => {
   const { root, write } = fixture(t);
   write("docs/ai/archive/history.md", "# History\n\n[Broken](missing.md)\n");
+  write(".agents/skills/readonly/SKILL.md", "# Read-only skill\n\n[Reference](references/details.mdx#details)\n");
+  write(".agents/skills/readonly/references/details.mdx", '# Details\n\nexport const neverExecute = (() => { throw new Error("Do not execute MDX"); })()\n');
   const snapshot = (directory) => readdirSync(directory, { withFileTypes: true })
     .sort((a, b) => a.name.localeCompare(b.name, "en"))
     .map((entry) => [entry.name, entry.isDirectory() ? snapshot(join(directory, entry.name)) : readFileSync(join(directory, entry.name))]);
@@ -163,4 +166,300 @@ test("repeated checks are deterministic and leave all fixture files unchanged", 
   const second = await verifyAiDocs(root);
   assert.deepEqual(first, second);
   assert.deepEqual(snapshot(root), before);
+});
+
+const inline = (value) => String.fromCharCode(96) + value + String.fromCharCode(96);
+
+test("pnpm options before and after run do not hide missing scripts", async (t) => {
+  const { root, write } = fixture(t);
+  const commands = [
+    "pnpm run --silent absent",
+    "pnpm --silent run absent",
+    "pnpm.cmd --loglevel info run absent",
+    "pnpm run --loglevel=info absent",
+    'pnpm --reporter append-only run "absent"',
+  ];
+  write("README.md", commands.map(inline).join("\n\n"));
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, commands.length);
+  assert.ok(errors.every((error) => error.includes("unknown package script: absent")));
+});
+
+test("prose punctuation is separate from scripts while quoted names remain exact", async (t) => {
+  const { root, write } = fixture(t);
+  const scripts = { build: "unused", "release package": "unused", "verify:site": "unused" };
+  write("package.json", JSON.stringify({ scripts }));
+  write("README.md", [
+    "Run pnpm run build.",
+    "Use pnpm --silent run build。",
+    "Then pnpm.cmd run --loglevel info build!",
+    inline("pnpm run 'release package'"),
+    inline("pnpm run verify:site --some-script-argument"),
+    inline("pnpm run"),
+  ].join("\n\n"));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+  write("README.md", inline('pnpm run "build."') + "\n");
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 1);
+  assert.ok(errors[0].endsWith("unknown package script: build."));
+  write("package.json", JSON.stringify({ scripts: { ...scripts, "build.": "unused" } }));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+  write("package.json", JSON.stringify({ scripts: { "build.": "unused" } }));
+  write("README.md", "Run pnpm run build.\n");
+  const proseOnly = await verifyAiDocs(root);
+  assert.equal(proseOnly.errors.length, 1);
+  assert.ok(proseOnly.errors[0].endsWith("unknown package script: build"));
+});
+
+test("unverifiable pnpm commands produce diagnostics rather than passing silently", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", [
+    "pnpm --unsupported run build",
+    "pnpm run --loglevel",
+    'pnpm run "$SCRIPT"',
+    "pnpm run 'unclosed",
+    "pnpm --dir other-package run build",
+  ].map(inline).join("\n\n"));
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 5);
+  assert.ok(errors.every((error) => error.includes("cannot statically validate pnpm command")));
+});
+
+test("only visible text, inline commands and shell blocks contribute package commands", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", [
+    "<!-- pnpm run obsolete -->",
+    "~~~js",
+    'console.log("pnpm run example");',
+    "~~~",
+    "~~~md",
+    "pnpm run illustrative",
+    "~~~",
+    "~~~sh",
+    "pnpm run build",
+    "~~~",
+    "",
+    inline("pnpm install --frozen-lockfile"),
+  ].join("\n"));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+});
+
+test("fenced and indented shell diagnostics point to their original source lines", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", "# Commands\n\n~~~sh\npnpm run missing\n~~~\n\n    pnpm run missing\n");
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 2);
+  assert.ok(errors.some((error) => error.startsWith("README.md:4: unknown package script")));
+  assert.ok(errors.some((error) => error.startsWith("README.md:7: unknown package script")));
+});
+
+async function iframePolicy(engineering, workflows) {
+  let tree;
+  const processor = await createMarkdownProcessor({
+    syntaxHighlight: false,
+    remarkPlugins: [() => (value) => { tree = value; }],
+  });
+  await processor.render(workflows);
+  const links = [];
+  const collect = (node) => {
+    if (node.type === "link") links.push(node.url);
+    for (const child of node.children ?? []) collect(child);
+  };
+  collect(tree);
+  const fragment = "iframe-可访问标题";
+  assert.ok(links.includes("engineering.md#" + fragment), "Required iframe policy must be linked from the validation workflow");
+  const rendered = await processor.render(engineering);
+  const headings = tree.children.filter((node) => node.type === "heading");
+  const position = rendered.metadata.headings.findIndex(({ slug }) => slug === fragment);
+  assert.ok(position >= 0, "Required iframe policy section is missing");
+  const heading = headings[position];
+  const start = tree.children.indexOf(heading);
+  let end = start + 1;
+  while (end < tree.children.length && !(tree.children[end].type === "heading" && tree.children[end].depth <= heading.depth)) end++;
+  assert.ok(tree.children.slice(start + 1, end).some((node) => ["paragraph", "list"].includes(node.type)), "Required iframe policy section is empty");
+  return { start: heading.position.start.offset, headingEnd: heading.position.end.offset, end: tree.children[end]?.position.start.offset ?? engineering.length };
+}
+
+test("the real iframe policy is reachable and substantive, with deletion and empty-section controls", async () => {
+  const engineering = readFileSync(new URL("../docs/ai/engineering.md", import.meta.url), "utf8");
+  const workflows = readFileSync(new URL("../docs/ai/workflows.md", import.meta.url), "utf8");
+  const section = await iframePolicy(engineering, workflows);
+  await assert.rejects(iframePolicy(engineering.slice(0, section.start) + engineering.slice(section.end), workflows), /section is missing/);
+  await assert.rejects(iframePolicy(engineering.slice(0, section.headingEnd) + "\n\n" + engineering.slice(section.end), workflows), /section is empty/);
+  await assert.rejects(iframePolicy(engineering, "# Workflow\n"), /must be linked/);
+  await iframePolicy(engineering.slice(0, section.headingEnd) + "\n\nA reworded accessibility requirement.\n\n" + engineering.slice(section.end), workflows);
+});
+
+test("MDX anchors follow frontmatter, JSX, Chinese and duplicate headings without executing code", async (t) => {
+  const { root, write } = fixture(t);
+  const sentinel = "__aiDocsRegressionExecuted";
+  const original = globalThis[sentinel];
+  write("sample.mdx", [
+    "---",
+    "title: From frontmatter",
+    "---",
+    'import unresolvedImport from "./does-not-exist.js"',
+    "",
+    "export const sideEffect = (globalThis." + sentinel + " = true)",
+    "",
+    "# 中文标题",
+    "",
+    "## <span>JSX heading</span>",
+    "",
+    "## Repeat",
+    "",
+    "## Repeat",
+    "",
+    "## {frontmatter.title}",
+    "",
+    '<h2 id="explicit-jsx">An explicit JSX heading</h2>',
+    "",
+    '{(() => { throw new Error("MDX must not execute"); })()}',
+  ].join("\n"));
+  const fragments = ["中文标题", "jsx-heading", "repeat", "repeat-1", "from-frontmatter", "explicit-jsx"];
+  write("README.md", fragments.map((fragment) => "[Valid](sample.mdx#" + encodeURIComponent(fragment) + ")").join("\n\n"));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+  assert.equal(globalThis[sentinel], original);
+  write("README.md", "[Bad](sample.mdx#not-a-heading)\n\n[Metadata is not a heading](sample.mdx#title-from-frontmatter)\n");
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 2);
+  assert.ok(errors.every((error) => error.includes("missing Markdown heading")));
+});
+
+test("project MDX anchors reuse the real section plugin and generated heading IDs", async (t) => {
+  const { root, write } = fixture(t);
+  write("src/content/projects/case.mdx", [
+    "---",
+    "title: Case",
+    "---",
+    "",
+    "## Overview [#stable-overview]",
+    "",
+    "Details.",
+    "",
+    "### Nested heading",
+    "",
+    "More details.",
+    "",
+    "## Testing [#validation]",
+    "",
+    "Results.",
+  ].join("\n"));
+  write("README.md", ["stable-overview", "heading-stable-overview", "nested-heading", "validation", "heading-validation"]
+    .map((fragment) => "[Section](src/content/projects/case.mdx#" + fragment + ")").join("\n\n"));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+  write("README.md", "[Bad](src/content/projects/case.mdx#overview-stable-overview)\n");
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 1);
+  assert.ok(errors[0].includes("missing Markdown heading"));
+});
+
+test("MDX link and command diagnostics retain original lines after frontmatter", async (t) => {
+  const { root, write } = fixture(t);
+  write("docs/ai/extra.mdx", "---\ntitle: Example\n---\n\n# Visible\n\n[Broken](missing.md)\n\n" + inline("pnpm run absent") + "\n");
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 2);
+  assert.ok(errors.some((error) => error.startsWith("docs/ai/extra.mdx:7: missing local target")));
+  assert.ok(errors.some((error) => error.startsWith("docs/ai/extra.mdx:9: unknown package script")));
+});
+
+test("unresolvable MDX heading expressions and IDs fail with source lines", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", "[Heading](sample.mdx#anything)\n");
+  write("sample.mdx", "---\ntitle: Example\n---\n\n## {getTitle()}\n");
+  let report = await verifyAiDocs(root);
+  assert.equal(report.errors.length, 1);
+  assert.ok(report.errors[0].startsWith("sample.mdx:5:"));
+  assert.ok(report.errors[0].includes("Unverified dynamic MDX heading"));
+  write("sample.mdx", '<h2 id={getId()}>Visible</h2>\n');
+  report = await verifyAiDocs(root);
+  assert.equal(report.errors.length, 1);
+  assert.ok(report.errors[0].includes("Unverified dynamic MDX heading ID"));
+});
+
+for (const directory of [".agents/skills/example", ".codex/legacy"]) {
+  test("Skill and references are checked in " + directory + " without scanning output or scripts", async (t) => {
+    const { root, write } = fixture(t);
+    write("README.md", "# Readme\n");
+    write(directory + "/SKILL.md", "---\nname: example\ndescription: A fixture\n---\n\n# Example\n\n[Guide](references/details.md#details)\n\n" + inline("pnpm run build") + "\n");
+    write(directory + "/references/details.md", "# Details\n\n[Home](/README.md#readme)\n");
+    write(directory + "/references/advanced.mdx", "# Advanced\n\n[Home](/README.md#readme)\n");
+    write(directory + "/scripts/ignored.md", "[Broken](missing.md)\n" + inline("pnpm run absent") + "\n" + "x".repeat(20000));
+    write(directory + "/assets/ignored.md", "[Broken](missing.md)\n" + "x".repeat(20000));
+    const valid = await verifyAiDocs(root);
+    assert.deepEqual(valid.errors, []);
+    assert.ok(valid.metrics.files.some(({ path, kind }) => path === directory + "/SKILL.md" && kind === "entry"));
+    assert.ok(valid.metrics.files.some(({ path, kind }) => path === directory + "/references/advanced.mdx" && kind === "domain"));
+    assert.ok(!valid.metrics.files.some(({ path }) => path.includes("/assets/") || path.includes("/scripts/")));
+    write(directory + "/references/details.md", "# Details\n\n[Broken](missing.md)\n\n" + inline("pnpm run absent") + "\n");
+    const invalid = await verifyAiDocs(root);
+    assert.equal(invalid.errors.length, 2);
+    assert.ok(invalid.errors.every((error) => error.startsWith(directory + "/references/details.md:")));
+    assert.ok(invalid.errors.some((error) => error.includes("missing local target")));
+    assert.ok(invalid.errors.some((error) => error.includes("unknown package script")));
+    write(directory + "/references/details.md", "# Details\n");
+    write(directory + "/SKILL.md", "---\nname: example\ndescription: A fixture\n---\n\n[Broken](missing.md)\n\n" + inline("pnpm run absent") + "\n");
+    const invalidEntry = await verifyAiDocs(root);
+    assert.equal(invalidEntry.errors.length, 2);
+    assert.ok(invalidEntry.errors.some((error) => error.startsWith(directory + "/SKILL.md:6: missing local target")));
+    assert.ok(invalidEntry.errors.some((error) => error.startsWith(directory + "/SKILL.md:8: unknown package script")));
+  });
+}
+
+test("Skill entry and reference budgets reuse existing byte limits and count toward the total", async (t) => {
+  const { root, write } = fixture(t);
+  const directory = ".agents/skills/example";
+  write(directory + "/SKILL.md", "x".repeat(AI_DOC_BUDGETS.entry));
+  write(directory + "/references/details.md", "r".repeat(AI_DOC_BUDGETS.domain));
+  let report = await verifyAiDocs(root);
+  assert.deepEqual(report.errors, []);
+  const baselineBytes = report.metrics.activeBytes - AI_DOC_BUDGETS.entry - AI_DOC_BUDGETS.domain;
+  assert.equal(report.metrics.activeBytes, baselineBytes + AI_DOC_BUDGETS.entry + AI_DOC_BUDGETS.domain);
+  write(directory + "/SKILL.md", "x".repeat(AI_DOC_BUDGETS.entry + 1));
+  write(directory + "/references/details.md", "r".repeat(AI_DOC_BUDGETS.domain + 1));
+  report = await verifyAiDocs(root);
+  assert.equal(report.errors.length, 2);
+  assert.ok(report.errors.some((error) => error.includes("SKILL.md:") && error.includes("exceeds entry budget")));
+  assert.ok(report.errors.some((error) => error.includes("details.md:") && error.includes("exceeds domain budget")));
+  write(directory + "/SKILL.md", "# Skill\n");
+  write(directory + "/references/details.md", "# Details\n");
+  for (const name of domainNames) write("docs/ai/" + name + ".md", "a".repeat(8100));
+  report = await verifyAiDocs(root);
+  assert.ok(report.metrics.activeBytes < AI_DOC_BUDGETS.total);
+  write(directory + "/references/details.md", "r".repeat(1000));
+  report = await verifyAiDocs(root);
+  assert.equal(report.errors.length, 1);
+  assert.ok(report.errors[0].includes("exceeds total budget"));
+});
+
+test("budget failure output lists all active usage in stable descending order without mutating the report", async (t) => {
+  const { root, write } = fixture(t);
+  for (const name of domainNames) write("docs/ai/" + name + ".md", name[0].repeat(8500));
+  write("README.md", "r".repeat(60000));
+  write("docs/ai/archive/history.md", "h".repeat(60000));
+  const report = await verifyAiDocs(root);
+  assert.equal(report.errors.length, 1);
+  assert.ok(report.errors[0].includes("exceeds total budget"));
+  const before = structuredClone(report);
+  const output = formatAiDocReport(report);
+  const usage = output.slice(output.indexOf("Active guidance usage"));
+  for (const file of report.metrics.files.filter(({ kind }) => !["archive", "readme"].includes(kind))) {
+    assert.ok(usage.includes(file.path + ": " + file.bytes + "/" + AI_DOC_BUDGETS[file.kind] + " bytes"));
+  }
+  assert.ok(usage.includes("TOTAL: " + report.metrics.activeBytes + "/" + AI_DOC_BUDGETS.total));
+  assert.ok(usage.indexOf("docs/ai/business.md:") < usage.indexOf("docs/ai/coding-style.md:"));
+  assert.ok(usage.indexOf("docs/ai/workflows.md:") < usage.indexOf("AGENTS.md:"));
+  assert.ok(!usage.includes("README.md:") && !usage.includes("archive/history.md:"));
+  assert.equal(formatAiDocReport(report), output);
+  assert.deepEqual(report, before);
+});
+
+test("success output stays concise while individual budget failures also show usage", async (t) => {
+  const { root, write } = fixture(t);
+  const success = formatAiDocReport(await verifyAiDocs(root));
+  assert.equal(success.split("\n").length, 1);
+  assert.ok(success.startsWith("AI docs: active "));
+  write("AGENTS.md", "x".repeat(AI_DOC_BUDGETS.entry + 1));
+  const failed = formatAiDocReport(await verifyAiDocs(root));
+  assert.ok(failed.includes("exceeds entry budget") && failed.includes("Active guidance usage"));
 });

@@ -47,6 +47,10 @@
 - CV 链接读取 `site.resumeUrl`，文案为 View CV，使用 `target="_blank"`、`rel="noopener noreferrer"`，不加 `download`；更新 PDF 后检查文件与入口一致。
 - 仅使用静态 Astro、语义 HTML 和按需原生脚本。链接使用 a，状态操作使用 `button type="button"`；客户端框架或服务需符合当前需求并同步依赖与集成。
 
+### iframe 可访问标题
+
+仅在存在真实媒体需求时使用 iframe，并提供描述其内容的非空 `title`，使辅助技术能够识别嵌入内容。优先使用原生 HTML 语义，按需添加 ARIA。
+
 ## 域名与部署
 
 公开地址来自部署配置，`SITE_URL` 可覆盖默认自定义域名。仅支持 HTTPS 根路径；拒绝子路径、凭据、query 和 fragment，不读取 Git remote 或 `GITHUB_REPOSITORY` 推导地址。

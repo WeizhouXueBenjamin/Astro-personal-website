@@ -56,12 +56,14 @@
 | 集合、发布、列表、导航或跳转 | 加 `pnpm run verify:site`；核对草稿、日期/排序、空集合、可选值与旧地址 |
 | 正式构建产物、域名或公开资源 | build 后运行 `pnpm run verify:output`，核对链接、metadata、RSS、sitemap 与 robots |
 | 颜色或前景/背景配对 | 加 `pnpm run verify:design`，并检查实际文字、控件及焦点 |
-| 前端或 UI | 按上文设计检查，验证键盘、窄屏、无 JavaScript；动效变化检查减少动效 |
+| 前端或 UI | 按上文设计检查，验证键盘、窄屏、无 JavaScript 及 [iframe 可访问标题](engineering.md#iframe-可访问标题)；动效变化检查减少动效 |
 | 指导文档 | `pnpm run verify:ai-docs`，核对事实和 diff；纯文档不运行无关站点测试 |
 | 文档检查器或其测试 | 加 `pnpm run test:ai-docs` 与 build，覆盖隔离样例及只读行为 |
 
-文档检查扫描入口、README、领域规范和历史归档的本地 Markdown 链接与标题锚点；代码示例中的假链接不参与。活跃文档的 `pnpm run` 命令对照 scripts，归档命令保留历史语义。长段落重复仅提醒。
+文档检查扫描入口、README、领域规范、历史归档，以及仓库 `.agents/skills`、旧 `.codex` 中的 Skill 入口和 `references` Markdown/MDX；不扫描 Skill 脚本、输出素材或用户级目录。检查本地链接及 Markdown/MDX 标题锚点，项目章节复用现有插件；仅编译 MDX，不执行导入或表达式，动态标题无法静态确定时明确报错。代码示例中的假链接不参与。
 
-体积预算由[检查脚本](../../scripts/verify-ai-docs.mjs)集中定义：入口、各领域文档、审计索引及活跃指导集分别受限；README 和历史归档不计入指导体积。检查器无写入或自动修复，不验证外部网址或代码引用片段的真实性。
+活跃文档的命令从正文、行内代码和 shell 代码块提取，对照 scripts 校验 `pnpm run`、`pnpm.cmd run` 及常见参数形式；不执行命令。无法可靠解析的参数或动态脚本名会给出诊断，归档命令保留历史语义。长段落重复仅提醒。
+
+体积预算由[检查脚本](../../scripts/verify-ai-docs.mjs)集中定义：入口、各领域文档、审计索引及活跃指导集分别受限。Skill 入口复用入口预算，`references` 复用领域预算，均计入既有总预算；README 和历史归档不计入指导体积。预算失败会按用量输出各活跃文件及其限额，便于定位。检查器无写入或自动修复，不验证外部网址或代码引用片段的真实性。
 
 站点场景验证使用临时内容与 dev 服务，不等于浏览器交互验证。设计脚本只覆盖已列 token 配对，不代表完整 WCAG 审核；build 不代表完整类型检查。不得声称运行了不存在的 lint/check/typecheck，或把本地成功写成线上发布成功。

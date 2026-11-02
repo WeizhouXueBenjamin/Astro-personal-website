@@ -211,6 +211,75 @@ test("prose punctuation is separate from scripts while quoted names remain exact
   assert.ok(proseOnly.errors[0].endsWith("unknown package script: build"));
 });
 
+test("joined quoted and unquoted segments form one exact script name", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", [
+    'pnpm run "bu"ild',
+    "pnpm run bu'ild'",
+    'pnpm run "bu"\'ild\'',
+    'pnpm --loglevel="info" run "bu"ild',
+    "pnpm.cmd run --loglevel='info' bu\"ild\"",
+  ].map(inline).join("\n\n"));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+  write("README.md", [
+    'pnpm run "build"missing',
+    "pnpm run 'build'missing",
+    'pnpm run build"missing"',
+    'pnpm run "build"\'missing\'',
+  ].map(inline).join("\n\n"));
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 4);
+  assert.ok(errors.every((error) => error.endsWith("unknown package script: buildmissing")));
+  write("package.json", JSON.stringify({ scripts: { buildmissing: "unused" } }));
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+});
+
+test("dynamic or unclosed suffixes after quoted scripts produce diagnostics", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", [
+    'pnpm run "build"$SUFFIX',
+    'pnpm run "build""$SUFFIX"',
+    "pnpm run 'build'\"unclosed",
+  ].map(inline).join("\n\n"));
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 3);
+  assert.ok(errors.every((error) => error.includes("cannot statically validate pnpm command")));
+});
+
+test("command text inside arguments is never rescanned as a pnpm invocation", async (t) => {
+  const { root, write } = fixture(t);
+  const commands = [
+    'node --test --test-name-pattern "pnpm run missing" scripts/verify-ai-docs.test.mjs',
+    'echo "pnpm run missing"',
+    "echo 'pnpm.cmd run missing'",
+    'pnpm run build --message "pnpm run missing"',
+    "pnpm run build pnpm run missing",
+    "node --message \"prefix \\\"pnpm run missing\\\" suffix\"",
+  ];
+  write("README.md", commands.map(inline).join("\n\n") + "\n\n```sh\n" + commands.join("\n") + "\n```\n");
+  assert.deepEqual((await verifyAiDocs(root)).errors, []);
+});
+
+test("quoted argument separators do not hide subsequent executable commands", async (t) => {
+  const { root, write } = fixture(t);
+  write("README.md", [
+    "# Commands", "", "```sh",
+    'node --message "pnpm run literal && ; |" && pnpm run missing',
+    "pnpm run build --message 'pnpm run literal; && |' ; pnpm.cmd run missing",
+    'echo "pnpm run literal" | pnpm run missing',
+    'echo "pnpm run literal" || pnpm run missing',
+    "pnpm run missing # pnpm run ignored-comment",
+    "```", "", "Run pnpm run build. Then pnpm run missing.",
+    "Don't skip pnpm run missing.",
+    "运行pnpm run missing。",
+  ].join("\n"));
+  const { errors } = await verifyAiDocs(root);
+  assert.equal(errors.length, 8);
+  for (const line of [4, 5, 6, 7, 8, 11, 12, 13]) {
+    assert.ok(errors.includes(`README.md:${line}: unknown package script: missing`));
+  }
+});
+
 test("unverifiable pnpm commands produce diagnostics rather than passing silently", async (t) => {
   const { root, write } = fixture(t);
   write("README.md", [

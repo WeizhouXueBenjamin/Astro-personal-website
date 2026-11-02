@@ -95,19 +95,72 @@ const readToken = (input, start) => {
   let index = start;
   while (/[ \t]/.test(input[index] ?? "") && index < input.length) index++;
   if (index >= input.length || /[\r\n;&|]/.test(input[index])) return null;
+  const tokenStart = index;
   let value = "";
-  const quote = ["'", '"'].includes(input[index]) ? input[index++] : "";
-  const quoted = Boolean(quote);
+  let quote = "";
+  let quoted = false;
   while (index < input.length) {
     const character = input[index];
-    if (quote && character === quote) return { value, quoted, end: index + 1 };
+    if (quote && character === quote) {
+      quote = "";
+      index++;
+      continue;
+    }
     if (!quote && /[\s;&|]/.test(character)) break;
-    if (character === "\\" && ["\\", quote, " ", "\t"].includes(input[index + 1])) index++;
+    if (!quote && ["'", '"'].includes(character)) {
+      quote = character;
+      quoted = true;
+      index++;
+      continue;
+    }
+    const escapes = quote ? ["\\", quote] : ["\\", "'", '"', " ", "\t"];
+    if (character === "\\" && quote !== "'" && escapes.includes(input[index + 1])) index++;
     value += input[index++];
   }
   if (quote) throw new Error("unclosed quote");
-  return { value, quoted, end: index };
+  return { value, quoted, start: tokenStart, end: index };
 };
+
+function* pnpmInvocations(text, prose) {
+  for (const [line, input] of text.split(/\r?\n/).entries()) {
+    let index = 0;
+    let commandStart = true;
+    while (index < input.length) {
+      if (/\s/.test(input[index])) {
+        index++;
+        continue;
+      }
+      if (/[;&|]/.test(input[index])) {
+        commandStart = true;
+        index++;
+        continue;
+      }
+      if (!prose && input[index] === "#") break;
+      const start = index;
+      let token;
+      try {
+        token = readToken(input, index);
+      } catch {
+        // A yielded pnpm prefix is diagnosed by inspectCommands. Ordinary prose
+        // may contain apostrophes, so resume after that word instead of stopping.
+        if (!prose) break;
+        index += input.slice(index).search(/\s|$/) || 1;
+        continue;
+      }
+      index = token.end;
+      // Consume whole words, including quoted arguments, without rescanning them.
+      // Prose can introduce a command mid-sentence; shell examples need an executable.
+      if (/^pnpm(?:\.cmd)?$/.test(token.value) && (prose || commandStart)) {
+        yield { input: input.slice(start), line };
+      } else if (prose && !token.quoted) {
+        // Preserve commands next to punctuation or Chinese prose without spaces.
+        const match = /\bpnpm(?:\.cmd)?\b/.exec(input.slice(start, index));
+        if (match) yield { input: input.slice(start + match.index), line };
+      }
+      commandStart &&= !token.quoted && /^(?:[A-Za-z_]\w*=.*|\$|>)$/.test(token.value);
+    }
+  }
+}
 
 const inspectCommands = (node, source, scripts, report) => {
   if (!["text", "inlineCode", "code"].includes(node.type) || !node.position) return;
@@ -116,9 +169,8 @@ const inspectCommands = (node, source, scripts, report) => {
   const text = prose ? source.slice(node.position.start.offset, node.position.end.offset) : node.value;
   const fenced = node.type === "code" && /^ {0,3}(?:`{3,}|~{3,})/.test(source.slice(node.position.start.offset));
   const baseLine = node.position.start.line + (fenced ? 1 : 0);
-  for (const match of text.matchAll(/\bpnpm(?:\.cmd)?\b/g)) {
-    const line = baseLine + text.slice(0, match.index).split("\n").length - 1;
-    const input = text.slice(match.index).split(/\r?\n/)[0];
+  for (const { input, line: offset } of pnpmInvocations(text, prose)) {
+    const line = baseLine + offset;
     if (!/\brun\b/.test(input)) continue;
     try {
       let token = readToken(input, 0);
@@ -132,7 +184,7 @@ const inspectCommands = (node, source, scripts, report) => {
           run = true;
           continue;
         }
-        if (token.value.startsWith("-") && !token.quoted) {
+        if (input[token.start] === "-") {
           const [option, ...assigned] = token.value.split("=");
           if (packageOptions.has(option)) throw new Error("package selection cannot be validated against this package.json");
           if (booleanOptions.has(option) && !assigned.length) continue;

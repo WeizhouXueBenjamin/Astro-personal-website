@@ -6,25 +6,23 @@ import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { getDeploymentConfig } from "./src/config/deployment.mjs";
-import remarkBasePaths from "./src/lib/remark-base-paths.mjs";
 import remarkProjects from "./src/lib/remark-projects.mjs";
 
-const { site, base } = getDeploymentConfig();
+const { site } = getDeploymentConfig();
 
 export default defineConfig({
   site,
-  base,
   output: "static",
   trailingSlash: "always",
   markdown: {
-    processor: unified({ remarkPlugins: [[remarkBasePaths, { base }], remarkProjects] }),
+    processor: unified({ remarkPlugins: [remarkProjects] }),
   },
   integrations: [
     mdx(),
     sitemap({
       filter: (page) =>
         !["/experience", "/gallery", "/404", "/404.html"].includes(
-          new URL(page).pathname.slice(base === "/" ? 0 : base.length).replace(/\/$/, ""),
+          new URL(page).pathname.replace(/\/$/, ""),
         ),
     }),
   ],

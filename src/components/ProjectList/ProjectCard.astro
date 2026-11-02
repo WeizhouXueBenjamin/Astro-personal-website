@@ -7,32 +7,42 @@ import { getProjectCover } from "#base/lib/project-media";
 interface Props {
   project: CollectionEntry<"projects">;
   headingLevel?: "h2" | "h3";
+  layout?: "compact" | "wide";
 }
 
-const { project, headingLevel: Heading = "h2" } = Astro.props;
+const { project, headingLevel: Heading = "h2", layout = "compact" } = Astro.props;
 const { title, slug, summary, category, techStack, status, projectType } = project.data;
 const cover = getProjectCover(project.data);
 ---
 
-<article class="project-card surface-card" data-filter-tags={JSON.stringify([category])}>
+<article class:list={["project-card surface-card", `project-card--${layout}`, { "project-card--with-cover": cover }]}>
   <a class="project-card__link" href={getProjectPath(slug)} aria-labelledby={`card-${slug}`}>
+    <div class="project-card__heading">
+      <p class="project-card__meta">
+        <span class="project-card__category">{category}</span>
+        <span>{projectType}</span>
+        {status && <span class="tag">{status}</span>}
+      </p>
+      <Heading id={`card-${slug}`}>{title}</Heading>
+    </div>
     {cover && (
       <div class="project-card__cover">
-        <Image src={cover.src} alt={cover.alt} widths={[480, 800, 1200]} sizes="(max-width: 700px) 100vw, 50vw" format={cover.src.format === "svg" ? "svg" : "webp"} loading="lazy" />
+        <Image
+          src={cover.src}
+          alt={cover.alt}
+          widths={[480, 800, 1200]}
+          sizes={layout === "wide" ? "(max-width: 800px) 100vw, 40vw" : "(max-width: 700px) 100vw, 50vw"}
+          format={cover.src.format === "svg" ? "svg" : "webp"}
+          loading="lazy"
+        />
       </div>
     )}
     <div class="project-card__body">
-      <div class="project-card__meta">
-        <span class="eyebrow">{category}</span>
-        {status && <span class="tag">{status}</span>}
-      </div>
-      <Heading id={`card-${slug}`}>{title}</Heading>
-      <p class="project-card__type">{projectType}</p>
       <p class="project-card__summary">{summary}</p>
       <ul class="tag-list" aria-label="Core technologies">
-        {techStack.map((tech) => <li>{tech}</li>)}
+        {techStack.slice(0, 3).map((tech) => <li>{tech}</li>)}
       </ul>
-      <span class="project-card__action">View project <span aria-hidden="true">↗</span></span>
+      <span class="project-card__action" aria-hidden="true">View case study <span>→</span></span>
     </div>
   </a>
 </article>
@@ -49,8 +59,9 @@ const cover = getProjectCover(project.data);
   }
 
   .project-card__link {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-areas: "heading" "body";
+    grid-template-rows: auto 1fr;
     height: 100%;
     color: inherit;
     text-decoration: none;
@@ -60,9 +71,40 @@ const cover = getProjectCover(project.data);
     outline-offset: -4px;
   }
 
+  .project-card--with-cover .project-card__link {
+    grid-template-areas: "heading" "cover" "body";
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .project-card__heading {
+    display: grid;
+    grid-area: heading;
+    align-content: start;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: var(--card-padding) var(--card-padding) var(--space-4);
+  }
+
+  .project-card__heading :is(h2, h3) {
+    font-size: var(--size-h3);
+    text-wrap: pretty;
+  }
+
+  .project-card:hover :is(h2, h3),
+  .project-card:focus-within :is(h2, h3) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+
   .project-card__cover {
+    grid-area: cover;
+    min-width: 0;
     aspect-ratio: 16 / 9;
-    border-bottom: 1px solid var(--border);
+    margin-inline: var(--card-padding);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
     background: var(--surface);
   }
 
@@ -75,32 +117,31 @@ const cover = getProjectCover(project.data);
 
   .project-card__body {
     display: flex;
-    flex: 1;
+    grid-area: body;
     flex-direction: column;
     align-items: start;
+    min-width: 0;
     gap: var(--space-4);
-    padding: var(--card-padding);
+    padding: var(--space-4) var(--card-padding) var(--card-padding);
   }
 
   .project-card__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
-  }
-
-  .project-card__body :is(h2, h3) {
-    font-size: var(--size-h3);
-    text-wrap: pretty;
-  }
-
-  .project-card__type {
-    margin-top: calc(-1 * var(--space-2));
+    gap: var(--space-2) var(--space-3);
     color: var(--text-muted);
-    font-size: var(--size-sm);
+    font-size: var(--size-xs);
+  }
+
+  .project-card__category {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .project-card__summary {
+    max-width: var(--content-copy);
     color: var(--text-secondary);
   }
 
@@ -114,5 +155,26 @@ const cover = getProjectCover(project.data);
     color: var(--accent);
     font-size: var(--size-sm);
     font-weight: var(--weight-control);
+  }
+
+  @media (min-width: 801px) {
+    .project-card--wide.project-card--with-cover .project-card__link {
+      grid-template-areas: "cover heading" "cover body";
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    .project-card--wide .project-card__heading {
+      padding-bottom: 0;
+    }
+
+    .project-card--wide .project-card__cover {
+      align-self: center;
+      margin-block: var(--card-padding);
+    }
+
+    .project-card--wide .project-card__heading :is(h2, h3) {
+      font-size: var(--size-h2);
+    }
   }
 </style>

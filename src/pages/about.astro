@@ -4,7 +4,6 @@ import { site } from "#config/site";
 import { capabilities, studies } from "#config/profile";
 import Experience from "#components/Experience/Experience.astro";
 import SocialLinks from "#components/SocialLinks.astro";
-import { withBase } from "#base/lib/paths";
 
 const anchorLinks = [
   { href: "#introduction", label: "Introduction" },
@@ -34,7 +33,7 @@ const anchorLinks = [
     <article class="about-page">
       <section id="introduction" class="about-section about-intro" aria-label="Introduction">
         <div class="identity-row">
-          <img src={withBase("/favicon.svg")} alt="" width="56" height="56" />
+          <img src="/favicon.svg" alt="" width="56" height="56" />
           <div>
             <p class="identity-name">{site.username}</p>
             <p class="location">{site.location}</p>
@@ -43,8 +42,8 @@ const anchorLinks = [
         <p class="direction">{site.userTitle}</p>
         <p class="intro-copy">{site.userDescription}</p>
         <div class="intro-actions">
-          <a class="action-link" href={withBase("/projects/")}>Explore my projects →</a>
-          <a class="action-link" href={withBase("/#contact")}>Get in touch</a>
+          <a class="action-link" href="/projects/">Explore my projects →</a>
+          <a class="action-link" href="/#contact">Get in touch</a>
         </div>
         <SocialLinks />
       </section>

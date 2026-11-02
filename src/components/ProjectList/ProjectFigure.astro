@@ -5,7 +5,8 @@ import { projectMediaSchema } from "#base/lib/project-schema";
 import { validateProjectMediaFiles, type ProjectMediaData } from "#base/lib/project-media";
 import ProjectMedia from "./ProjectMedia.astro";
 
-type Props = ProjectMediaData & { number: number; step?: number };
+type ImageProps = Omit<Extract<ProjectMediaData, { type: "image" }>, "type"> & { type?: "image" };
+type Props = (ImageProps | Exclude<ProjectMediaData, { type: "image" }>) & { number: number; step?: number };
 
 const { number, step, ...data } = Astro.props;
 // Astro SVG imports are component functions carrying the same image metadata.

@@ -1,9 +1,8 @@
 ---
 import MainLayout from "#layouts/MainLayout.astro";
-import { withBase } from "#base/lib/paths";
 ---
 
 <MainLayout title="Page not found" description="The requested page could not be found.">
   <p>This page may have moved or the address may be incorrect.</p>
-  <p><a href={withBase("/")}>Return to the homepage →</a></p>
+  <p><a href="/">Return to the homepage →</a></p>
 </MainLayout>

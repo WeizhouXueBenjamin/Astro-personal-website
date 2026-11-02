@@ -1,11 +1,10 @@
 import { getCollection } from "astro:content";
 import { validateProjectMediaFiles } from "./project-media";
-import { withBase } from "./paths";
 
 export const getBlogPath = (id: string) =>
-  withBase(`/blog/${id.split("/").map(encodeURIComponent).join("/")}/`);
+  `/blog/${id.split("/").map(encodeURIComponent).join("/")}/`;
 
-export const getProjectPath = (slug: string) => withBase(`/projects/${slug}/`);
+export const getProjectPath = (slug: string) => `/projects/${slug}/`;
 
 export async function getPublishedPosts() {
   return (await getCollection("blogs", ({ data }) => !data.draft)).sort(

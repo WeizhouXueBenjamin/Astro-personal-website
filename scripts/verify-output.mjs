@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { getDeploymentConfig } from "../src/config/deployment.mjs";
 
 // Check the actual artifact, without a development server masking path errors.
-export function verifyOutput({ root = "dist", site, base }) {
+export function verifyOutput({ root = "dist", site }) {
   const files = new Set();
   let totalBytes = 0;
   let largest = { path: "", bytes: 0 };
@@ -28,16 +28,14 @@ export function verifyOutput({ root = "dist", site, base }) {
     assert.ok(files.has(required), `Missing static output: ${required}`);
   }
 
-  const prefix = base === "/" ? "/" : `${base}/`;
-  const publicUrl = new URL(prefix, site);
+  const publicUrl = new URL("/", site);
   let checked = 0;
   const decode = (value) => value.replace(/&amp;/g, "&").replace(/&#(?:x([\da-f]+)|(\d+));/gi, (_, hex, decimal) => String.fromCodePoint(parseInt(hex ?? decimal, hex ? 16 : 10)));
   function check(reference, from) {
     if (!reference || /^(?:data:|mailto:|tel:|javascript:)/i.test(reference)) return;
     const url = new URL(decode(reference), from);
     if (url.origin !== publicUrl.origin) return;
-    assert.ok(url.pathname.startsWith(prefix), `URL escapes base ${prefix}: ${url.href}`);
-    const path = decodeURIComponent(url.pathname.slice(prefix.length));
+    const path = decodeURIComponent(url.pathname.slice(1));
     const target = files.has(path) ? path : posix.join(path, "index.html");
     assert.ok(files.has(target), `Missing output or incorrect filename case: ${url.href} (from ${from})`);
     checked += 1;

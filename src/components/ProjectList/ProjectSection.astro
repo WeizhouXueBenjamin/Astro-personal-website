@@ -21,49 +21,55 @@ const { id, title, index } = Astro.props;
 <style>
   .project-section {
     display: grid;
-    grid-template-columns: 13rem minmax(0, 1fr);
-    gap: var(--space-7);
+    gap: var(--space-5);
     padding-block: var(--space-7);
     border-top: 1px solid var(--border);
-    scroll-margin-top: var(--header-offset);
+    scroll-margin-top: calc(var(--header-offset) + var(--space-4));
   }
 
   .project-section__heading {
-    display: grid;
-    align-content: start;
+    display: flex;
+    align-items: baseline;
     gap: var(--space-3);
   }
 
   .project-section__heading h2 {
-    font-size: var(--size-h3);
+    font-size: var(--size-h2);
     text-wrap: pretty;
   }
 
   .project-section__body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flow-root;
     min-width: 0;
+    font-size: var(--size-lead);
   }
 
   .project-section__body > :global(p),
   .project-section__body > :global(ul),
+  .project-section__body > :global(ol),
   .project-section__body > :global(blockquote) {
-    max-width: var(--content-copy);
+    max-width: 70ch;
+  }
+
+  .project-section__body :global(li + li) {
+    margin-top: var(--space-2);
+  }
+
+  .project-section__body :global(table) {
+    display: block;
+  }
+
+  .project-section__body :global(h3) {
+    scroll-margin-top: calc(var(--header-offset) + var(--space-4));
   }
 
   .project-section__body > :global(.project-test + .project-test) {
     margin-block-start: 0;
   }
 
-  @media (max-width: 800px) {
-    .project-section {
-      grid-template-columns: 1fr;
-      gap: var(--space-5);
-    }
-
-    .project-section__heading {
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: baseline;
+  @media (max-width: 600px) {
+    .project-section__body {
+      font-size: var(--size-body);
     }
   }
 </style>

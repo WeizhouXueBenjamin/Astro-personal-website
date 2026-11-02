@@ -1,12 +1,11 @@
 ---
 import { components } from "./components";
 import GlobalNavItem from "./GlobalNavItem.astro";
-import { withBase } from "#base/lib/paths";
 
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
 
 const isActiveHref = (href: string) => {
-  const normalizedHref = withBase(href).replace(/\/$/, "") || "/";
+  const normalizedHref = href.replace(/\/$/, "") || "/";
 
   if (href === "/") {
     return currentPath === normalizedHref;
@@ -20,7 +19,7 @@ const isActiveHref = (href: string) => {
   <nav class="floating-toolbar" aria-label="top-level navigation">
     <ul class="toolbar-list">
       {components.map((component) => (
-        <GlobalNavItem {...component} href={withBase(component.href)} isActive={isActiveHref(component.href)} />
+        <GlobalNavItem {...component} isActive={isActiveHref(component.href)} />
       ))}
     </ul>
   </nav>

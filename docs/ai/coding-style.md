@@ -1,57 +1,39 @@
 # 代码生成与组织约定
 
-本文件规定生成代码的组织方式。业务事实见 [business.md](business.md)，运行时契约见 [engineering.md](engineering.md)；视觉方向见 [design-system.md](design-system.md)，不能由每次代码生成重新决定。
+本文维护代码写法；数据、发布与布局契约见[工程约定](engineering.md)，主题语义见[设计规范](design-system.md)。生成前先定位实际消费者与数据源，沿用现有领域目录。
 
-## 生成前的定位
+## 文件与复用
 
-| 需求 | 优先修改位置 | 避免产生的第二份实现 |
-| --- | --- | --- |
-| 更改姓名、职业方向、所在地或联系方式 | `src/config/site.ts` | 页面中的独立简介和社交 URL |
-| 调整教育、证书与能力分类 | `src/config/profile.ts` | About 页内的重复数组 |
-| 添加项目、经历、文章 | 对应 `src/content/` 集合 | 组件里的内容示例数组 |
-| 调整排序、精选、公开文章范围或文章 URL | `src/lib/content.ts` | 列表、首页、RSS 各自处理同一规则 |
-| 调整页面外壳或 metadata | `src/layouts/` | 业务组件中的 head、主导航或页脚 |
-| 调整颜色、字体尺度、圆角与间距基础 | `src/styles/global.css` | 每个组件中的另一组设计常量 |
-| 增加领域展示 | 现有 `Experience`、`ProjectList` 等目录 | 没有调用者的通用组件体系 |
+- `src/pages/` 组合路由与页面，领域组件可读取本领域集合；`src/layouts/` 提供共享外壳，不在业务组件复制 head、导航和页脚。
+- 静态配置、作者内容和共享选择行为分别留在现有 config、content、lib 中，不在组件建立第二份事实或规则。
+- 优先现有 Experience、ProjectList、GlobalNav 等领域目录。已有多个消费者确需共享时才提取最小函数或样式；不为假设中的复用增加服务层、工厂或全局状态。
+- 新功能应有真实调用者、明确输入和可观察行为，不生成无调用者的组件体系。
 
-需要共享某项行为时，先找到当前消费者，再选择最小复用方式；不要只为以后可能复用而增加服务层、工厂或状态库。
+## Astro 与 Props
 
-## Astro 文件
+- frontmatter 顺序为 import、Props 类型、props 解构、派生数据；其后为模板、按需 script 与 scoped style。
+- 使用 `interface Props` 或 `type Props`。复用公开类型时提供本地 Props 别名以便 Astro 识别，保持调用接口。
+- 领域组件优先接收完整 `CollectionEntry<"projects">` 或 `CollectionEntry<"experience">`；展示组件仅接收所需数据，不传整份站点配置。
+- 可选内容在模板中显式判断；无值时不生成空 href、不可用按钮或占位媒体。
+- CSS 类使用有业务含义的 kebab-case；动态状态使用 `class:list` 或原生状态属性，不依赖文本内容选择元素。
 
-- frontmatter 放在文件顶部，顺序为 import、Props 类型、props 解构、派生数据；随后是模板和 scoped style。只有实际需要客户端行为时才添加 script。
-- 组件通过 `interface Props` 或 `type Props` 声明输入。若已有公开的 Props 类型，给它增加本地 `Props` 别名以便 Astro 识别，保持调用接口。
-- 领域组件优先接收完整的 `CollectionEntry<"projects">` / `CollectionEntry<"experience">`；展示组件只接收其需要的数据，不接收整个站点配置。
-- 可选内容在模板中显式判断后渲染。缺少可选链接时不生成空 href、不可用按钮或占位媒体。
-- 普通页面标题由 MainLayout 提供；正文从 h2 开始。首页、项目详情和文章阅读页复用 Layout，并分别提供一个 main 和 h1；ProjectHero 负责案例标题，BlogDetailLayout 负责文章标题与阅读布局。
-- CSS 类使用有业务含义的 kebab-case；动态状态使用 `class:list` 或原生状态属性，避免依赖文本内容选择元素。
+## TypeScript 与交互
 
-## TypeScript 与数据
+- 沿用现有 imports aliases；相邻文件使用简短相对路径，不批量改写无关 import。
+- 类型使用 `import type` 与集合契约，不复制字段定义或用 any 掩盖结构问题。
+- 派生值负责展示，不重新解释任职状态、项目完成度或证据是否已验证。
+- DOM 脚本不导入构建时内容读取或 Node 文件系统代码。筛选、展开优先局部 DOM 状态，重复初始化保持安全。
 
-- 使用项目已有的 `#components/*`、`#layouts/*`、`#config/*` 等 aliases；相邻文件的相对路径保持简短，不批量重写无关 import。
-- 类型导入使用 `import type`，集合类型来自 Astro 内容契约，不复制字段定义，不用 `any` 掩盖结构不明的问题。
-- 静态配置在 config，作者内容在 content；组件中的派生值只负责展示，不重新解释项目是否完成、任职是否结束或某指标是否经过验证。
-- 只在已有多个消费者共享业务选择时提取 lib 函数。DOM 交互脚本不导入构建时内容读取或 Node 文件系统代码。
-- 前端筛选和展开等交互优先使用局部 DOM 状态，不引入全局状态管理。重复初始化应保持安全。
+## 样式组织
 
-## 样式职责
-
-- 全局 CSS 定义 token、基础排版和已经复用的样式 recipe；Astro scoped CSS 定义该组件的结构、布局和局部状态。
-- 同一视觉属性从共享 token 取值，不在卡片、页面和按钮中重复写固定颜色或另一套字号、圆角。
-- 新增 CSS 或修改一整段样式时，一条声明占一行，保持状态与媒体查询在对应基础规则附近；不生成压缩式样式块。
-- Tailwind 适合简单局部布局。已经由共享 recipe 表达的按钮、卡片、标签不再叠加另一套冲突的工具类。
-- inline style 仅用于数据驱动的自定义属性或尺寸，不能绕过主题 token 设置固定颜色和外观。
-- 不用全局 button、iframe 等宽泛规则处理某个业务组件；全局焦点与减少动效规则可统一定义。
+- 全局 CSS 负责 token、基础排版及已复用 recipe；scoped CSS 负责组件结构、布局和局部状态。
+- 外观从共享 token 取值。已有 recipe 的按钮、卡片和标签不再叠加冲突工具类；Tailwind 用于适合的局部布局。
+- CSS 一条声明一行，状态和媒体查询紧邻基础规则。inline style 仅用于数据驱动的自定义属性或尺寸。
+- 不用全局 button、iframe 等宽泛规则修复单一组件；焦点和减少动效可以全局定义。
 
 ## 格式与注释
 
-- 新写 TypeScript 使用双引号、分号和两空格缩进；Astro 属性和 CSS 使用现有多行风格，较长的属性列表及 map 模板展开排版。
-- 提交普通源代码，不手动压缩；不修改已有第三方 minified 脚本的格式。
-- 注释解释业务约束、兼容原因和非显然的选择，不逐行复述实现。
-- 面向访问者的 UI 文案用英文；项目规范和业务解释用中文，代码标识与工具名保留英文。
-- 修改现有文件时只整理受影响的部分；不为格式统一覆盖所有者的无关改动。
-
-## 完成标准
-
-新功能应有实际页面消费者、明确的数据来源和可观察的行为。按 [workflows.md](workflows.md) 选择验证，不通过新增占位内容、放宽 schema 或声称未执行的检查来完成任务。
-
-本项目尚未配置自动格式化、lint 和完整类型检查；上述格式是生成约定，不宣称已由工具强制执行。需要引入工具时单独提供配置和可运行命令。
+- 新写 TypeScript 使用双引号、分号、两空格缩进；较长 Astro 属性和 map 模板展开排版。
+- 提交普通源码，不手工压缩，不重排第三方 minified 脚本。
+- 注释解释业务约束、兼容原因和非显然选择，不逐行复述代码。
+- 只整理受影响部分，保留无关修改。本文格式是编写约定，不由自动格式化或 Lint 强制执行；现有代码质量工具的覆盖范围见[验证选择](workflows.md#验证选择)。

@@ -1,5 +1,4 @@
 ---
-import { withBase } from "#base/lib/paths";
 import { contactLinks, site } from "#config/site";
 
 const links = contactLinks.filter(({ icon }) => ["email", "linkedin", "github"].includes(icon));
@@ -18,7 +17,7 @@ const links = contactLinks.filter(({ icon }) => ["email", "linkedin", "github"].
       </a>
       <a
         class="action-link"
-        href={withBase(site.resumeUrl)}
+        href={site.resumeUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="View CV (PDF, opens in a new tab)"

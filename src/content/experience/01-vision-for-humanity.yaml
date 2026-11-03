@@ -1,7 +1,7 @@
 jobTitle: "Full-Stack Engineer"
 company: "Vision for Humanity Charitable Trust"
 location: "Auckland, NZ"
-startDate: "Dec 2025"
+startDate: "Jan 2026"
 endDate: "Jun 2026"
 tags:
   - Full Stack
@@ -11,11 +11,13 @@ techStack:
   - TailwindCSS
   - Firebase
 bullets:
+  - "Migrated static pages to hybrid SSR (Vike), improving page load by ~40% and SEO scores (Lighthouse from 72 → 91)."
   - "Built and maintained React/NextJS frontends for three health initiatives, integrating Shopify checkout and Firebase real-time sync."
   - "Owned frontend architecture and reusable component library, working directly with founder & architect."
-  - "Migrated static pages to hybrid SSR (Vike), improving page load by ~40% and SEO scores (Lighthouse from 72 → 91)."
   - "Delivered 6-month fixed contract with 2 on site days/week, including knowledge transfer docs and handoff."
 highLights:
   - "Reduced initial load time by 40%"
   - "Increased Lighthouse score from 72 to 91"
-# Add referenceLetter only when a real document and approved quotation are available.
+referenceLetter:
+  path: "/documents/references/vision-for-humanity-benjamin-xue-reference.pdf"
+  refererName: "Kim Larking · Founder"

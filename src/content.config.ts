@@ -54,10 +54,11 @@ const experience = defineCollection({
         .object({
           path: z.string().min(1, "File path is required"),
           refererName: z.string().min(1, "Referer name is required"),
-          refererAvatar: z.string().min(1, "Referer avatar is required"),
+          refererAvatar: z.string().min(1, "Referer avatar must not be empty").optional(),
           refererSentence: z
             .string()
-            .min(10, "Referer sentence must be at least 10 characters"),
+            .min(10, "Referer sentence must be at least 10 characters")
+            .optional(),
         })
         .optional()
         .refine(

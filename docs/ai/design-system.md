@@ -51,12 +51,12 @@
 | 需求 | 现有用法 | 生成约束 |
 | --- | --- | --- |
 | 主要与次要动作 | `.action-link`、`.action-link--primary` | 一屏只强调最有用的主要动作；href 必须真实有效 |
-| 项目、经历与文章卡片 | `.surface-card`、`--card-padding` | 独立内容需要表面时使用；统一边框、圆角与内边距，结构按领域组件维护 |
+| 项目、文章与联系卡片 | `.surface-card`、`--card-padding` | 独立内容需要表面时使用；统一边框、圆角与内边距，结构按领域组件维护 |
 | 技术栈、领域和年份 | `.tag-list`、`.tag`、`.technical-meta` | 标签是阅读辅助，不用密集假仪表或“熟练度”条 |
 | 小节标注与标题 | `.eyebrow`、`.section-heading` | 用真实标题层级表达页面结构 |
 | 正文与空状态 | `.prose`、`.empty-state` | 文章长文与无内容状态保持可读，不用占位事实 |
 | 页面引言 | `.page-intro` | Projects 与 Blog 等内容页复用次要正文色和阅读宽度 |
-| 长经历 | 原生 `<details>`、`.detail-disclosure` | 默认展示身份、简介和首要贡献；展开后连续显示完整 bullet list，提示切换为 `Show less`，无 JavaScript 时仍可操作。项目改用独立详情页 |
+| 职业经历 | 左侧身份、右侧贡献；原生 `<details>`、`.detail-disclosure` | 沿用 About 分栏与留白，窄屏堆叠；细线仅用于条目边界。长经历默认显示首要贡献，展开后完整列表底部显示 `Show less`，无需 JavaScript；推荐信入口位于折叠区外 |
 
 新增展示需求从当前 About 与 ExperienceCard 的实际职责出发；共享样式的提取方式按代码约定执行。
 

@@ -33,7 +33,7 @@
 ## 容易误用的契约
 
 - Experience 字段为 `highLights`；日期为字符串，沿用现有月份格式和 `Present`，不未经迁移改为 Date 或新状态模型。
-- `referenceLetter` 的必需子字段、长度与后缀以 schema 为准。后缀通过不代表文件存在或允许公开；不能用占位引文或头像绕过验证。
+- `referenceLetter` 入口随对应经历展示；头像与引文可选，字段、长度与后缀以 schema 为准。后缀通过不代表文件存在或允许公开；不能用占位材料绕过验证。
 - `image()` 必须解析真实图片；链接、媒体、PDF 与使用范围还需核对实际资源。
 - Projects 使用严格 MDX frontmatter，技术章节在正文组织；不恢复旧 YAML 章节或媒体排序字段。项目状态未知时省略，不推断为 Completed。
 - MDX 的章节、Figure、分组和测试引用由 `remark-projects.mjs` 处理，Hero 与正文共用 `project-schema.ts`；本地视频由 `project-media.ts` 校验。

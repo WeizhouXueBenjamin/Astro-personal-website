@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import ExperienceHighlights from "./ExperienceHighlights.astro";
 
 interface Props {
   experience: CollectionEntry<"experience">;
@@ -15,135 +14,144 @@ const {
   endDate,
   bullets,
   techStack = [],
-  highLights = [],
   logo,
   companyWebsite,
+  referenceLetter,
 } = experience.data;
 
-const initials = company
-  .split(/\s+/)
-  .filter(Boolean)
-  .slice(0, 2)
-  .map((word) => word[0])
-  .join("")
-  .toUpperCase();
 const hasMoreDetails =
   bullets.length > 2 && (bullets.length > 3 || bullets.join(" ").length > 420);
 const visibleBullets = hasMoreDetails ? bullets.slice(0, 2) : bullets;
 const extraBullets = hasMoreDetails ? bullets.slice(2) : [];
+const technologies = techStack.filter((tech) => tech.trim().length > 0);
+const referenceFormat = referenceLetter?.path.split(".").pop()?.toUpperCase();
 ---
 
-<article class="experience-card surface-card">
+<article class="experience-entry">
   <header>
-    <div class="logo" aria-hidden={!logo}>
-      {logo ? <img src={logo.src} alt={`${company} logo`} loading="lazy" /> : <span>{initials}</span>}
-    </div>
     <div class="title-group">
       <h3>{jobTitle}</h3>
-      {
-        companyWebsite ? (
-          <a href={companyWebsite} target="_blank" rel="noopener noreferrer">{company}</a>
-        ) : (
-          <p>{company}</p>
-        )
-      }
+      <p class="organisation">
+        {logo && <img src={logo.src} alt="" width="32" height="32" loading="lazy" />}
+        {
+          companyWebsite ? (
+            <a href={companyWebsite} target="_blank" rel="noopener noreferrer">{company}</a>
+          ) : (
+            <span>{company}</span>
+          )
+        }
+      </p>
+    </div>
+    <div class="meta">
+      <p class="period">{startDate} – {endDate || "Present"}</p>
+      {location && <p>{location}</p>}
     </div>
   </header>
 
-  <div class="meta">
-    <span class="tag">{startDate} - {endDate || "Present"}</span>
-    {location && <span class="tag">{location}</span>}
-  </div>
-
-  {hasMoreDetails ? (
-    <div class="bullet-disclosure">
-      <ul class="impact-list bullet-disclosure__preview" aria-label={`${company} responsibilities preview`}>
-        {visibleBullets.map((bullet) => <li>{bullet}</li>)}
-      </ul>
-      <details class="detail-disclosure">
-        <summary>
-          <span class="detail-disclosure__closed">More contributions ({extraBullets.length})</span>
-          <span class="detail-disclosure__open">Show less</span>
-        </summary>
-        <ul class="impact-list" aria-label={`${company} responsibilities`}>
-          {bullets.map((bullet) => <li>{bullet}</li>)}
+  <div class="experience-content">
+    {hasMoreDetails ? (
+      <div class="bullet-disclosure">
+        <ul class="impact-list bullet-disclosure__preview" aria-label={`${company} responsibilities preview`}>
+          {visibleBullets.map((bullet) => <li>{bullet}</li>)}
         </ul>
-      </details>
-    </div>
-  ) : (
-    <ul class="impact-list" aria-label={`${company} responsibilities`}>
-      {bullets.map((bullet) => <li>{bullet}</li>)}
-    </ul>
-  )}
-
-  {
-    techStack.length > 0 && (
-      <div class="tech-stack" aria-label={`${company} technology stack`}>
-        <h4>Tech Stack</h4>
-        <div class="tag-list">
-          {techStack.filter(Boolean).map((tech) => (
-            <span class="tag">{tech}</span>
-          ))}
-        </div>
+        <details class="detail-disclosure">
+          <summary>
+            <span class="detail-disclosure__closed">More contributions ({extraBullets.length})</span>
+            <span class="detail-disclosure__open">Show less</span>
+          </summary>
+          <ul class="impact-list" aria-label={`${company} responsibilities`}>
+            {bullets.map((bullet) => <li>{bullet}</li>)}
+          </ul>
+        </details>
       </div>
-    )
-  }
+    ) : (
+      <ul class="impact-list" aria-label={`${company} responsibilities`}>
+        {bullets.map((bullet) => <li>{bullet}</li>)}
+      </ul>
+    )}
 
-  <ExperienceHighlights highlights={highLights} />
+    {
+      technologies.length > 0 && (
+        <ul class="tag-list" aria-label={`${company} technology stack`}>
+          {technologies.map((tech) => <li>{tech}</li>)}
+        </ul>
+      )
+    }
+
+    {referenceLetter && (
+      <footer class="reference">
+        <a
+          class="action-link"
+          href={referenceLetter.path}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`View reference letter for ${company} (${referenceFormat}, opens in a new tab)`}
+        >
+          View reference letter ({referenceFormat})
+        </a>
+        <p>{referenceLetter.refererName}</p>
+      </footer>
+    )}
+  </div>
 </article>
 
 <style>
-  .experience-card {
+  .experience-entry {
     display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: var(--space-5);
-    padding: var(--card-padding);
+    align-items: start;
+    min-width: 0;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    overflow-wrap: anywhere;
   }
 
   header {
     display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr);
-    gap: var(--space-4);
-    align-items: center;
-  }
-
-  .logo {
-    display: grid;
-    width: 3rem;
-    height: 3rem;
-    place-items: center;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: var(--size-sm);
-    font-weight: var(--weight-control);
-  }
-
-  .logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: var(--space-2);
-  }
-
-  .title-group {
+    gap: var(--space-3);
     min-width: 0;
   }
 
-  .title-group p,
-  .title-group a {
-    display: inline-block;
-    margin-top: var(--space-1);
+  .title-group {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .organisation {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
     color: var(--text-secondary);
-    font-size: var(--size-sm);
+  }
+
+  .organisation img {
+    flex: 0 0 2rem;
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+  }
+
+  .organisation a {
+    color: inherit;
   }
 
   .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    display: grid;
+    gap: var(--space-1);
+    color: var(--text-muted);
+    font-size: var(--size-sm);
+  }
+
+  .period {
+    font-family: var(--font-mono);
+  }
+
+  .experience-content {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
   }
 
   .impact-list {
@@ -159,12 +167,47 @@ const extraBullets = hasMoreDetails ? bullets.slice(2) : [];
     color: var(--text-muted);
   }
 
-  .tech-stack {
-    display: grid;
-    gap: var(--space-3);
+  .experience-content .detail-disclosure:not([open]) {
+    padding-top: 0;
+    border-top: 0;
   }
 
-  h4 {
+  .detail-disclosure summary {
+    min-height: var(--control-height);
+    padding-block: var(--space-2);
+  }
+
+  .detail-disclosure[open] {
+    position: relative;
+    padding-bottom: calc(var(--control-height) + var(--space-3));
+  }
+
+  .detail-disclosure[open] > summary {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+  }
+
+  .detail-disclosure[open] > .impact-list {
+    margin-top: 0;
+  }
+
+  .reference {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    align-items: center;
+  }
+
+  .reference p {
+    color: var(--text-muted);
     font-size: var(--size-sm);
+  }
+
+  @container (max-width: 40rem) {
+    .experience-entry {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
   }
 </style>

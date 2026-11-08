@@ -20,5 +20,6 @@ highLights: []
 # referenceLetter:
 #   path: "/documents/references/actual-letter.pdf"
 #   refererName: "ACTUAL_NAME_AND_TITLE"
+#   # Avatar and quotation are optional; only add real, approved materials.
 #   refererAvatar: "/images/references/actual-avatar.jpg"
 #   refererSentence: "ACTUAL_APPROVED_QUOTATION_OF_AT_LEAST_TEN_CHARACTERS"

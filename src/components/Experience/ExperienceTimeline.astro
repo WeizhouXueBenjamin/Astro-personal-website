@@ -7,86 +7,21 @@ interface Props {
 }
 
 const { experiences } = Astro.props;
-
-const yearFrom = (startDate: string) => {
-  const match = startDate.match(/\d{4}/);
-  return match ? match[0] : "Current";
-};
-
-const groupedExperiences = new Map<string, CollectionEntry<"experience">[]>();
-for (const experience of experiences) {
-  const year = yearFrom(experience.data.startDate);
-  const group = groupedExperiences.get(year) ?? [];
-  group.push(experience);
-  groupedExperiences.set(year, group);
-}
 ---
 
 <section class="experience-section" aria-labelledby="career-heading">
-  <div class="section-heading">
-    <p class="eyebrow">Background</p>
-    <h2 id="career-heading">Professional experience</h2>
-  </div>
-
-  <div class="timeline-grid">
-    {
-      [...groupedExperiences].map(([year, entries]) => (
-        <section class="year-group" aria-labelledby={`year-${year}`}>
-          <p class="year-label" id={`year-${year}`}>{year}</p>
-          <div class="cards">
-            {entries.map((experience) => (
-              <ExperienceCard experience={experience} />
-            ))}
-          </div>
-        </section>
-      ))
-    }
+  <h2 id="career-heading">Professional experience</h2>
+  <div class="experience-list">
+    {experiences.map((experience) => <ExperienceCard experience={experience} />)}
   </div>
 </section>
 
 <style>
-  .timeline-grid {
+  .experience-list {
     display: grid;
-    gap: var(--space-5);
-    margin-top: var(--space-5);
-  }
-
-  .year-group {
-    display: grid;
-    grid-template-columns: 5rem minmax(0, 1fr);
-    gap: var(--space-5);
-    align-items: start;
-  }
-
-  .year-label {
-    position: sticky;
-    top: var(--header-offset);
-    padding: var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: var(--size-sm);
-    text-align: center;
-  }
-
-  .cards {
-    display: grid;
-    gap: var(--space-5);
+    gap: var(--space-6);
     min-width: 0;
-  }
-
-  @media (max-width: 700px) {
-    .year-group {
-      grid-template-columns: 1fr;
-      gap: var(--space-3);
-    }
-
-    .year-label {
-      position: static;
-      width: fit-content;
-      min-width: 5rem;
-    }
+    margin-top: var(--space-5);
+    container-type: inline-size;
   }
 </style>
